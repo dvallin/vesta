@@ -1,0 +1,7 @@
+{
+  "name": "vesta",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
