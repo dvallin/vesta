@@ -9,7 +9,7 @@ import {
 } from "@ionic/react";
 import { useEffect } from "react";
 import useShoppingListFields from "../../hooks/use-shopping-list-fields";
-import { useToolbar } from "../../hooks/use-toolbar";
+import useToolbar from "../../hooks/use-toolbar";
 import { sortByName } from "../../model/shopping-list";
 import ShoppingIngredientItem from "./ingredient/item";
 

@@ -6,7 +6,7 @@ import {
   SubmitHandler,
   UseFormReturn,
 } from "react-hook-form";
-import { useToolbar } from "../../hooks/use-toolbar";
+import useToolbar from "../../hooks/use-toolbar";
 
 export interface FormProps<T extends FieldValues> {
   methods: UseFormReturn<T>;

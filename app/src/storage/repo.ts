@@ -57,8 +57,24 @@ export async function getFirstByType<T>(type: string): Promise<Entity<T>> {
   return next.value as Entity<T>;
 }
 
-export async function getById<T>(id: string): Promise<T> {
-  return _storage.get(id) as Promise<T>;
+export interface GetByIdOptions<T> {
+  defaultValue: T;
+  type: string;
+}
+export async function getById<T>(
+  id: string,
+  options: Partial<GetByIdOptions<T>> = {}
+): Promise<T> {
+  const value = (await _storage.get(id)) as Promise<T>;
+  if (
+    value === null &&
+    options.type !== undefined &&
+    options.defaultValue !== undefined
+  ) {
+    await add(options.type, options.defaultValue);
+    return options.defaultValue;
+  }
+  return value;
 }
 
 export async function update<T>(id: string, value: T): Promise<void> {

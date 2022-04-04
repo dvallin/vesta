@@ -11,7 +11,7 @@ import { useEffect } from "react";
 import RecipeSelect from "../recipe/select";
 import useMealPlanFields from "../../hooks/use-meal-plan-fields";
 import RecipeLabel from "../recipe/label";
-import { useToolbar } from "../../hooks/use-toolbar";
+import useToolbar from "../../hooks/use-toolbar";
 import DayItem from "./list/day-item";
 import WeekItem from "./list/week-item";
 

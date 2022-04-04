@@ -48,4 +48,6 @@ export const ToolbarProvider: React.FC<ToolbarProviderProps> = ({
   return <Context.Provider value={value}>{children}</Context.Provider>;
 };
 
-export const useToolbar = () => useContext(Context);
+export default function useToolbar() {
+  return useContext(Context);
+}

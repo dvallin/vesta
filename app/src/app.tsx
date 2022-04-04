@@ -48,6 +48,7 @@ import "@ionic/react/css/display.css";
 
 /* Theme variables */
 import "./theme/variables.css";
+import UserList from "./components/users/user-list";
 
 setupIonicReact();
 
@@ -58,6 +59,9 @@ const App: React.FC = () => (
         <IonTabs>
           <IonRouterOutlet>
             <Switch>
+              <Route exact path="/users">
+                <UserList />
+              </Route>
               <Route exact path="/recipe/search">
                 <RecipeSearch />
               </Route>

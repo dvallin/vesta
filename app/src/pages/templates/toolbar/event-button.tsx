@@ -1,5 +1,5 @@
 import { IonButton } from "@ionic/react";
-import { useToolbar } from "../../../hooks/use-toolbar";
+import useToolbar from "../../../hooks/use-toolbar";
 
 export interface ToolbarEventButtonProps
   extends React.ComponentPropsWithRef<typeof IonButton> {
