@@ -6,9 +6,7 @@ import useNetwork, {
   ConnectHandler,
   DataHandler,
 } from "../../connectivity/use-network";
-import { useUserInfo } from "../../storage/use-user-info";
-
-type UserInfoData = { type: "user-info"; name: string | undefined };
+import { UserInfoData, useUserInfo } from "../../storage/use-user-info";
 
 function useUserList() {
   const [foreignId, setForeignId] = useState("");
@@ -19,9 +17,7 @@ function useUserList() {
     const onData: DataHandler<UserInfoData> = {
       applies: (id, data): data is UserInfoData =>
         "type" in data && data.type === "user-info",
-      apply: (id, data, { setPeerUsername }) => {
-        setPeerUsername(id, data.name);
-      },
+      apply: (id, data, { setPeerUsername }) => setPeerUsername(id, data.name),
     };
 
     const onConnect: ConnectHandler = {

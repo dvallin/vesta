@@ -195,19 +195,9 @@ function useNetworkProvider() {
     [peer, state, registerConnection]
   );
 
-  useEffect(() => {
-    if (peer) {
-      const onConnection = (conn: Peer.DataConnection) =>
-        void registerConnection(conn);
-
-      peer.on("connection", onConnection);
-      return () => peer.off("connection", onConnection);
-    }
-  }, [peer, connectHandlers, dataHandlers, registerConnection]);
-
   const broadcast = useCallback(
     (data: Record<string, unknown>) =>
-      Object.keys(state).map((id) => send(id, data)),
+      Object.keys(state.peers).map((id) => send(id, data)),
     [state, send]
   );
 
@@ -254,6 +244,7 @@ function useNetworkProvider() {
     ]
   );
 
+  // handle events (this indirection in necessary so we can hand down a fresh network object to the handlers)
   useEffect(() => {
     if (state.events.length > 0) {
       for (const event of state.events) {
@@ -282,6 +273,17 @@ function useNetworkProvider() {
       dispatch({ type: "clear-events" });
     }
   }, [state.events, connectHandlers, dataHandlers, network]);
+
+  // handle connect request from other peers
+  useEffect(() => {
+    if (peer) {
+      const onConnection = (conn: Peer.DataConnection) =>
+        void registerConnection(conn);
+
+      peer.on("connection", onConnection);
+      return () => peer.off("connection", onConnection);
+    }
+  }, [peer, connectHandlers, dataHandlers, registerConnection]);
 
   return network;
 }
@@ -321,7 +323,7 @@ export interface Network {
   // sends data to a peer if it is online
   send<T extends Data>(id: string, data: T): void;
   // sends data to all peers that are currently online
-  broadcast(data: Data): void;
+  broadcast<T extends Data>(data: T): void;
   // register and unregister handlers
   on<T extends Data>(event: "data", handler: DataHandler<T>): void;
   on(event: "connect", handler: ConnectHandler): void;

@@ -28,17 +28,19 @@ export function useSwrRepository<T, O extends Record<string, Method>>(
   config?: Partial<SWRConfiguration>
 ): SwrRepository<T> & O {
   const repo = useSWR<T, Error>(key, fetcher, config);
-  return useMemo(() => {
+
+  const wrappedMethods = useMemo(() => {
     const m: Record<string, unknown> = {};
     for (const method of Object.keys(methods)) {
       m[method] = callAndMutate(repo.mutate, methods[method]);
     }
+    return m;
+  }, [methods, repo.mutate]);
 
-    return {
-      ...repo,
-      ...(m as O),
-    };
-  }, [repo, methods]);
+  return {
+    ...repo,
+    ...(wrappedMethods as O),
+  };
 }
 
 function callAndMutate<T>(mutate: KeyedMutator<T>, callback: Method): Method {
