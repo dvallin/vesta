@@ -1,5 +1,5 @@
-import { IonSlide, IonSlides } from "@ionic/react";
-import React, { useEffect, useRef } from "react";
+import { IonButton, IonCol, IonGrid, IonIcon, IonRow } from "@ionic/react";
+import { chevronBackOutline, chevronForwardOutline } from "ionicons/icons";
 import useMealPlanItemPreview from "../../../hooks/use-meal-plan-item-preview";
 import useMealPlanWeekView from "../../../hooks/use-meal-plan-week-view";
 import { MealItem, PreparationItem } from "../../../model/meal-plan";
@@ -12,34 +12,52 @@ const MealPlanItemPreview: React.FC = () => {
     .map((item, index) => ({ item, index }))
     .filter(({ item }) => item.type === "preparation" || item.type === "meal");
 
-  const ref = useRef<HTMLIonSlidesElement>(null);
-  useEffect(() => {
-    const itemIndex = items.findIndex(({ index }) => index === previewIndex);
-    if (itemIndex >= 0) {
-      void ref.current?.slideTo(itemIndex);
-    }
-  }, [items, ref, previewIndex]);
+  if (items.length === 0) {
+    return <></>;
+  }
 
+  let currentItemIndex = items.findIndex(({ index }) => index === previewIndex);
+  if (currentItemIndex < 0) {
+    currentItemIndex = 0;
+  }
+  console.log(currentItemIndex, previewIndex, items[currentItemIndex]);
   return (
-    <IonSlides
-      ref={ref}
-      pager
-      options={{ autoHeight: true }}
-      onIonSlideDidChange={async () => {
-        const index = await ref.current?.getActiveIndex();
-        if (index !== undefined) {
-          const newPreviewIndex = items[index].index;
-          setPreviewIndex(newPreviewIndex);
-        }
-      }}
-    >
-      {items.map(({ item }, index) => (
-        // eslint-disable-next-line react/no-array-index-key
-        <IonSlide key={index}>
-          <MealPlanSummary item={item as MealItem | PreparationItem} />
-        </IonSlide>
-      ))}
-    </IonSlides>
+    <>
+      <IonGrid>
+        <IonRow className="ion-align-items-center">
+          <IonCol size="2">
+            <IonButton
+              color="light"
+              onClick={() =>
+                setPreviewIndex(
+                  items[(currentItemIndex + items.length - 1) % items.length]
+                    .index
+                )
+              }
+            >
+              <IonIcon icon={chevronBackOutline} />
+            </IonButton>
+          </IonCol>
+          <IonCol size="8">
+            <MealPlanSummary
+              item={items[currentItemIndex].item as MealItem | PreparationItem}
+            />
+          </IonCol>
+          <IonCol size="2">
+            <IonButton
+              color="light"
+              onClick={() =>
+                setPreviewIndex(
+                  items[(currentItemIndex + 1) % items.length].index
+                )
+              }
+            >
+              <IonIcon icon={chevronForwardOutline} />
+            </IonButton>
+          </IonCol>
+        </IonRow>
+      </IonGrid>
+    </>
   );
 };
 

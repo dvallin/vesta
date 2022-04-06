@@ -18,6 +18,7 @@ const RecipeSelect: React.FC<RecipeSelectProps> = ({ name }) => {
         <>
           <IonModal
             isOpen={edit}
+            onDidDismiss={() => setEdit(false)}
             breakpoints={[0.2, 0.5, 1]}
             initialBreakpoint={0.5}
           >

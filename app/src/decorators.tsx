@@ -9,6 +9,7 @@ import {
 import { SWRConfig } from "swr";
 import { mealPlans } from "../.storybook/data/meal-plan";
 import { recipes } from "../.storybook/data/recipe";
+import { userInfo } from "../.storybook/data/user-info";
 import { shoppingLists } from "../.storybook/data/shopping-list";
 import { merge } from "../.storybook/data/swr-cache";
 
@@ -63,7 +64,8 @@ export const swrDecorator = (
   provider: () => Map<string, unknown> = merge(
     recipes,
     mealPlans,
-    shoppingLists
+    shoppingLists,
+    userInfo
   )
 ): Decorator =>
   function (component) {
@@ -71,8 +73,7 @@ export const swrDecorator = (
       <SWRConfig
         value={{ provider, revalidateIfStale: false, revalidateOnFocus: false }}
       >
-        {" "}
-        {component}{" "}
+        {component}
       </SWRConfig>
     );
   };

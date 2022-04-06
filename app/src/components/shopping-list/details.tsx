@@ -40,19 +40,17 @@ const ShoppingListDetails: React.FC = () => {
             reorder(detail);
           }}
         >
-          {todo
-            .sort((a, b) => sortByName(a.ingredient, b.ingredient))
-            .map(({ ingredient, index }) => (
-              <IonItem key={index} button>
-                <IonReorder />
-                <ShoppingIngredientItem
-                  ingredient={ingredient}
-                  onClick={() => {
-                    toggleBought(index, ingredient);
-                  }}
-                />
-              </IonItem>
-            ))}
+          {todo.map(({ ingredient, index }) => (
+            <IonItem key={index} button>
+              <IonReorder />
+              <ShoppingIngredientItem
+                ingredient={ingredient}
+                onClick={() => {
+                  toggleBought(index, ingredient);
+                }}
+              />
+            </IonItem>
+          ))}
         </IonReorderGroup>
       </IonItemGroup>
       <IonItemGroup>
