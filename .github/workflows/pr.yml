@@ -1,0 +1,46 @@
+name: pull request workflow
+
+on: pull_request
+
+defaults:
+  run:
+    working-directory: app
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ./app/node_modules
+          key: modules-${{ hashFiles('app/package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
+      - name: format
+        run: npm run format
+
+      - name: lint
+        run: npm run lint
+
+      - name: test
+        run: npm test
+
+      - name: build
+        # FIXME: reactivate ci once source maps of ionic/storage are fixed
+        run: CI= npm run build
+
+      - name: deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_VESTA_346611 }}"
+          projectId: vesta-346611
+          entryPoint: app

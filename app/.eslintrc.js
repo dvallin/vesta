@@ -28,6 +28,7 @@ module.exports = {
     "react/prefer-stateless-function": 1,
     "react/display-name": 0,
     "react/prop-types": 0,
+    "react-hooks/exhaustive-deps": 2,
     "react/react-in-jsx-scope": 0, // Since React 17 using JSX doesn't require React to be imported.
     curly: "error",
     "unicorn/prevent-abbreviations": 0,

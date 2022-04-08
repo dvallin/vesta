@@ -1,4 +1,4 @@
-import { IonContent, IonHeader, IonPage } from "@ionic/react";
+import { IonContent, IonHeader, IonPage, IonSpinner } from "@ionic/react";
 import React, { Suspense } from "react";
 import { ToolbarProvider } from "../../hooks/use-toolbar";
 
@@ -12,8 +12,7 @@ const Page: React.FC<PageProps> = ({ children, toolbar, defaultTitle }) => (
     <IonPage>
       <IonHeader>{toolbar}</IonHeader>
       <IonContent fullscreen>
-        <IonHeader collapse="condense">{toolbar}</IonHeader>
-        <Suspense fallback={<div>loading...</div>}>{children}</Suspense>
+        <Suspense fallback={<IonSpinner />}>{children}</Suspense>
       </IonContent>
     </IonPage>
   </ToolbarProvider>

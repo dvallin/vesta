@@ -12,7 +12,7 @@ import {
 } from "@ionic/react";
 import { useEffect } from "react";
 import useShoppingListFields from "../../hooks/use-shopping-list-fields";
-import { useToolbar } from "../../hooks/use-toolbar";
+import useToolbar from "../../hooks/use-toolbar";
 import NumberInput from "../form/number-input";
 import IngredientNameInput from "../form/suggestion-inputs/ingredient-name-input";
 import UnitInput from "../form/suggestion-inputs/unit-input";
