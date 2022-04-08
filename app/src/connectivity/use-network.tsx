@@ -49,60 +49,57 @@ type ConnectivityAction =
       id: string;
     };
 
-const reducer: Reducer<Connectivity, ConnectivityAction> = (state, action) => {
+const eventsReducer: Reducer<Connectivity["events"], ConnectivityAction> = (
+  events,
+  action
+) => {
   switch (action.type) {
-    case "clear-events": {
+    case "clear-events":
+      return [];
+    default:
+      return [...events, action];
+  }
+};
+
+const peersReducer: Reducer<Connectivity["peers"], ConnectivityAction> = (
+  peers,
+  action
+) => {
+  switch (action.type) {
+    case "set-name":
       return {
-        peers: state.peers,
-        events: [],
+        ...peers,
+        [action.id]: { ...peers[action.id], username: action.username },
       };
-    }
-    case "data": {
-      return {
-        peers: state.peers,
-        events: [...state.events, action],
-      };
-    }
-    case "set-name": {
-      return {
-        peers: {
-          ...state.peers,
-          [action.id]: { ...state.peers[action.id], username: action.username },
-        },
-        events: [...state.events, action],
-      };
-    }
     case "connect":
       return {
-        peers: {
-          ...state.peers,
-          [action.id]: {
-            ...state.peers[action.id],
-            connection: action.connection,
-          },
+        ...peers,
+        [action.id]: {
+          ...peers[action.id],
+          connection: action.connection,
         },
-        events: [...state.events, action],
       };
     case "disconnect":
       return {
-        peers: {
-          ...state.peers,
-          [action.id]: { ...state.peers[action.id], connection: undefined },
-        },
-        events: [...state.events, action],
+        ...peers,
+        [action.id]: { ...peers[action.id], connection: undefined },
       };
     case "forget": {
-      const peers = {
-        ...state.peers,
+      const p = {
+        ...peers,
       };
-      delete peers[action.id];
-      return {
-        peers,
-        events: [...state.events, action],
-      };
+      delete p[action.id];
+      return p;
     }
+    default:
+      return peers;
   }
 };
+
+const reducer: Reducer<Connectivity, ConnectivityAction> = (state, action) => ({
+  events: eventsReducer(state.events, action),
+  peers: peersReducer(state.peers, action),
+});
 
 const fail = () => {
   throw new Error("context not initialized");

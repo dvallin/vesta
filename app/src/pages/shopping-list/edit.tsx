@@ -27,7 +27,7 @@ const Edit: React.FC = () => {
       methods={methods}
       onSubmit={(updated) => {
         if (list) {
-          void update(list?.id, updated);
+          void update({ ...updated, id: list.id });
         } else {
           void add(updated);
         }

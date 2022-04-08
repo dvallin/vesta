@@ -9,7 +9,7 @@ export function useRecipes() {
     async () => getAllByType<Recipe>("recipe"),
     {
       add: async (recipe: Recipe) => add("recipe", recipe),
-      update: async (id: string, recipe: Recipe) => update(id, recipe),
+      update: async (recipe: Entity<Recipe>) => update(recipe),
     }
   );
 }

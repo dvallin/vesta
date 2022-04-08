@@ -26,7 +26,8 @@ const AddMealPlan: React.FC = () => {
       methods={methods}
       onSubmit={(updated) => {
         if (list) {
-          void update(list?.id, combine(list, updated));
+          const combined = combine(list, updated);
+          void update({ ...combined, id: list.id });
         } else {
           void add(updated);
         }

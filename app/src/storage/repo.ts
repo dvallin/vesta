@@ -21,9 +21,12 @@ async function getIndex(): Promise<Index> {
   return m ?? {};
 }
 
-export async function add<T>(type: string, value: T): Promise<string> {
-  const id = v4();
-  await _storage.set(id, { ...value, id });
+export async function add<T>(
+  type: string,
+  value: T,
+  id = v4()
+): Promise<string> {
+  await _storage.set(id, value);
   const index = await getIndex();
   if (index[type] === undefined) {
     index[type] = [];
@@ -52,31 +55,43 @@ export async function getAllByType<T>(type: string): Promise<Array<Entity<T>>> {
   return allItems;
 }
 
-export async function getFirstByType<T>(type: string): Promise<Entity<T>> {
-  const next = await streamAllByType(type).next();
-  return next.value as Entity<T>;
+export async function getSingleton<T>(
+  type: string,
+  defaultValue: T
+): Promise<Entity<T>> {
+  return getByIdOrDefault(type, type, defaultValue);
 }
 
-export interface GetByIdOptions<T> {
-  defaultValue: T;
-  type: string;
-}
-export async function getById<T>(
+export async function getByIdOrDefault<T>(
   id: string,
-  options: Partial<GetByIdOptions<T>> = {}
-): Promise<T> {
-  const value = (await _storage.get(id)) as Promise<T>;
-  if (
-    value === null &&
-    options.type !== undefined &&
-    options.defaultValue !== undefined
-  ) {
-    await add(options.type, options.defaultValue);
-    return options.defaultValue;
+  type: string,
+  defaultValue: T
+): Promise<Entity<T>> {
+  const value = await getById<T>(id);
+
+  if (value !== undefined) {
+    return value;
   }
-  return value;
+
+  await add(type, defaultValue, id);
+  return {
+    ...defaultValue,
+    id,
+  };
 }
 
-export async function update<T>(id: string, value: T): Promise<void> {
-  await _storage.set(id, value);
+export async function getById<T>(id: string): Promise<Entity<T> | undefined> {
+  const value = (await _storage.get(id)) as T;
+  if (value === null) {
+    return undefined;
+  }
+  return {
+    ...value,
+    id,
+  };
+}
+
+export async function update<T>(value: Entity<T>): Promise<void> {
+  const { id, ...rest } = value;
+  await _storage.set(id, rest);
 }

@@ -1,14 +1,17 @@
+import { Entity } from "../model/entity";
 import { MealPlan } from "../model/meal-plan";
-import { getFirstByType, update, add } from "./repo";
+import { getSingleton, update, add } from "./repo";
 import { useSwrRepository } from "./use-swr-repository";
+
+const defaultValue: MealPlan = { plans: [] };
 
 export function useMealPlan() {
   return useSwrRepository(
     "meal-plan",
-    async () => getFirstByType<MealPlan>("meal-plan"),
+    async () => getSingleton<MealPlan>("meal-plan", defaultValue),
     {
       add: async (plan: MealPlan) => add("meal-plan", plan),
-      update: async (id: string, plan: MealPlan) => update(id, plan),
+      update: async (plan: Entity<MealPlan>) => update(plan),
     }
   );
 }

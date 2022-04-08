@@ -23,9 +23,9 @@ const Edit: React.FC = () => {
         </Toolbar>
       }
       methods={methods}
-      onSubmit={(recipe) => {
+      onSubmit={(updated) => {
         if (recipeId) {
-          void update(recipeId, recipe);
+          void update({ ...updated, id: recipeId });
           router.goBack();
         }
       }}

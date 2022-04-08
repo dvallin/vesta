@@ -1,11 +1,10 @@
-import { v4 } from "uuid";
 import useNetwork from "../connectivity/use-network";
+import { Entity } from "../model/entity";
 import { UserInfo } from "../model/user-info";
-import { getById, update } from "./repo";
+import { getSingleton, update } from "./repo";
 import { useSwrRepository } from "./use-swr-repository";
 
 const defaultValue: UserInfo = {
-  id: v4(),
   name: "",
 };
 
@@ -15,13 +14,13 @@ export function useUserInfo() {
   const network = useNetwork();
   return useSwrRepository(
     "user-info",
-    async () => getById("user-info", { type: "user-info", defaultValue }),
+    async () => getSingleton("user-info", defaultValue),
     {
-      update: async (info: UserInfo) => {
+      update: async (info: Entity<UserInfo>) => {
         // broadcast this change directly to all peers
         network.broadcast<UserInfoData>({ type: "user-info", name: info.name });
         // serialize into local-storage
-        return update("user-info", info);
+        return update(info);
       },
     }
   );
