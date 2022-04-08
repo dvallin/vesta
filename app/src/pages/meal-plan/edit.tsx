@@ -27,7 +27,7 @@ const Edit: React.FC = () => {
       methods={methods}
       onSubmit={(updated) => {
         if (plan) {
-          void update(plan?.id, updated);
+          void update({ ...updated, id: plan.id });
         } else {
           void add(updated);
         }

@@ -13,7 +13,7 @@ const MyUser = () => {
       <IonLabel>Username</IonLabel>
       <IonInput
         value={user.name}
-        onIonChange={(e) => update({ ...user, name: e.detail.value ?? "" })}
+        onIonChange={(e) => update({ name: e.detail.value ?? "", id: user.id })}
       />
     </IonItem>
   );
