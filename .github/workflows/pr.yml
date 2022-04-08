@@ -17,8 +17,8 @@ jobs:
         id: cache
         uses: actions/cache@v3
         with:
-          path: ./node_modules
-          key: modules-${{ hashFiles('package-lock.json') }}
+          path: ./app/node_modules
+          key: modules-${{ hashFiles('app/package-lock.json') }}
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
@@ -36,3 +36,11 @@ jobs:
       - name: build
         # FIXME: reactivate ci once source maps of ionic/storage are fixed
         run: CI= npm run build
+
+      - name: deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_VESTA_346611 }}"
+          projectId: vesta-346611
+          entryPoint: app
