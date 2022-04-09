@@ -1,20 +1,35 @@
+import { filterArray } from "@syncedstore/core";
+import { useSyncedStore } from "@syncedstore/react";
+import { useCallback } from "react";
+import { v4 } from "uuid";
 import { Entity } from "../model/entity";
 import { Recipe } from "../model/recipe";
-import { getAllByType, add, update } from "./repo";
-import { useSwrRepository } from "./use-swr-repository";
+import { store } from "./store";
 
 export function useRecipes() {
-  return useSwrRepository(
-    "recipes",
-    async () => getAllByType<Recipe>("recipe"),
-    {
-      add: async (recipe: Recipe) => add("recipe", recipe),
-      update: async (recipe: Entity<Recipe>) => update(recipe),
-    }
+  const { recipes } = useSyncedStore(store);
+
+  const update = useCallback(
+    (recipe: Entity<Recipe>) => {
+      filterArray(recipes, (r) => r.id !== recipe.id);
+      recipes.push(recipe);
+    },
+    [recipes]
   );
+
+  const add = useCallback(
+    (recipe: Recipe) => recipes.push({ id: v4(), ...recipe }),
+    [recipes]
+  );
+
+  return {
+    data: recipes,
+    add,
+    update,
+  };
 }
 
 export function useRecipe(id: string | undefined): Entity<Recipe> | undefined {
-  const { data: recipes = [] } = useRecipes();
-  return recipes.find((r) => r.id === id);
+  const { data } = useRecipes();
+  return data.find((r) => r.id === id);
 }

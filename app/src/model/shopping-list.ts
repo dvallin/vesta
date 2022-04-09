@@ -1,5 +1,8 @@
 import { z } from "zod";
 import { uniqueArray } from "../unique";
+import { Entity } from "./entity";
+import { MealPlan } from "./meal-plan";
+import { Recipe } from "./recipe";
 
 export const shoppingIngredientFromPlanSchema = z.object({
   date: z.number(),
@@ -23,27 +26,6 @@ export type ShoppingIngredient = typeof shoppingIngredientSchema._type;
 export type ShoppingIngredientFromPlan =
   typeof shoppingIngredientFromPlanSchema._type;
 
-export function combine(left: ShoppingList, right: ShoppingList): ShoppingList {
-  const combinedIngredientsByName: Record<string, ShoppingIngredient> = {};
-  const combinedIngredients = [
-    ...left.shoppingIngredients,
-    ...right.shoppingIngredients,
-  ];
-  for (const ingredient of combinedIngredients) {
-    combinedIngredientsByName[ingredient.ingredientName] =
-      combineShoppingIngredients(
-        ingredient,
-        combinedIngredientsByName[ingredient.ingredientName] || {
-          fromPlans: [],
-        }
-      );
-  }
-
-  return {
-    shoppingIngredients: Object.values(combinedIngredientsByName),
-  };
-}
-
 export function combineShoppingIngredients(
   left: ShoppingIngredient,
   right: ShoppingIngredient
@@ -66,4 +48,39 @@ export function combineShoppingIngredients(
 
 export function sortByName(a: ShoppingIngredient, b: ShoppingIngredient) {
   return a.ingredientName.localeCompare(b.ingredientName);
+}
+
+export function createShoppingListFromMealPlan(
+  plan: Partial<MealPlan> | undefined,
+  recipes: Entity<Recipe>[] | undefined
+): ShoppingList {
+  const shoppingIngredientsByName: Record<string, ShoppingIngredient> = {};
+
+  for (const p of plan?.plans ?? []) {
+    const fromPlan: ShoppingIngredientFromPlan = {
+      date: p.date,
+      recipeId: p.recipeId,
+    };
+
+    const recipe = recipes?.find((r) => p.recipeId === r.id);
+    for (const i of recipe?.ingredients ?? []) {
+      const ingredient = shoppingIngredientsByName[i.ingredientName] || {
+        ingredientName: i.ingredientName,
+        bought: false,
+        fromPlans: [],
+      };
+      shoppingIngredientsByName[i.ingredientName] = combineShoppingIngredients(
+        ingredient,
+        {
+          ...i,
+          fromPlans: [fromPlan],
+          bought: false,
+        }
+      );
+    }
+  }
+
+  return {
+    shoppingIngredients: Object.values(shoppingIngredientsByName),
+  };
 }

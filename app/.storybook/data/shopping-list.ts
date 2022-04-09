@@ -1,9 +1,6 @@
-import { Entity } from "../../src/model/entity";
 import { ShoppingList } from "../../src/model/shopping-list";
-import { SwrCache, createCache } from "./swr-cache";
 
-export const standardShoppingList: Entity<ShoppingList> = {
-  id: "1",
+export const standardShoppingList: ShoppingList = {
   shoppingIngredients: [
     {
       ingredientName: "potato",
@@ -23,6 +20,3 @@ export const standardShoppingList: Entity<ShoppingList> = {
     { ingredientName: "salt", bought: false, fromPlans: [] },
   ],
 };
-
-export const shoppingLists: () => SwrCache = () =>
-  createCache(["shopping-list", standardShoppingList]);

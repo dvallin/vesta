@@ -16,11 +16,7 @@ import {
   searchOutline,
   cartOutline,
   pizzaOutline,
-  settingsOutline,
 } from "ionicons/icons";
-
-import { SWRConfig } from "swr";
-import { NetworkProvider } from "./connectivity/use-network";
 
 import EditMealPlan from "./pages/meal-plan/edit";
 import MealPlanView from "./pages/meal-plan/view";
@@ -33,8 +29,6 @@ import RecipeView from "./pages/recipe/view";
 import ShoppingListView from "./pages/shopping-list/view";
 import ShoppingListAddMealPlan from "./pages/shopping-list/add-meal-plan";
 import EditShoppingList from "./pages/shopping-list/edit";
-
-import SettingsPage from "./pages/settings/view";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -60,78 +54,67 @@ setupIonicReact();
 
 const App: React.FC = () => (
   <Suspense fallback={<IonSpinner />}>
-    <SWRConfig value={{ suspense: true }}>
-      <NetworkProvider>
-        <IonApp>
-          <IonReactRouter>
-            <IonTabs>
-              <IonRouterOutlet>
-                <Switch>
-                  <Route exact path="/settings">
-                    <SettingsPage />
-                  </Route>
-                  <Route exact path="/recipe/search">
-                    <RecipeSearch />
-                  </Route>
-                  <Route exact path="/recipe/add">
-                    <AddRecipe />
-                  </Route>
-                  <Route exact path="/recipe/:recipeId/edit">
-                    <EditRecipe />
-                  </Route>
-                  <Route exact path="/recipe/:recipeId">
-                    <RecipeView />
-                  </Route>
+    <IonApp>
+      <IonReactRouter>
+        <IonTabs>
+          <IonRouterOutlet>
+            <Switch>
+              <Route exact path="/recipe/search">
+                <RecipeSearch />
+              </Route>
+              <Route exact path="/recipe/add">
+                <AddRecipe />
+              </Route>
+              <Route exact path="/recipe/:recipeId/edit">
+                <EditRecipe />
+              </Route>
+              <Route exact path="/recipe/:recipeId">
+                <RecipeView />
+              </Route>
 
-                  <Route path="/meal-plan/edit">
-                    <EditMealPlan />
-                  </Route>
-                  <Route path="/meal-plan">
-                    <MealPlanView />
-                  </Route>
+              <Route path="/meal-plan/edit">
+                <EditMealPlan />
+              </Route>
+              <Route path="/meal-plan">
+                <MealPlanView />
+              </Route>
 
-                  <Route exact path="/shopping-list/edit">
-                    <EditShoppingList />
-                  </Route>
-                  <Route exact path="/shopping-list/add-meal-plan">
-                    <ShoppingListAddMealPlan />
-                  </Route>
-                  <Route exact path="/shopping-list">
-                    <ShoppingListView />
-                  </Route>
+              <Route exact path="/shopping-list/edit">
+                <EditShoppingList />
+              </Route>
+              <Route exact path="/shopping-list/add-meal-plan">
+                <ShoppingListAddMealPlan />
+              </Route>
+              <Route exact path="/shopping-list">
+                <ShoppingListView />
+              </Route>
 
-                  <Route exact path="/">
-                    <Redirect to="/meal-plan" />
-                  </Route>
-                </Switch>
-              </IonRouterOutlet>
-              <IonTabBar slot="bottom">
-                <IonTabButton tab="recipe-search" href="/recipe/search">
-                  <IonIcon icon={searchOutline} />
-                  <IonLabel>Search</IonLabel>
-                </IonTabButton>
-                <IonTabButton tab="add-recipe" href="/recipe/add">
-                  <IonIcon icon={createOutline} />
-                  <IonLabel>Write</IonLabel>
-                </IonTabButton>
-                <IonTabButton tab="meal-plan" href="/meal-plan">
-                  <IonIcon icon={pizzaOutline} />
-                  <IonLabel>Plan</IonLabel>
-                </IonTabButton>
-                <IonTabButton tab="shopping-list" href="/shopping-list">
-                  <IonIcon icon={cartOutline} />
-                  <IonLabel>Shop</IonLabel>
-                </IonTabButton>
-                <IonTabButton tab="settings" href="/settings">
-                  <IonIcon icon={settingsOutline} />
-                  <IonLabel>Configure</IonLabel>
-                </IonTabButton>
-              </IonTabBar>
-            </IonTabs>
-          </IonReactRouter>
-        </IonApp>
-      </NetworkProvider>
-    </SWRConfig>
+              <Route exact path="/">
+                <Redirect to="/meal-plan" />
+              </Route>
+            </Switch>
+          </IonRouterOutlet>
+          <IonTabBar slot="bottom">
+            <IonTabButton tab="recipe-search" href="/recipe/search">
+              <IonIcon icon={searchOutline} />
+              <IonLabel>Search</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="add-recipe" href="/recipe/add">
+              <IonIcon icon={createOutline} />
+              <IonLabel>Write</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="meal-plan" href="/meal-plan">
+              <IonIcon icon={pizzaOutline} />
+              <IonLabel>Plan</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="shopping-list" href="/shopping-list">
+              <IonIcon icon={cartOutline} />
+              <IonLabel>Shop</IonLabel>
+            </IonTabButton>
+          </IonTabBar>
+        </IonTabs>
+      </IonReactRouter>
+    </IonApp>
   </Suspense>
 );
 

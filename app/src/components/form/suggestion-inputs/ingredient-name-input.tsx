@@ -10,7 +10,10 @@ const IngredientNameInput: React.FC<
   const suggestions = useMemo(
     () =>
       uniqueStringArray(
-        data?.flatMap((r) => r.ingredients.map((i) => i.ingredientName)) ?? []
+        // FIXME: leaky abstraction in syncedstore - missing flatMap
+        // eslint-disable-next-line unicorn/prefer-array-flat-map
+        data?.map((r) => r.ingredients.map((i) => i.ingredientName)).flat() ??
+          []
       ).sort(),
     [data]
   );

@@ -1,11 +1,10 @@
 import { Story } from "@storybook/react";
-import swrDecorator from "../../../.storybook/decorators/swr-decorator";
 import AddMealPlan from "./add-meal-plan";
 
 const Default = {
   title: "pages/shopping-list/AddMealPlan",
   component: AddMealPlan,
-  decorators: [swrDecorator()],
+  decorators: [],
 };
 
 const Template: Story = () => <AddMealPlan />;

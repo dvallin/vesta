@@ -20,7 +20,7 @@ const MealPlanItemPreview: React.FC = () => {
   if (currentItemIndex < 0) {
     currentItemIndex = 0;
   }
-  console.log(currentItemIndex, previewIndex, items[currentItemIndex]);
+
   return (
     <>
       <IonGrid>

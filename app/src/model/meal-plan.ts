@@ -38,46 +38,50 @@ export function buildPlanItems<P extends DailyMealPlan>(
   plans: P[],
   recipes?: Array<Entity<Recipe>>
 ) {
-  const items = plans.flatMap((plan, index) => {
-    const recipe = recipes?.find((r) => r.id === plan.recipeId);
-    const instructionsByDate = recipe
-      ? groupInstructionsByDate(recipe, plan.date)
-      : {};
-    const result = Object.entries(instructionsByDate).map(
-      ([d, instructions]) => {
-        const date = Number.parseInt(d, 10);
-        if (date !== plan.date) {
-          const item: PreparationItem<P> = {
-            type: "preparation",
+  const items = plans
+    // FIXME: leaky abstraction in syncedstore - missing flatMap
+    // eslint-disable-next-line unicorn/prefer-array-flat-map
+    .map((plan, index) => {
+      const recipe = recipes?.find((r) => r.id === plan.recipeId);
+      const instructionsByDate = recipe
+        ? groupInstructionsByDate(recipe, plan.date)
+        : {};
+      const result = Object.entries(instructionsByDate).map(
+        ([d, instructions]) => {
+          const date = Number.parseInt(d, 10);
+          if (date !== plan.date) {
+            const item: PreparationItem<P> = {
+              type: "preparation",
+              date,
+              instructions,
+              plan,
+            };
+            return item;
+          }
+
+          const item: MealItem<P> = {
+            type: "meal",
             date,
             instructions,
+            index,
             plan,
           };
           return item;
         }
-
-        const item: MealItem<P> = {
+      );
+      if (!instructionsByDate[plan.date]) {
+        result.push({
           type: "meal",
-          date,
-          instructions,
+          date: plan.date,
+          instructions: recipe?.instructions ?? [],
           index,
           plan,
-        };
-        return item;
+        } as MealItem<P>);
       }
-    );
-    if (!instructionsByDate[plan.date]) {
-      result.push({
-        type: "meal",
-        date: plan.date,
-        instructions: recipe?.instructions ?? [],
-        index,
-        plan,
-      } as MealItem<P>);
-    }
 
-    return result;
-  });
+      return result;
+    })
+    .flat();
 
   const week = getWeekList();
   return week.flatMap<MealPlanItem<P>>((item) =>

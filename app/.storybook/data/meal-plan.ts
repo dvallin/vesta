@@ -1,11 +1,8 @@
 import { startOfDay } from "date-fns";
-import { Entity } from "../../src/model/entity";
 import { MealPlan } from "../../src/model/meal-plan";
 import { standardRecipe } from "./recipe";
-import { SwrCache, createCache } from "./swr-cache";
 
-export const standardMealPlan: Entity<MealPlan> = {
-  id: "1",
+export const standardMealPlan: MealPlan = {
   plans: [
     {
       date: startOfDay(new Date()).getTime(),
@@ -25,6 +22,3 @@ export const standardMealPlan: Entity<MealPlan> = {
     },
   ],
 };
-
-export const mealPlans: () => SwrCache = () =>
-  createCache(["meal-plan", standardMealPlan]);
