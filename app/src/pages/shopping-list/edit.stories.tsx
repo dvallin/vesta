@@ -1,11 +1,10 @@
 import { Story } from "@storybook/react";
-import swrDecorator from "../../../.storybook/decorators/swr-decorator";
 import Edit from "./edit";
 
 const Default = {
   title: "pages/shopping-list/Edit",
   component: Edit,
-  decorators: [swrDecorator()],
+  decorators: [],
 };
 
 const Template: Story = () => <Edit />;

@@ -19,8 +19,8 @@ const Add: React.FC = () => {
         </Toolbar>
       }
       methods={methods}
-      onSubmit={async (recipe) => {
-        const id = await add(recipe);
+      onSubmit={(recipe) => {
+        const id = add(recipe);
         router.push(`/recipe/${id}`);
       }}
     >

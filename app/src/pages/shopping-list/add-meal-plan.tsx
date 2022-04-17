@@ -2,17 +2,14 @@ import { useIonRouter } from "@ionic/react";
 import FormPage from "../templates/form-page";
 import ShoppingListForm from "../../components/shopping-list/form";
 import Toolbar from "../templates/toolbar/toolbar";
-import useShoppingListForm from "../../hooks/use-shopping-list-form";
 import { useShoppingList } from "../../storage/use-shopping-list";
-import useShoppingListFromMealPlan from "../../hooks/use-shopping-list-from-meal-plan";
-import { combine } from "../../model/shopping-list";
+import useAddMealPlanForm from "../../hooks/use-add-meal-plan-form";
 import SubmitButton from "../templates/toolbar/submit-button";
 
 const AddMealPlan: React.FC = () => {
-  const { data: list, update, add } = useShoppingList();
-  const shoppingListFromMealPlan = useShoppingListFromMealPlan();
+  const shoppingList = useShoppingList();
 
-  const methods = useShoppingListForm(shoppingListFromMealPlan);
+  const methods = useAddMealPlanForm();
 
   const router = useIonRouter();
   return (
@@ -25,13 +22,24 @@ const AddMealPlan: React.FC = () => {
       }
       methods={methods}
       onSubmit={(updated) => {
-        if (list) {
-          const combined = combine(list, updated);
-          void update({ ...combined, id: list.id });
-        } else {
-          void add(updated);
+        for (const ingredient of updated.shoppingIngredients) {
+          const current = shoppingList.shoppingIngredients?.find(
+            (i) => i.ingredientName === ingredient.ingredientName
+          );
+          if (current) {
+            current.amount = (current.amount || 0) + (ingredient.amount || 0);
+            for (const plan of ingredient.fromPlans) {
+              const hasPlan = current.fromPlans.find(
+                (p) => p.date === plan.date && p.recipeId === plan.recipeId
+              );
+              if (!hasPlan) {
+                current.fromPlans.push(plan);
+              }
+            }
+          } else {
+            shoppingList.shoppingIngredients?.push(ingredient);
+          }
         }
-
         router.push("/shopping-list");
       }}
     >

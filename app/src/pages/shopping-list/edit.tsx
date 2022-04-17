@@ -9,8 +9,8 @@ import useShoppingListForm from "../../hooks/use-shopping-list-form";
 import SubmitButton from "../templates/toolbar/submit-button";
 
 const Edit: React.FC = () => {
-  const { data: list, update, add } = useShoppingList();
-  const methods = useShoppingListForm(list);
+  const shoppingList = useShoppingList();
+  const methods = useShoppingListForm();
 
   const router = useIonRouter();
   return (
@@ -26,12 +26,7 @@ const Edit: React.FC = () => {
       }
       methods={methods}
       onSubmit={(updated) => {
-        if (list) {
-          void update({ ...updated, id: list.id });
-        } else {
-          void add(updated);
-        }
-
+        shoppingList.shoppingIngredients = updated.shoppingIngredients;
         router.goBack();
       }}
     >

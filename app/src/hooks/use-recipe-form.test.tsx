@@ -1,18 +1,14 @@
 import { standardRecipe } from "../../.storybook/data/recipe";
 import { renderHookWithDecorators } from "../decorators";
-import { Recipe } from "../model/recipe";
+import mockStore from "../storage/mock-store";
 import useRecipeForm from "./use-recipe-form";
 
-const render = (recipe?: Recipe) =>
-  renderHookWithDecorators(useRecipeForm, recipe, []);
+jest.mock("../storage/store", () => ({ store: mockStore() }));
+
+const render = () =>
+  renderHookWithDecorators(useRecipeForm, standardRecipe.id, []);
 
 it("initializes state", () => {
-  const { result } = render(standardRecipe);
-  expect(result.current.getValues()).toEqual(standardRecipe);
-});
-
-it("resets state", () => {
-  const { result, rerender } = render();
-  rerender(standardRecipe);
+  const { result } = render();
   expect(result.current.getValues()).toEqual(standardRecipe);
 });

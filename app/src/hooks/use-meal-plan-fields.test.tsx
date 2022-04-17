@@ -1,20 +1,16 @@
 import { act } from "@testing-library/react-hooks";
 import { startOfTomorrow, startOfToday } from "date-fns";
-import {
-  formDecorator,
-  renderHookWithDecorators,
-  swrDecorator,
-} from "../decorators";
+import { formDecorator, renderHookWithDecorators } from "../decorators";
 import { MealItem } from "../model/meal-plan";
+import mockStore from "../storage/mock-store";
 import useMealPlanFields from "./use-meal-plan-fields";
+
+jest.mock("../storage/store", () => ({ store: mockStore() }));
 
 jest.useFakeTimers().setSystemTime(new Date("2020-01-01").getTime());
 
 const render = () =>
-  renderHookWithDecorators(useMealPlanFields, undefined, [
-    formDecorator(),
-    swrDecorator(),
-  ]);
+  renderHookWithDecorators(useMealPlanFields, undefined, [formDecorator()]);
 
 const filterMeals = (
   result: ReturnType<typeof useMealPlanFields>

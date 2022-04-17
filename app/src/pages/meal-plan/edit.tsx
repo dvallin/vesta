@@ -9,8 +9,8 @@ import ToolbarEventButton from "../templates/toolbar/event-button";
 import SubmitButton from "../templates/toolbar/submit-button";
 
 const Edit: React.FC = () => {
-  const { data: plan, update, add } = useMealPlan();
-  const methods = useMealPlanForm(plan);
+  const mealPlan = useMealPlan();
+  const methods = useMealPlanForm();
 
   const router = useIonRouter();
   return (
@@ -26,12 +26,7 @@ const Edit: React.FC = () => {
       }
       methods={methods}
       onSubmit={(updated) => {
-        if (plan) {
-          void update({ ...updated, id: plan.id });
-        } else {
-          void add(updated);
-        }
-
+        mealPlan.plans = updated.plans;
         router.goBack();
       }}
     >

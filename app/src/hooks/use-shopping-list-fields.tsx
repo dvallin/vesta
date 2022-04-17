@@ -16,7 +16,7 @@ const defaultIngredient = {
 
 export default function useShoppingListFields() {
   const { control } = useFormContext<ShoppingList>();
-  const { fields, update, move, remove, prepend } = useFieldArray({
+  const { fields, move, remove, prepend } = useFieldArray({
     control,
     name: "shoppingIngredients",
   });
@@ -35,12 +35,6 @@ export default function useShoppingListFields() {
   return {
     todo,
     bought,
-    toggleBought: (index: number, ingredient: ShoppingIngredient) => {
-      update(index, { ...ingredient, bought: !ingredient.bought });
-    },
-    clean: () => {
-      remove(bought.map(({ index }) => index));
-    },
     reorder: ({ from, to, complete }: ItemReorderEventDetail) => {
       move(from, to);
       complete(false);

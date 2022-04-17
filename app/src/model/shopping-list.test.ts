@@ -1,35 +1,4 @@
-import {
-  combine,
-  combineShoppingIngredients,
-  ShoppingIngredient,
-} from "./shopping-list";
-
-const ingredient = (
-  ingredientName: string,
-  amount: number
-): ShoppingIngredient => ({
-  ingredientName,
-  bought: false,
-  amount,
-  fromPlans: [],
-});
-
-describe("combine", () => {
-  it("combines ingredients by name", () => {
-    expect(
-      combine(
-        { shoppingIngredients: [ingredient("a", 1), ingredient("b", 1)] },
-        { shoppingIngredients: [ingredient("b", 1), ingredient("c", 1)] }
-      )
-    ).toEqual({
-      shoppingIngredients: [
-        ingredient("a", 1),
-        ingredient("b", 2),
-        ingredient("c", 1),
-      ],
-    });
-  });
-});
+import { combineShoppingIngredients } from "./shopping-list";
 
 describe("combineShoppingIngredients", () => {
   it("just takes left values", () => {

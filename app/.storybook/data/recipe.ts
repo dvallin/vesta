@@ -1,7 +1,6 @@
 import { Entity } from "../../src/model/entity";
 import { Recipe } from "../../src/model/recipe";
 import { loremIpsum } from "./lorem-ipsum";
-import { SwrCache, createCache } from "./swr-cache";
 
 export const standardRecipe: Entity<Recipe> = {
   id: "1",
@@ -34,6 +33,3 @@ export const standardRecipe: Entity<Recipe> = {
     { ingredientName: "salt" },
   ],
 };
-
-export const recipes: () => SwrCache = () =>
-  createCache(["recipes", [standardRecipe]]);
