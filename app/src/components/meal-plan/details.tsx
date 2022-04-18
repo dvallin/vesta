@@ -1,6 +1,6 @@
 import { IonItem, IonList, IonNote } from "@ionic/react";
-import useMealPlanItemPreview from "../../hooks/use-meal-plan-item-preview";
-import useMealPlanWeekView from "../../hooks/use-meal-plan-week-view";
+import useMealPlanItemPreview from "./use-meal-plan-item-preview";
+import useMealPlanWeekView from "./use-meal-plan-week-view";
 import RecipeLabel from "../recipe/label";
 import DayItem from "./list/day-item";
 import WeekItem from "./list/week-item";

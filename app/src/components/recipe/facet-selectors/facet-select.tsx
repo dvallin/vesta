@@ -26,37 +26,33 @@ const FacetSelect: React.FC<FacetSelectProps> = ({
           (f) => f.key === facetKey
         );
         return (
-          <>
-            <IonSelect
-              value={
-                ionSelectProps.multiple
-                  ? currentFacets.map((f) => f.value)
-                  : currentFacets[0]?.value
+          <IonSelect
+            value={
+              ionSelectProps.multiple
+                ? currentFacets.map((f) => f.value)
+                : currentFacets[0]?.value
+            }
+            onIonChange={({ detail }) => {
+              const selection: string[] =
+                typeof detail.value === "string"
+                  ? detail.value.split(",")
+                  : (detail.value as string[]);
+              const selectedFacets: RecipeFacet[] = facets
+                .filter((f) => selection.includes(f.value))
+                .map((f) => ({ ...f, key: facetKey }));
+              if (!equalArray(currentFacets, selectedFacets, (f) => f.value)) {
+                field.onChange([...otherFacets, ...selectedFacets]);
               }
-              onIonChange={({ detail }) => {
-                const selection: string[] =
-                  typeof detail.value === "string"
-                    ? detail.value.split(",")
-                    : (detail.value as string[]);
-                const selectedFacets: RecipeFacet[] = facets
-                  .filter((f) => selection.includes(f.value))
-                  .map((f) => ({ ...f, key: facetKey }));
-                if (
-                  !equalArray(currentFacets, selectedFacets, (f) => f.value)
-                ) {
-                  field.onChange([...otherFacets, ...selectedFacets]);
-                }
-              }}
-              {...ionSelectProps}
-            >
-              <IonSelectOption value={""}>None</IonSelectOption>
-              {facets.map(({ value, icon }) => (
-                <IonSelectOption key={value} value={value}>
-                  {value} {icon}
-                </IonSelectOption>
-              ))}
-            </IonSelect>
-          </>
+            }}
+            {...ionSelectProps}
+          >
+            <IonSelectOption value={""}>None</IonSelectOption>
+            {facets.map(({ value, icon }) => (
+              <IonSelectOption key={value} value={value}>
+                {value} {icon}
+              </IonSelectOption>
+            ))}
+          </IonSelect>
         );
       }}
     />

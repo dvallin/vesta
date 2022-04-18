@@ -1,5 +1,5 @@
 import { Story } from "@storybook/react";
-import Edit from "./edit";
+import Edit from ".";
 
 const Default = {
   title: "pages/meal-plan/Edit",

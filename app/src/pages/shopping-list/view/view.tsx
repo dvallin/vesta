@@ -1,10 +1,10 @@
 import { IonIcon } from "@ionic/react";
 import { createOutline, trashBinOutline } from "ionicons/icons";
-import ShoppingListDetails from "../../components/shopping-list/details";
-import Page from "../templates/page";
-import ToolbarEventButton from "../templates/toolbar/event-button";
-import ToolbarNavigateButton from "../templates/toolbar/navigate-button";
-import Toolbar from "../templates/toolbar/toolbar";
+import ShoppingListDetails from "../../../components/shopping-list/details";
+import Page from "../../templates/page";
+import ToolbarEventButton from "../../templates/toolbar/event-button";
+import ToolbarNavigateButton from "../../templates/toolbar/navigate-button";
+import Toolbar from "../../templates/toolbar/toolbar";
 
 const ShoppingListViewPage: React.FC = () => {
   return (

@@ -1,9 +1,9 @@
 import { getYjsValue } from "@syncedstore/core";
 import { useMemo } from "react";
 import { AbstractType } from "yjs";
-import { DailyMealPlan, buildPlanItems, MealPlan } from "../model/meal-plan";
-import { useMealPlan } from "../storage/use-meal-plan";
-import { useRecipes } from "../storage/use-recipes";
+import { DailyMealPlan, buildPlanItems, MealPlan } from "../../model/meal-plan";
+import { useMealPlan } from "../../storage/use-meal-plan";
+import { useRecipes } from "../../storage/use-recipes";
 
 export default function useMealPlanWeekView() {
   const mealPlan = useMealPlan();

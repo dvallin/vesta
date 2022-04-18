@@ -1,11 +1,11 @@
 import { act } from "@testing-library/react-hooks";
 import { startOfTomorrow, startOfToday } from "date-fns";
-import { formDecorator, renderHookWithDecorators } from "../decorators";
-import { MealItem } from "../model/meal-plan";
-import mockStore from "../storage/mock-store";
-import useMealPlanFields from "./use-meal-plan-fields";
+import { formDecorator, renderHookWithDecorators } from "../../../decorators";
+import { MealItem } from "../../../model/meal-plan";
+import mockStore from "../../../storage/mock-store";
+import useMealPlanFields from "./use-form";
 
-jest.mock("../storage/store", () => ({ store: mockStore() }));
+jest.mock("../../../storage/store", () => ({ store: mockStore() }));
 
 jest.useFakeTimers().setSystemTime(new Date("2020-01-01").getTime());
 

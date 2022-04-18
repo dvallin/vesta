@@ -3,6 +3,8 @@ import {
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
+  IonChip,
+  IonLabel,
   IonText,
 } from "@ionic/react";
 import { useRecipe } from "../../storage/use-recipes";
@@ -21,6 +23,14 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({ recipeId }) => {
         <IonCardTitle>{recipe?.name}</IonCardTitle>
       </IonCardHeader>
       <IonCardContent>
+        {recipe?.facets?.map(({ key, value, icon }) => (
+          <IonChip key={`${key}:${value}`}>
+            <IonLabel>
+              {value} {icon}
+            </IonLabel>
+          </IonChip>
+        ))}
+
         <IonText>
           <p>{recipe?.description}</p>
         </IonText>

@@ -1,5 +1,5 @@
 import { Story } from "@storybook/react";
-import View from "./view";
+import View from ".";
 
 const Default = {
   title: "pages/meal-plan/View",

@@ -1,8 +1,5 @@
 import { z } from "zod";
 import { uniqueArray } from "../array/unique";
-import { Entity } from "./entity";
-import { MealPlan } from "./meal-plan";
-import { Recipe } from "./recipe";
 
 export const shoppingIngredientFromPlanSchema = z.object({
   date: z.number(),
@@ -50,37 +47,31 @@ export function sortByName(a: ShoppingIngredient, b: ShoppingIngredient) {
   return a.ingredientName.localeCompare(b.ingredientName);
 }
 
-export function createShoppingListFromMealPlan(
-  plan: Partial<MealPlan> | undefined,
-  recipes: Entity<Recipe>[] | undefined
-): ShoppingList {
-  const shoppingIngredientsByName: Record<string, ShoppingIngredient> = {};
-
-  for (const p of plan?.plans ?? []) {
-    const fromPlan: ShoppingIngredientFromPlan = {
-      date: p.date,
-      recipeId: p.recipeId,
-    };
-
-    const recipe = recipes?.find((r) => p.recipeId === r.id);
-    for (const i of recipe?.ingredients ?? []) {
-      const ingredient = shoppingIngredientsByName[i.ingredientName] || {
-        ingredientName: i.ingredientName,
-        bought: false,
-        fromPlans: [],
-      };
-      shoppingIngredientsByName[i.ingredientName] = combineShoppingIngredients(
-        ingredient,
-        {
-          ...i,
-          fromPlans: [fromPlan],
-          bought: false,
-        }
+export function addIngredient(
+  shoppingList: Partial<ShoppingList>,
+  ingredient: ShoppingIngredient
+): void {
+  // we can only add it to the same ingredient and unit (no unit conversion yet)
+  const current = shoppingList.shoppingIngredients?.find(
+    (i) =>
+      i.ingredientName === ingredient.ingredientName &&
+      i.unit === ingredient.unit
+  );
+  if (!current) {
+    shoppingList.shoppingIngredients?.push(ingredient);
+  } else {
+    // add amounts
+    if (ingredient.amount !== undefined && current.amount !== undefined) {
+      current.amount += ingredient.amount;
+    }
+    // merge plan references
+    for (const plan of ingredient.fromPlans) {
+      const hasPlan = current.fromPlans.find(
+        (p) => p.date === plan.date && p.recipeId === plan.recipeId
       );
+      if (!hasPlan) {
+        current.fromPlans.push(plan);
+      }
     }
   }
-
-  return {
-    shoppingIngredients: Object.values(shoppingIngredientsByName),
-  };
 }

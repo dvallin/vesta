@@ -1,4 +1,4 @@
-import { IonItem, IonLabel, IonList } from "@ionic/react";
+import { IonItem, IonLabel, IonList, IonNote } from "@ionic/react";
 import { Entity } from "../../model/entity";
 import { Recipe } from "../../model/recipe";
 
@@ -20,6 +20,9 @@ const RecipeList: React.FC<RecipeListProps> = ({ recipes, onClick }) => (
         }}
       >
         <IonLabel className="ion-text-wrap">{recipe.name}</IonLabel>
+        <IonNote slot="end">
+          {recipe?.facets?.map(({ value, icon }) => icon ?? value).join(" ")}
+        </IonNote>
       </IonItem>
     ))}
   </IonList>

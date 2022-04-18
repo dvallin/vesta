@@ -8,15 +8,15 @@ import {
   IonReorderGroup,
 } from "@ionic/react";
 import { useEffect } from "react";
-import RecipeSelect from "../recipe/select";
-import useMealPlanFields from "../../hooks/use-meal-plan-fields";
-import RecipeLabel from "../recipe/label";
-import useToolbar from "../../hooks/use-toolbar";
-import DayItem from "./list/day-item";
-import WeekItem from "./list/week-item";
+import RecipeSelect from "../../recipe/select";
+import useForm from "./use-form";
+import RecipeLabel from "../../recipe/label";
+import useToolbar from "../../../hooks/use-toolbar";
+import DayItem from "../list/day-item";
+import WeekItem from "../list/week-item";
 
 const MealPlanForm: React.FC = () => {
-  const { items, reorder, add, remove } = useMealPlanFields();
+  const { items, reorder, add, remove } = useForm();
 
   const { register } = useToolbar();
   useEffect(() => {

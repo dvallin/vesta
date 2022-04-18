@@ -1,8 +1,8 @@
 import { Story } from "@storybook/react";
-import pageDecorator from "../../../.storybook/decorators/page-decorator";
-import formDecorator from "../../../.storybook/decorators/form-decorator";
-import { Recipe } from "../../model/recipe";
-import Form from "./form";
+import pageDecorator from "../../../../.storybook/decorators/page-decorator";
+import formDecorator from "../../../../.storybook/decorators/form-decorator";
+import { Recipe } from "../../../model/recipe";
+import Form from ".";
 
 const Default = {
   title: "molecules/meal-plan/Form",
