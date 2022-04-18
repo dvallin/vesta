@@ -16,7 +16,6 @@ const NumberInput: React.FC<InputProps> = ({
   const { control } = useFormContext();
   return (
     <Controller
-      key={name}
       control={control}
       name={name}
       render={({ field }) => (

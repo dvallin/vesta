@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { uniqueArray } from "../unique";
+import { uniqueArray } from "../array/unique";
 import { Entity } from "./entity";
 import { MealPlan } from "./meal-plan";
 import { Recipe } from "./recipe";

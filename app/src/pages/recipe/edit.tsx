@@ -6,6 +6,7 @@ import FormPage from "../templates/form-page";
 import RecipeForm from "../../components/recipe/form";
 import Toolbar from "../templates/toolbar/toolbar";
 import SubmitButton from "../templates/toolbar/submit-button";
+import RecipeDeleteButton from "../../components/recipe/delete-button";
 
 const Edit: React.FC = () => {
   const { recipeId } = useParams<{ recipeId?: string }>();
@@ -18,11 +19,13 @@ const Edit: React.FC = () => {
       defaultTitle="Edit Recipe"
       toolbar={
         <Toolbar>
+          <RecipeDeleteButton />
           <SubmitButton />
         </Toolbar>
       }
       methods={methods}
       onSubmit={(updated) => {
+        console.log(updated);
         if (recipeId) {
           void update({ ...updated, id: recipeId });
           router.goBack();

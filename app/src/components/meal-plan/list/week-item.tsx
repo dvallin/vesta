@@ -7,7 +7,7 @@ export interface WeekItemProps
 }
 
 const WeekItem: React.FC<WeekItemProps> = ({ date }) => (
-  <IonListHeader color="primary">
+  <IonListHeader color="light">
     <IonLabel>Week {format(date, "ww")}</IonLabel>
   </IonListHeader>
 );

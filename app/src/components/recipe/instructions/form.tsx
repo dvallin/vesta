@@ -65,21 +65,19 @@ const InstructionsForm: React.FC = () => {
             <IonItem>
               <IonGrid>
                 <IonRow>
-                  <IonCol size="1">
+                  <IonCol size="2">
                     <IonReorder />
                   </IonCol>
-                  <IonCol size="4">
-                    <InstructionActionForm index={index} />
-                  </IonCol>
-                  <IonCol>
-                    <IonItem lines="none">
-                      <TextArea
-                        autoGrow
-                        name={`instructions.${index}.instruction`}
-                        label="instruction"
-                      />
-                    </IonItem>
-                  </IonCol>
+                  <InstructionActionForm index={index} />
+                </IonRow>
+                <IonRow>
+                  <IonItem lines="none">
+                    <TextArea
+                      autoGrow
+                      name={`instructions.${index}.instruction`}
+                      placeholder="instruction"
+                    />
+                  </IonItem>
                 </IonRow>
               </IonGrid>
             </IonItem>

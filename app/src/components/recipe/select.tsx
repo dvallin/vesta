@@ -1,6 +1,6 @@
 import { IonModal } from "@ionic/react";
 import { useState } from "react";
-import { Controller } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import RecipeItem from "./label";
 import RecipeSearch from "./search";
 
@@ -10,9 +10,10 @@ export interface RecipeSelectProps {
 
 const RecipeSelect: React.FC<RecipeSelectProps> = ({ name }) => {
   const [edit, setEdit] = useState(false);
+  const { control } = useFormContext();
   return (
     <Controller
-      key={name}
+      control={control}
       name={name}
       render={({ field: { onChange, value } }) => (
         <>
