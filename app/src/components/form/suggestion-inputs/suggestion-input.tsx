@@ -28,7 +28,7 @@ const InnerSuggestionInput: React.FC<InnerSuggestionInputProps> = ({
   suggestions,
   ...ionInputProps
 }) => {
-  const hits = useSearch((field.value as string) ?? "", suggestions, {
+  const { result } = useSearch((field.value as string) ?? "", suggestions, {
     maxCount: 3,
   });
   return (
@@ -51,7 +51,7 @@ const InnerSuggestionInput: React.FC<InnerSuggestionInputProps> = ({
         size="cover"
       >
         <IonList>
-          {hits.map((hit) => (
+          {result.map((hit) => (
             <IonItem
               key={hit}
               button

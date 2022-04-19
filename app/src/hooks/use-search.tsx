@@ -6,7 +6,7 @@ export interface SearchOptions<T> extends Fuse.IFuseOptions<T> {
 }
 
 export default function useSearch<T>(
-  term: string,
+  term: string | Fuse.Expression | undefined,
   data: T[],
   options: Partial<SearchOptions<T>> = {}
 ) {
@@ -18,11 +18,16 @@ export default function useSearch<T>(
     }
   }, [data, options, fuse]);
 
-  return useMemo(() => {
-    const result =
-      term.length > 0
-        ? fuse.current?.search(term).map((i) => i.item) ?? []
-        : data;
-    return options.maxCount ? result.slice(0, options.maxCount) : result;
-  }, [fuse, data, term, options.maxCount]);
+  const fullResult = useMemo(
+    () => (term ? fuse.current?.search(term).map((i) => i.item) ?? [] : data),
+    [fuse, data, term]
+  );
+
+  const result = useMemo(
+    () =>
+      options.maxCount ? fullResult.slice(0, options.maxCount) : fullResult,
+    [fullResult, options.maxCount]
+  );
+
+  return { fullResult, result };
 }

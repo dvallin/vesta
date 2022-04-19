@@ -26,9 +26,9 @@ import EditRecipe from "./pages/recipe/edit";
 import RecipeSearch from "./pages/recipe/search";
 import RecipeView from "./pages/recipe/view";
 
-import ShoppingListView from "./pages/shopping-list/view/view";
+import ShoppingListView from "./pages/shopping-list/view";
 import ShoppingListAddMealPlan from "./pages/shopping-list/add-meal-plan/add-meal-plan";
-import EditShoppingList from "./pages/shopping-list/edit/edit";
+import EditShoppingList from "./pages/shopping-list/edit";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";

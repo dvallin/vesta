@@ -1,8 +1,10 @@
-import { IonSearchbar } from "@ionic/react";
+import { IonCol, IonGrid, IonItem, IonRow, IonSearchbar } from "@ionic/react";
 import { Recipe } from "../../../model/recipe";
 import { Entity } from "../../../model/entity";
 import RecipeList from "../list";
 import useSearch from "./use-search";
+import CountrySelect from "../facets/select/country-select";
+import DietSelect from "../facets/select/diet-select";
 
 export interface RecipeSearchProps {
   maxCount?: number;
@@ -10,7 +12,8 @@ export interface RecipeSearchProps {
 }
 
 const RecipeSearch: React.FC<RecipeSearchProps> = ({ onSelect, maxCount }) => {
-  const { result, term, setTerm } = useSearch(maxCount);
+  const { result, term, setTerm, facetQuery, setFacetQuery } =
+    useSearch(maxCount);
   return (
     <>
       <IonSearchbar
@@ -21,6 +24,23 @@ const RecipeSearch: React.FC<RecipeSearchProps> = ({ onSelect, maxCount }) => {
           }
         }}
       />
+      <IonGrid>
+        <IonRow>
+          <IonCol size="6">
+            <IonItem lines="none">
+              <CountrySelect
+                currentFacets={facetQuery}
+                onChange={setFacetQuery}
+              />
+            </IonItem>
+          </IonCol>
+          <IonCol size="6">
+            <IonItem lines="none">
+              <DietSelect currentFacets={facetQuery} onChange={setFacetQuery} />
+            </IonItem>
+          </IonCol>
+        </IonRow>
+      </IonGrid>
       <RecipeList recipes={result} onClick={onSelect} />
     </>
   );

@@ -1,7 +1,7 @@
-import FacetSelect from "./facet-select";
+import FacetEdit from "./facet-edit";
 
-const DietSelect = () => (
-  <FacetSelect
+const DietEdit = () => (
+  <FacetEdit
     multiple
     facetKey="diet"
     placeholder="Diet"
@@ -16,4 +16,4 @@ const DietSelect = () => (
   />
 );
 
-export default DietSelect;
+export default DietEdit;

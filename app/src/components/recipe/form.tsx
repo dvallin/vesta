@@ -1,8 +1,8 @@
 import { IonCol, IonGrid, IonItem, IonList, IonRow } from "@ionic/react";
 import Input from "../form/input";
 import TextArea from "../form/text-area";
-import CountrySelect from "./facet-selectors/country-select";
-import DietSelect from "./facet-selectors/diet-select";
+import CountryEdit from "./facets/edit/country-edit";
+import DietEdit from "./facets/edit/diet-edit";
 import IngredientsForm from "./ingredients/form";
 import InstructionsForm from "./instructions/form";
 
@@ -20,12 +20,12 @@ const RecipeForm: React.FC = () => (
           <IonRow>
             <IonCol size="6">
               <IonItem lines="none">
-                <DietSelect />
+                <DietEdit />
               </IonItem>
             </IonCol>
             <IonCol size="6">
               <IonItem lines="none">
-                <CountrySelect />
+                <CountryEdit />
               </IonItem>
             </IonCol>
           </IonRow>

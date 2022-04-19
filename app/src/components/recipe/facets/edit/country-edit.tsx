@@ -1,7 +1,7 @@
-import FacetSelect from "./facet-select";
+import FacetEdit from "./facet-edit";
 
-const CountrySelect = () => (
-  <FacetSelect
+const CountryEdit = () => (
+  <FacetEdit
     facetKey="country"
     placeholder="Country"
     facets={[
@@ -16,4 +16,4 @@ const CountrySelect = () => (
   />
 );
 
-export default CountrySelect;
+export default CountryEdit;
