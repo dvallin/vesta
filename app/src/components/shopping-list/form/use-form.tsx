@@ -1,7 +1,8 @@
 import { ItemReorderEventDetail } from "@ionic/react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { ShoppingIngredient, ShoppingList } from "../model/shopping-list";
+import useToolbar from "../../../pages/templates/toolbar/use-toolbar";
+import { ShoppingIngredient, ShoppingList } from "../../../model/shopping-list";
 
 const defaultIngredient = {
   // eslint-disable-next-line unicorn/no-null
@@ -14,11 +15,20 @@ const defaultIngredient = {
   fromPlans: [],
 } as unknown as ShoppingIngredient;
 
-export default function useShoppingListFields() {
+export default function useForm() {
   const { control } = useFormContext<ShoppingList>();
   const { fields, move, remove, prepend } = useFieldArray({
     control,
     name: "shoppingIngredients",
+  });
+
+  const { register } = useToolbar();
+  useEffect(() => {
+    register("clean-shopping-list", (key) => {
+      if (key === "add") {
+        prepend(defaultIngredient);
+      }
+    });
   });
 
   const { todo, bought } = useMemo(() => {
@@ -38,9 +48,6 @@ export default function useShoppingListFields() {
     reorder: ({ from, to, complete }: ItemReorderEventDetail) => {
       move(from, to);
       complete(false);
-    },
-    add: () => {
-      prepend(defaultIngredient);
     },
     remove,
   };

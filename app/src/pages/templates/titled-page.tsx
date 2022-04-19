@@ -1,5 +1,5 @@
 import { IonTitle, IonToolbar } from "@ionic/react";
-import useToolbar from "../../hooks/use-toolbar";
+import useToolbar from "./toolbar/use-toolbar";
 import Page from "./page";
 
 export interface DefaultPageProps {

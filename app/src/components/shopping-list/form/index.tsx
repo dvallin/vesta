@@ -10,24 +10,13 @@ import {
   IonReorderGroup,
   IonRow,
 } from "@ionic/react";
-import { useEffect } from "react";
-import useShoppingListFields from "../../hooks/use-shopping-list-fields";
-import useToolbar from "../../hooks/use-toolbar";
-import NumberInput from "../form/number-input";
-import IngredientNameInput from "../form/suggestion-inputs/ingredient-name-input";
-import UnitInput from "../form/suggestion-inputs/unit-input";
+import useForm from "./use-form";
+import NumberInput from "../../form/number-input";
+import IngredientNameInput from "../../form/suggestion-inputs/ingredient-name-input";
+import UnitInput from "../../form/suggestion-inputs/unit-input";
 
 const ShoppingListDetails: React.FC = () => {
-  const { todo, reorder, add, remove } = useShoppingListFields();
-
-  const { register } = useToolbar();
-  useEffect(() => {
-    register("clean-shopping-list", (key) => {
-      if (key === "add") {
-        add();
-      }
-    });
-  });
+  const { todo, reorder, remove } = useForm();
 
   return (
     <IonList>

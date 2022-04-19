@@ -5,7 +5,7 @@ import MealPlanItemPreview from "../../../components/meal-plan/item/preview";
 import { MealPlanItemPreviewContext } from "../../../components/meal-plan/use-meal-plan-item-preview";
 import Page from "../../templates/page";
 import ToolbarNavigateButton from "../../templates/toolbar/navigate-button";
-import Toolbar from "../../templates/toolbar/toolbar";
+import Toolbar from "../../templates/toolbar";
 
 const MealPlanView: React.FC = () => (
   <Page

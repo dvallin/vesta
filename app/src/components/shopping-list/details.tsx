@@ -8,7 +8,7 @@ import {
   IonReorderGroup,
 } from "@ionic/react";
 import { useEffect } from "react";
-import useToolbar from "../../hooks/use-toolbar";
+import useToolbar from "../../pages/templates/toolbar/use-toolbar";
 import { sortByName } from "../../model/shopping-list";
 import { useShoppingListIngredients } from "../../storage/use-shopping-list";
 import ShoppingIngredientItem from "./ingredient/item";

@@ -1,9 +1,8 @@
 import { IonSearchbar } from "@ionic/react";
-import { useState } from "react";
-import useRecipeSearch from "../../hooks/use-recipe-search";
-import { Recipe } from "../../model/recipe";
-import { Entity } from "../../model/entity";
-import RecipeList from "./list";
+import { Recipe } from "../../../model/recipe";
+import { Entity } from "../../../model/entity";
+import RecipeList from "../list";
+import useSearch from "./use-search";
 
 export interface RecipeSearchProps {
   maxCount?: number;
@@ -11,8 +10,7 @@ export interface RecipeSearchProps {
 }
 
 const RecipeSearch: React.FC<RecipeSearchProps> = ({ onSelect, maxCount }) => {
-  const [term, setTerm] = useState("");
-  const recipes = useRecipeSearch(term, maxCount);
+  const { result, term, setTerm } = useSearch(maxCount);
   return (
     <>
       <IonSearchbar
@@ -23,7 +21,7 @@ const RecipeSearch: React.FC<RecipeSearchProps> = ({ onSelect, maxCount }) => {
           }
         }}
       />
-      <RecipeList recipes={recipes} onClick={onSelect} />
+      <RecipeList recipes={result} onClick={onSelect} />
     </>
   );
 };

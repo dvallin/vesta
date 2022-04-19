@@ -1,6 +1,6 @@
 import { Story } from "@storybook/react";
-import routerDecorator from "../../../.storybook/decorators/router-decorator";
-import Edit from "./edit";
+import routerDecorator from "../../../../.storybook/decorators/router-decorator";
+import Edit from ".";
 
 const Default = {
   title: "pages/recipe/Edit",
