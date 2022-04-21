@@ -1,6 +1,6 @@
 import { IonContent, IonHeader, IonPage, IonSpinner } from "@ionic/react";
 import React, { Suspense } from "react";
-import { ToolbarProvider } from "../../hooks/use-toolbar";
+import { ToolbarProvider } from "./toolbar/use-toolbar";
 
 export interface PageProps {
   toolbar: React.ReactNode;

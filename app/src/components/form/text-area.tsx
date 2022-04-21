@@ -12,7 +12,6 @@ const TextArea: React.FC<InputProps> = ({ name, label, ...ionInputProps }) => {
   const { control } = useFormContext();
   return (
     <Controller
-      key={name}
       control={control}
       name={name}
       render={({ field }) => (

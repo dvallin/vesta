@@ -1,4 +1,4 @@
-import { IonItem } from "@ionic/react";
+import { IonCol, IonItem } from "@ionic/react";
 import { formatDuration, parseDuration } from "../../../../model/duration";
 import FormattedInput from "../../../form/formatted-input";
 import Select from "../../../form/select";
@@ -13,23 +13,27 @@ const InstructionActionForm: React.FC<InstructionActionFormProps> = ({
   const name = `instructions.${index}.action` as const;
   return (
     <>
-      <IonItem lines="none">
-        <Select
-          name={`${name}.type`}
-          options={[
-            { value: "step", label: "Step" },
-            { value: "preparation", label: "Preparation" },
-          ]}
-        />
-      </IonItem>
-      <IonItem lines="none">
-        <FormattedInput
-          name={`${name}.duration`}
-          label="Duration"
-          parse={parseDuration}
-          format={formatDuration}
-        />
-      </IonItem>
+      <IonCol>
+        <IonItem lines="none">
+          <Select
+            name={`${name}.type`}
+            options={[
+              { value: "step", label: "Step" },
+              { value: "preparation", label: "Preparation" },
+            ]}
+          />
+        </IonItem>
+      </IonCol>
+      <IonCol>
+        <IonItem lines="none">
+          <FormattedInput
+            name={`${name}.duration`}
+            placeholder="Duration"
+            parse={parseDuration}
+            format={formatDuration}
+          />
+        </IonItem>
+      </IonCol>
     </>
   );
 };

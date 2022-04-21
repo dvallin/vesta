@@ -5,7 +5,7 @@ const UnitInput: React.FC<
 > = (props) => (
   <SuggestionInput
     {...props}
-    label="Unit"
+    placeholder="Unit"
     type="text"
     suggestions={[
       // Volume

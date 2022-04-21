@@ -4,7 +4,7 @@ import { useParams } from "react-router";
 import RecipeDetails from "../../components/recipe/details";
 import Page from "../templates/page";
 import ToolbarNavigateButton from "../templates/toolbar/navigate-button";
-import Toolbar from "../templates/toolbar/toolbar";
+import Toolbar from "../templates/toolbar";
 
 const RecipeViewPage: React.FC = () => {
   const { recipeId } = useParams<{ recipeId?: string }>();

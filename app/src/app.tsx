@@ -27,7 +27,7 @@ import RecipeSearch from "./pages/recipe/search";
 import RecipeView from "./pages/recipe/view";
 
 import ShoppingListView from "./pages/shopping-list/view";
-import ShoppingListAddMealPlan from "./pages/shopping-list/add-meal-plan";
+import ShoppingListAddMealPlan from "./pages/shopping-list/add-meal-plan/add-meal-plan";
 import EditShoppingList from "./pages/shopping-list/edit";
 
 /* Core CSS required for Ionic components to work properly */

@@ -9,6 +9,13 @@ import { store } from "./store";
 export function useRecipes() {
   const { recipes } = useSyncedStore(store);
 
+  const remove = useCallback(
+    (id: string) => {
+      filterArray(recipes, (r) => r.id !== id);
+    },
+    [recipes]
+  );
+
   const update = useCallback(
     (recipe: Entity<Recipe>) => {
       filterArray(recipes, (r) => r.id !== recipe.id);
@@ -25,6 +32,7 @@ export function useRecipes() {
   return {
     data: recipes,
     add,
+    remove,
     update,
   };
 }

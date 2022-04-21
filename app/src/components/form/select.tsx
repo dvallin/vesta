@@ -1,13 +1,17 @@
-import { IonLabel, IonSelect, IonSelectOption } from "@ionic/react";
+import { IonSelect, IonSelectOption } from "@ionic/react";
 import { Controller, useFormContext } from "react-hook-form";
 
-export interface SelectProps {
+type IonSelectProps = React.ComponentProps<typeof IonSelect>;
+export interface SelectProps extends IonSelectProps {
   name: string;
-  label?: string;
   options: Array<{ value: string; label: string }>;
 }
 
-const Select: React.FC<SelectProps> = ({ name, label, options }) => {
+const Select: React.FC<SelectProps> = ({
+  name,
+  options,
+  ...ionSelectProps
+}) => {
   const { control } = useFormContext();
   return (
     <Controller
@@ -16,12 +20,12 @@ const Select: React.FC<SelectProps> = ({ name, label, options }) => {
       name={name}
       render={({ field }) => (
         <>
-          {label && <IonLabel position="stacked">{label}</IonLabel>}
           <IonSelect
             value={field.value as string}
             onIonChange={({ detail }) => {
               field.onChange(detail.value);
             }}
+            {...ionSelectProps}
           >
             {options.map(({ value, label }) => (
               <IonSelectOption key={value} value={value}>

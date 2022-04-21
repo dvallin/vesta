@@ -7,29 +7,36 @@ export const recipeIngredientSchema = z.object({
   unit: z.string().optional(),
   ingredientName: z.string(),
 });
-export const recipeInstructionActionSchema = z
-  .object({
+export const recipeInstructionActionSchema = z.discriminatedUnion("type", [
+  z.object({
     type: z.literal("step"),
     duration: durationSchema.optional(),
-  })
-  .or(
-    z.object({
-      type: z.literal("preparation"),
-      duration: durationSchema,
-    })
-  );
+  }),
+  z.object({
+    type: z.literal("preparation"),
+    duration: durationSchema,
+  }),
+]);
+
 export const recipeInstructionSchema = z.object({
   instruction: z.string(),
   action: recipeInstructionActionSchema,
+});
+export const recipeFacetSchema = z.object({
+  key: z.string(),
+  value: z.string(),
+  icon: z.string().optional(),
 });
 export const recipeSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   instructions: z.array(recipeInstructionSchema),
   ingredients: z.array(recipeIngredientSchema),
+  facets: z.array(recipeFacetSchema).optional(),
 });
 
 export type Recipe = typeof recipeSchema._type;
+export type RecipeFacet = typeof recipeFacetSchema._type;
 export type RecipeInstruction = typeof recipeInstructionSchema._type;
 
 export function groupInstructionsByDate(

@@ -66,21 +66,26 @@ const IngredientsForm: React.FC = () => {
             <IonItem>
               <IonGrid>
                 <IonRow>
-                  <IonCol size="1">
+                  <IonCol size="2">
                     <IonReorder />
                   </IonCol>
-                  <IonCol>
+                  <IonCol size="2">
                     <NumberInput
                       name={`ingredients.${index}.amount`}
-                      label="Amount"
+                      placeholder="Amount"
+                      enterkeyhint="next"
                     />
                   </IonCol>
-                  <IonCol>
-                    <UnitInput name={`ingredients.${index}.unit`} />
+                  <IonCol size="2">
+                    <UnitInput
+                      name={`ingredients.${index}.unit`}
+                      enterkeyhint="next"
+                    />
                   </IonCol>
-                  <IonCol>
+                  <IonCol size="6">
                     <IngredientNameInput
                       name={`ingredients.${index}.ingredientName`}
+                      enterkeyhint="done"
                     />
                   </IonCol>
                 </IonRow>

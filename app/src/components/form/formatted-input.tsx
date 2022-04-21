@@ -21,15 +21,13 @@ const FormattedInput = <T,>({
   const { control } = useFormContext();
   return (
     <Controller
-      key={name}
       control={control}
       name={name}
       render={({ field: { value, onChange } }) => (
         <>
           {label && <IonLabel position="stacked">{label}</IonLabel>}
           <IonInput
-            // eslint-disable-next-line unicorn/no-null
-            value={value ? format(value as T) : null}
+            value={value ? format(value as T) : undefined}
             onIonChange={({ detail }) => {
               if (detail.value) {
                 const v = parse(detail.value);
@@ -37,8 +35,7 @@ const FormattedInput = <T,>({
                   onChange(v);
                 }
               } else {
-                // eslint-disable-next-line unicorn/no-null
-                onChange(null);
+                onChange();
               }
             }}
             {...ionInputProps}

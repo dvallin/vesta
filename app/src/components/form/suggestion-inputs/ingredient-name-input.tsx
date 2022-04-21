@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useRecipes } from "../../../storage/use-recipes";
-import { uniqueStringArray } from "../../../unique";
+import { uniqueStringArray } from "../../../array/unique";
 import SuggestionInput, { SuggestionInputProps } from "./suggestion-input";
 
 const IngredientNameInput: React.FC<
@@ -20,8 +20,9 @@ const IngredientNameInput: React.FC<
   return (
     <SuggestionInput
       {...props}
-      label="Name"
+      placeholder="Name"
       type="text"
+      autoCorrect="on"
       suggestions={suggestions}
     />
   );
