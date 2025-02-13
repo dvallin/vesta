@@ -1,0 +1,9 @@
+{
+  "defaultWorkspaceType": "swiftPM",
+  "swiftCompilerFlags": ["-target", "arm64-apple-ios18.0"],
+  "triple": "arm64-apple-ios18.0-simulator",
+  "fallbackBuildSystem": {
+    "swiftCompilerFlags": ["-target", "arm64-apple-ios18.0"],
+    "sdk": "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
+  }
+}
