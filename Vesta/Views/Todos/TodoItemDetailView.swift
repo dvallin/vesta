@@ -7,30 +7,97 @@ struct TodoItemDetailView: View {
 
     var body: some View {
         Form {
-            Section {
-                TextField("Title", text: $item.title)
-                TextField("Description", text: $item.details)
-                DatePicker(
-                    "Due Date",
-                    selection: Binding(
-                        get: { item.dueDate ?? Date() },
-                        set: { item.dueDate = $0 }
-                    ),
-                    displayedComponents: .date)
-                Toggle("Completed", isOn: $item.isCompleted)
-                Picker("Recurrence", selection: $item.recurrenceFrequency) {
-                    Text("None").tag(Optional<RecurrenceFrequency>.none)
-                    Text("Daily").tag(RecurrenceFrequency?.some(.daily))
-                    Text("Weekly").tag(RecurrenceFrequency?.some(.weekly))
-                    Text("Monthly").tag(RecurrenceFrequency?.some(.monthly))
-                    Text("Yearly").tag(RecurrenceFrequency?.some(.yearly))
+            Section(header: Text("General")) {
+                TextField(
+                    "Title",
+                    text: Binding(
+                        get: { item.title },
+                        set: { newValue in
+                            item.setTitle(modelContext: modelContext, title: newValue)
+                        }
+                    ))
+                TextField(
+                    "Details",
+                    text: Binding(
+                        get: { item.details },
+                        set: { newValue in
+                            item.setDetails(modelContext: modelContext, details: newValue)
+                        }
+                    ))
+            }
+            Section(header: Text("Due Date")) {
+                Toggle(
+                    "Enable Due Date",
+                    isOn: Binding(
+                        get: { item.dueDate != nil },
+                        set: { newValue in
+                            item.setDueDate(
+                                modelContext: modelContext, dueDate: newValue ? Date() : nil)
+                        }
+                    ))
+                if let dueDate = item.dueDate {
+                    DatePicker(
+                        "Due Date",
+                        selection: Binding(
+                            get: { dueDate },
+                            set: { newValue in
+                                item.setDueDate(modelContext: modelContext, dueDate: newValue)
+                            }
+                        ),
+                        displayedComponents: .date
+                    )
+                    Picker(
+                        "Recurrence",
+                        selection: Binding(
+                            get: { item.recurrenceFrequency },
+                            set: { newValue in
+                                item.setRecurrenceFrequency(
+                                    modelContext: modelContext, recurrenceFrequency: newValue)
+                            }
+                        )
+                    ) {
+                        Text("None").tag(Optional<RecurrenceFrequency>.none)
+                        Text("Daily").tag(RecurrenceFrequency?.some(.daily))
+                        Text("Weekly").tag(RecurrenceFrequency?.some(.weekly))
+                        Text("Monthly").tag(RecurrenceFrequency?.some(.monthly))
+                        Text("Yearly").tag(RecurrenceFrequency?.some(.yearly))
+                    }
+                    Toggle(
+                        "Fixed Recurrence",
+                        isOn: Binding(
+                            get: { item.recurrenceType == .some(.fixed) },
+                            set: { newValue in
+                                item.setRecurrenceType(
+                                    modelContext: modelContext,
+                                    recurrenceType: newValue ? .some(.fixed) : .some(.flexible))
+                            }
+                        ))
                 }
             }
-            Section {
+
+            Section(header: Text("Actions")) {
                 Button(action: markAsDone) {
                     Label("Mark as Done", systemImage: "checkmark.circle")
                 }
                 .disabled(item.isCompleted)
+
+                Toggle(
+                    "Completed",
+                    isOn: Binding(
+                        get: { item.isCompleted },
+                        set: { newValue in
+                            if newValue {
+                                withAnimation {
+                                    item.markAsDone(modelContext: modelContext)
+                                }
+                            } else {
+                                withAnimation {
+                                    item.undoLastEvent(modelContext: modelContext)
+                                }
+                            }
+                        }
+                    )
+                )
             }
         }
         .navigationTitle(item.title)

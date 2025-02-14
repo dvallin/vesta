@@ -2,22 +2,13 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-// MARK: - Enums
-
 enum RecurrenceFrequency: String, Codable {
-    case daily
-    case weekly
-    case monthly
-    case yearly
+    case daily, weekly, monthly, yearly
 }
 
-enum TodoItemEventType: String, Codable {
-    case markAsDone
-    case delete
-    case edit
+enum RecurrenceType: String, Codable {
+    case fixed, flexible
 }
-
-// MARK: - Models
 
 @Model
 class TodoItem {
@@ -26,28 +17,18 @@ class TodoItem {
     var dueDate: Date?
     var isCompleted: Bool
     var recurrenceFrequency: RecurrenceFrequency?
+    var recurrenceType: RecurrenceType?
 
     @Relationship(deleteRule: .cascade)
     var events: [TodoItemEvent]
 
     init(
-        title: String, details: String, dueDate: Date?,
-        isCompleted: Bool = false, recurrenceFrequency: RecurrenceFrequency? = nil
-    ) {
-        self.title = title
-        self.details = details
-        self.dueDate = dueDate
-        self.isCompleted = isCompleted
-        self.recurrenceFrequency = recurrenceFrequency
-        self.events = []
-    }
-
-    init(
         title: String,
         details: String,
-        dueDate: Date?,
+        dueDate: Date? = nil,
         isCompleted: Bool = false,
         recurrenceFrequency: RecurrenceFrequency? = nil,
+        recurrenceType: RecurrenceType? = nil,
         events: [TodoItemEvent] = []
     ) {
         self.title = title
@@ -55,78 +36,84 @@ class TodoItem {
         self.dueDate = dueDate
         self.isCompleted = isCompleted
         self.recurrenceFrequency = recurrenceFrequency
+        self.recurrenceType = recurrenceType
         self.events = events
     }
 
-    // MARK: - Methods
-
     func markAsDone(modelContext: ModelContext) {
+        let event = TodoItemEvent(type: .markAsDone, date: Date(), todoItem: self)
+        events.append(event)
+
         if let frequency = recurrenceFrequency {
-            adjustDueDate(for: frequency)
+            updateDueDate(
+                for: frequency,
+                basedOn: recurrenceType == .fixed ? (dueDate ?? event.date) : event.date)
         } else {
             isCompleted = true
         }
-        let event = TodoItemEvent(type: .markAsDone, date: Date())
-        events.append(event)
     }
 
-    func delete(modelContext: ModelContext) {
-        let event = TodoItemEvent(type: .delete, date: Date())
-        events.append(event)
-    }
-
-    func edit(
+    func setDetails(
         modelContext: ModelContext,
-        title: String? = nil,
-        details: String? = nil,
-        dueDate: Date? = nil,
-        recurrenceFrequency: RecurrenceFrequency? = nil
+        details: String
     ) {
-        if let newTitle = title {
-            self.title = newTitle
-        }
-        if let newDetails = details {
-            self.details = newDetails
-        }
-        if let newDueDate = dueDate {
-            self.dueDate = newDueDate
-        }
-        if let freq = recurrenceFrequency {
-            self.recurrenceFrequency = freq
-        }
-
-        let event = TodoItemEvent(type: .edit, date: Date())
+        let event = TodoItemEvent(type: .edit, date: Date(), todoItem: self)
         events.append(event)
+        self.details = details
     }
 
-    private func adjustDueDate(for frequency: RecurrenceFrequency) {
-        guard let currentDueDate = dueDate else { return }
+    func setTitle(
+        modelContext: ModelContext,
+        title: String
+    ) {
+        let event = TodoItemEvent(type: .edit, date: Date(), todoItem: self)
+        events.append(event)
+        self.title = title
+    }
+
+    func setDueDate(modelContext: ModelContext, dueDate: Date?) {
+        let event = TodoItemEvent(type: .edit, date: Date(), todoItem: self)
+        events.append(event)
+        self.dueDate = dueDate
+    }
+
+    func setRecurrenceFrequency(
+        modelContext: ModelContext, recurrenceFrequency: RecurrenceFrequency?
+    ) {
+        let event = TodoItemEvent(type: .edit, date: Date(), todoItem: self)
+        events.append(event)
+        self.recurrenceFrequency = recurrenceFrequency
+    }
+
+    func setRecurrenceType(modelContext: ModelContext, recurrenceType: RecurrenceType?) {
+        let event = TodoItemEvent(type: .edit, date: Date(), todoItem: self)
+        events.append(event)
+        self.recurrenceType = recurrenceType
+    }
+
+    func undoLastEvent(modelContext: ModelContext) {
+        guard let lastEvent = events.popLast() else { return }
+
+        self.title = lastEvent.snapshotTitle
+        self.details = lastEvent.snapshotDetails
+        self.dueDate = lastEvent.snapshotDueDate
+        self.isCompleted = lastEvent.snapshotIsCompleted
+        self.recurrenceFrequency = lastEvent.snapshotRecurrenceFrequency
+        self.recurrenceType = lastEvent.snapshotRecurrenceType
+    }
+
+    private func updateDueDate(for frequency: RecurrenceFrequency, basedOn baseDate: Date) {
         let calendar = Calendar.current
+
         switch frequency {
         case .daily:
-            dueDate = calendar.date(byAdding: .day, value: 1, to: currentDueDate)
+            dueDate = calendar.date(byAdding: .day, value: 1, to: baseDate)
         case .weekly:
-            dueDate = calendar.date(byAdding: .weekOfYear, value: 1, to: currentDueDate)
+            dueDate = calendar.date(byAdding: .weekOfYear, value: 1, to: baseDate)
         case .monthly:
-            dueDate = calendar.date(byAdding: .month, value: 1, to: currentDueDate)
+            dueDate = calendar.date(byAdding: .month, value: 1, to: baseDate)
         case .yearly:
-            dueDate = calendar.date(byAdding: .year, value: 1, to: currentDueDate)
+            dueDate = calendar.date(byAdding: .year, value: 1, to: baseDate)
         }
-    }
-}
-
-@Model
-class TodoItemEvent {
-    var type: TodoItemEventType
-    var date: Date
-
-    // Many-to-one relationship back to the Task that owns this event
-    @Relationship(inverse: \TodoItem.events)
-    var task: TodoItem?
-
-    init(type: TodoItemEventType, date: Date, task: TodoItem? = nil) {
-        self.type = type
-        self.date = date
-        self.task = task
     }
 }
