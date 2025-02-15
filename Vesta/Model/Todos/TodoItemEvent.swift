@@ -3,7 +3,12 @@ import SwiftData
 
 enum TodoItemEventType: String, Codable {
     case markAsDone
-    case edit
+    case editTitle
+    case editDetails
+    case editDueDate
+    case editRecurrenceFrequency
+    case editRecurrenceType
+    case editIsCompleted
 }
 
 @Model
@@ -11,26 +16,31 @@ class TodoItemEvent {
     var type: TodoItemEventType
     var date: Date
 
-    var snapshotTitle: String
-    var snapshotDetails: String
-    var snapshotDueDate: Date?
-    var snapshotIsCompleted: Bool
-    var snapshotRecurrenceFrequency: RecurrenceFrequency?
-    var snapshotRecurrenceType: RecurrenceType?
+    var previousTitle: String?
+    var previousDetails: String?
+    var previousDueDate: Date?
+    var previousIsCompleted: Bool?
+    var previousRecurrenceFrequency: RecurrenceFrequency?
+    var previousRecurrenceType: RecurrenceType?
 
     @Relationship(inverse: \TodoItem.events)
     var todoItem: TodoItem?
 
-    init(type: TodoItemEventType, date: Date, todoItem: TodoItem) {
+    init(
+        type: TodoItemEventType, date: Date, todoItem: TodoItem, previousTitle: String? = nil,
+        previousDetails: String? = nil, previousDueDate: Date? = nil,
+        previousIsCompleted: Bool? = nil, previousRecurrenceFrequency: RecurrenceFrequency? = nil,
+        previousRecurrenceType: RecurrenceType? = nil
+    ) {
         self.type = type
         self.date = date
         self.todoItem = todoItem
 
-        self.snapshotTitle = todoItem.title
-        self.snapshotDetails = todoItem.details
-        self.snapshotDueDate = todoItem.dueDate
-        self.snapshotIsCompleted = todoItem.isCompleted
-        self.snapshotRecurrenceFrequency = todoItem.recurrenceFrequency
-        self.snapshotRecurrenceType = todoItem.recurrenceType
+        self.previousTitle = previousTitle
+        self.previousDetails = previousDetails
+        self.previousDueDate = previousDueDate
+        self.previousIsCompleted = previousIsCompleted
+        self.previousRecurrenceFrequency = previousRecurrenceFrequency
+        self.previousRecurrenceType = previousRecurrenceType
     }
 }

@@ -41,65 +41,73 @@ class TodoItem {
     }
 
     func markAsDone(modelContext: ModelContext) {
-        let event = TodoItemEvent(type: .markAsDone, date: Date(), todoItem: self)
-        events.append(event)
+        createEvent(type: .markAsDone, previousDueDate: dueDate, previousIsCompleted: isCompleted)
 
         if let frequency = recurrenceFrequency {
             updateDueDate(
                 for: frequency,
-                basedOn: recurrenceType == .fixed ? (dueDate ?? event.date) : event.date)
+                basedOn: recurrenceType == .fixed ? (dueDate ?? Date()) : Date()
+            )
         } else {
             isCompleted = true
         }
     }
 
-    func setDetails(
-        modelContext: ModelContext,
-        details: String
-    ) {
-        let event = TodoItemEvent(type: .edit, date: Date(), todoItem: self)
-        events.append(event)
+    func setDetails(modelContext: ModelContext, details: String) {
+        createEvent(type: .editDetails, previousDetails: self.details)
         self.details = details
     }
 
-    func setTitle(
-        modelContext: ModelContext,
-        title: String
-    ) {
-        let event = TodoItemEvent(type: .edit, date: Date(), todoItem: self)
-        events.append(event)
+    func setTitle(modelContext: ModelContext, title: String) {
+        createEvent(type: .editTitle, previousTitle: self.title)
         self.title = title
     }
 
     func setDueDate(modelContext: ModelContext, dueDate: Date?) {
-        let event = TodoItemEvent(type: .edit, date: Date(), todoItem: self)
-        events.append(event)
+        createEvent(type: .editDueDate, previousDueDate: self.dueDate)
         self.dueDate = dueDate
+    }
+
+    func setIsCompleted(modelContext: ModelContext, isCompleted: Bool) {
+        createEvent(type: .editIsCompleted, previousIsCompleted: self.isCompleted)
+        self.isCompleted = isCompleted
     }
 
     func setRecurrenceFrequency(
         modelContext: ModelContext, recurrenceFrequency: RecurrenceFrequency?
     ) {
-        let event = TodoItemEvent(type: .edit, date: Date(), todoItem: self)
-        events.append(event)
+        createEvent(
+            type: .editRecurrenceFrequency, previousRecurrenceFrequency: self.recurrenceFrequency)
         self.recurrenceFrequency = recurrenceFrequency
     }
 
     func setRecurrenceType(modelContext: ModelContext, recurrenceType: RecurrenceType?) {
-        let event = TodoItemEvent(type: .edit, date: Date(), todoItem: self)
-        events.append(event)
+        createEvent(type: .editRecurrenceType, previousRecurrenceType: self.recurrenceType)
         self.recurrenceType = recurrenceType
     }
 
     func undoLastEvent(modelContext: ModelContext) {
         guard let lastEvent = events.popLast() else { return }
 
-        self.title = lastEvent.snapshotTitle
-        self.details = lastEvent.snapshotDetails
-        self.dueDate = lastEvent.snapshotDueDate
-        self.isCompleted = lastEvent.snapshotIsCompleted
-        self.recurrenceFrequency = lastEvent.snapshotRecurrenceFrequency
-        self.recurrenceType = lastEvent.snapshotRecurrenceType
+        switch lastEvent.type {
+        case .markAsDone:
+            self.isCompleted = lastEvent.previousIsCompleted ?? self.isCompleted
+            self.dueDate = lastEvent.previousDueDate
+        case .editTitle:
+            self.title = lastEvent.previousTitle ?? self.title
+        case .editDetails:
+            self.details = lastEvent.previousDetails ?? self.details
+        case .editIsCompleted:
+            self.isCompleted = lastEvent.previousIsCompleted ?? self.isCompleted
+        case .editDueDate:
+            self.dueDate = lastEvent.previousDueDate
+        case .editRecurrenceFrequency:
+            self.recurrenceFrequency = lastEvent.previousRecurrenceFrequency
+        case .editRecurrenceType:
+            self.recurrenceType = lastEvent.previousRecurrenceType
+        }
+        
+        modelContext.delete(lastEvent)
     }
 
     private func updateDueDate(for frequency: RecurrenceFrequency, basedOn baseDate: Date) {
@@ -115,5 +123,28 @@ class TodoItem {
         case .yearly:
             dueDate = calendar.date(byAdding: .year, value: 1, to: baseDate)
         }
+    }
+
+    private func createEvent(
+        type: TodoItemEventType,
+        previousTitle: String? = nil,
+        previousDetails: String? = nil,
+        previousDueDate: Date? = nil,
+        previousIsCompleted: Bool? = nil,
+        previousRecurrenceFrequency: RecurrenceFrequency? = nil,
+        previousRecurrenceType: RecurrenceType? = nil
+    ) {
+        let event = TodoItemEvent(
+            type: type,
+            date: Date(),
+            todoItem: self,
+            previousTitle: previousTitle,
+            previousDetails: previousDetails,
+            previousDueDate: previousDueDate,
+            previousIsCompleted: previousIsCompleted,
+            previousRecurrenceFrequency: previousRecurrenceFrequency,
+            previousRecurrenceType: previousRecurrenceType
+        )
+        events.append(event)
     }
 }
