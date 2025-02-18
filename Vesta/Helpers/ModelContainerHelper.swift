@@ -5,6 +5,7 @@ class ModelContainerHelper {
         let schema = Schema([
             TodoItem.self,
             TodoItemEvent.self,
+            Recipe.self,
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: isStoredInMemoryOnly)

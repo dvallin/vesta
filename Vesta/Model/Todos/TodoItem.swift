@@ -106,7 +106,7 @@ class TodoItem {
         case .editRecurrenceType:
             self.recurrenceType = lastEvent.previousRecurrenceType
         }
-        
+
         modelContext.delete(lastEvent)
     }
 

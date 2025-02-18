@@ -14,14 +14,9 @@ struct VestaApp: App {
     var body: some Scene {
         WindowGroup {
             TabView {
-                TodoListView()
-                    .tabItem {
-                        Label("Todo List", systemImage: "list.bullet")
-                    }
-                TodoEventsView()
-                    .tabItem {
-                        Label("Events", systemImage: "clock")
-                    }
+                TodayView().tabItem { Label("Today", systemImage: "list.bullet") }
+                MealsView().tabItem { Label("Meals", systemImage: "fork.knife") }
+                ShoppingView().tabItem { Label("Shopping", systemImage: "cart") }
             }
         }
         .modelContainer(sharedModelContainer)

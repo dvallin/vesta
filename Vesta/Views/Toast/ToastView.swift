@@ -12,7 +12,7 @@ struct ToastView: View {
             Button(action: undoAction) {
                 Text("Undo")
                     .font(.subheadline)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.accentColor)
             }
         }
         .padding()

@@ -4,14 +4,27 @@ import SwiftUI
 struct TodoListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var todoItems: [TodoItem]
+
+    @State private var filterMode: FilterMode = .all
+    @State private var showCompletedItems: Bool = false
+    @State private var searchText: String = ""
+
     @State private var isPresentingAddTodoItemView = false
+    @State private var isPresentingTodoEventsView = false
+    @State private var isPresentingFilterCriteriaView = false
+
     @State private var toastMessages: [ToastMessage] = []
 
+    init(filterMode: FilterMode = .all, showCompletedItems: Bool = false) {
+        _filterMode = State(initialValue: filterMode)
+        _showCompletedItems = State(initialValue: showCompletedItems)
+    }
+
     var body: some View {
-        NavigationSplitView {
+        NavigationView {
             ZStack {
                 List {
-                    ForEach(todoItems) { item in
+                    ForEach(filteredTodoItems) { item in
                         HStack {
                             Button(action: {
                                 markAsDone(item: item)
@@ -21,7 +34,7 @@ struct TodoListView: View {
                                         ? "checkmark.circle.fill"
                                         : "circle"
                                 )
-                                .foregroundColor(item.isCompleted ? .secondary : .blue)
+                                .foregroundColor(item.isCompleted ? .secondary : .accentColor)
                                 .scaleEffect(item.isCompleted ? 1 : 1.5)
                                 .animation(.easeInOut, value: item.isCompleted)
                             }
@@ -59,7 +72,6 @@ struct TodoListView: View {
                                     }
                                 }
                             }
-                            Spacer()
                         }
                     }
                     .onDelete(perform: deleteTodoItems)
@@ -76,7 +88,7 @@ struct TodoListView: View {
                                 .resizable()
                                 .frame(width: 24, height: 24)
                                 .padding()
-                                .background(Color.blue)
+                                .background(Color.accentColor)
                                 .foregroundColor(.white)
                                 .clipShape(Circle())
                                 .shadow(radius: 10)
@@ -85,13 +97,59 @@ struct TodoListView: View {
                     }
                 }
             }
-        } detail: {
-            Text("Select a todo item")
+            .navigationTitle("Todo List")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        isPresentingFilterCriteriaView = true
+                    }) {
+                        Image(systemName: "line.horizontal.3.decrease.circle")
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        isPresentingTodoEventsView = true
+                    }) {
+                        Image(systemName: "clock.arrow.circlepath")
+                    }
+                }
+                ToolbarItem(placement: .principal) {
+                    TextField("Search", text: $searchText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .frame(maxWidth: 200)
+                }
+            }
         }
         .sheet(isPresented: $isPresentingAddTodoItemView) {
             AddTodoItemView()
         }
+        .sheet(isPresented: $isPresentingTodoEventsView) {
+            TodoEventsView()
+        }
+        .sheet(isPresented: $isPresentingFilterCriteriaView) {
+            FilterCriteriaView(filterMode: $filterMode, showCompletedItems: $showCompletedItems)
+                .presentationDetents([.medium, .large])
+        }
         .toast(messages: $toastMessages)
+    }
+
+    private var filteredTodoItems: [TodoItem] {
+        todoItems.filter { item in
+            let matchesSearchText =
+                searchText.isEmpty || item.title.localizedCaseInsensitiveContains(searchText)
+                || item.details.localizedCaseInsensitiveContains(searchText)
+            let matchesCompleted = showCompletedItems || !item.isCompleted
+            guard matchesSearchText && matchesCompleted else { return false }
+
+            switch filterMode {
+            case .all:
+                return true
+            case .today:
+                return Calendar.current.isDateInToday(item.dueDate ?? Date.distantPast)
+            case .noDueDate:
+                return item.dueDate == nil
+            }
+        }
     }
 
     private func markAsDone(item: TodoItem) {

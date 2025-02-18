@@ -101,6 +101,16 @@ struct AddTodoItemView: View {
             details: details
         )
         modelContext.insert(newItem)
+        if let dueDate = dueDate {
+            newItem.setDueDate(modelContext: modelContext, dueDate: dueDate)
+        }
+        if let recurrenceFrequency = recurrenceFrequency {
+            newItem.setRecurrenceFrequency(
+                modelContext: modelContext, recurrenceFrequency: recurrenceFrequency)
+        }
+        if let recurrenceType = recurrenceType {
+            newItem.setRecurrenceType(modelContext: modelContext, recurrenceType: recurrenceType)
+        }
     }
 }
 
