@@ -22,6 +22,8 @@ struct RecipeListView: View {
                                 Text(recipe.details)
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
+                                    .lineLimit(2)
+                                    .truncationMode(.tail)
                             }
                         }
                     }

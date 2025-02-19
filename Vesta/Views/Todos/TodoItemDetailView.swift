@@ -117,7 +117,6 @@ struct TodoItemDetailView: View {
                 }
                 .padding(.horizontal)
             }
-            .navigationTitle(item.title)
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif

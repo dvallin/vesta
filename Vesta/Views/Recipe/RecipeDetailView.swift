@@ -7,7 +7,7 @@ struct RecipeDetailView: View {
 
     @State private var ingredientName: String = ""
     @State private var ingredientQuantity: String = ""
-    @State private var ingredientUnit: String = ""
+    @State private var ingredientUnit: Unit? = nil
 
     var body: some View {
         NavigationView {
@@ -25,30 +25,40 @@ struct RecipeDetailView: View {
                 .bold()
                 .padding(.horizontal)
 
-                TextEditor(
-                    text: Binding(
-                        get: { recipe.details },
-                        set: { newValue in
-                            recipe.details = newValue
-                        }
-                    )
-                )
-                .padding(8)
-                .background(
-                    RoundedRectangle(cornerRadius: 8).stroke(.tertiary, lineWidth: 1)
-                )
-                .padding(.horizontal)
-
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Ingredients")
                         .font(.headline)
                         .padding(.horizontal)
 
+                    HStack {
+                        TextField("Quantity", text: $ingredientQuantity)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .frame(width: 80)
+                            .keyboardType(.decimalPad)
+                        Picker("Unit", selection: $ingredientUnit) {
+                            Text("Unit").tag(Unit?.none)
+                            ForEach(Unit.allCases, id: \.self) { unit in
+                                Text(unit.rawValue).tag(unit as Unit?)
+                            }
+                        }
+                        .pickerStyle(MenuPickerStyle())
+                        TextField("Name", text: $ingredientName)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        Button(action: addIngredient) {
+                            Image(systemName: "plus.circle")
+                                .foregroundColor(.green)
+                        }
+                    }
+                    .padding(.horizontal)
+
                     ForEach(recipe.ingredients) { ingredient in
                         HStack {
                             Text(
-                                "\(ingredient.quantity, specifier: "%.2f") \(ingredient.unit) \(ingredient.name)"
+                                "\(ingredient.quantity != nil ? NumberFormatter.localizedString(from: NSNumber(value: ingredient.quantity!), number: .decimal) : "") \(ingredient.unit?.rawValue ?? "")"
                             )
+                            .frame(width: 100, alignment: .leading)
+                            Text(ingredient.name)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             Spacer()
                             Button(action: {
                                 removeIngredient(ingredient)
@@ -60,25 +70,22 @@ struct RecipeDetailView: View {
                         .padding(.horizontal)
                     }
 
-                    HStack {
-                        TextField("Name", text: $ingredientName)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                        TextField("Quantity", text: $ingredientQuantity)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.decimalPad)
-                        TextField("Unit", text: $ingredientUnit)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                        Button(action: addIngredient) {
-                            Image(systemName: "plus.circle")
-                                .foregroundColor(.green)
-                        }
-                    }
+                    Spacer()
+                    TextEditor(
+                        text: Binding(
+                            get: { recipe.details },
+                            set: { newValue in
+                                recipe.details = newValue
+                            }
+                        )
+                    )
+                    .padding(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8).stroke(.tertiary, lineWidth: 1)
+                    )
                     .padding(.horizontal)
                 }
-
-                Spacer()
             }
-            .navigationTitle(recipe.title)
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -86,19 +93,21 @@ struct RecipeDetailView: View {
     }
 
     private func addIngredient() {
-        guard let quantity = Double(ingredientQuantity), !ingredientName.isEmpty,
-            !ingredientUnit.isEmpty
-        else {
+        guard let quantity = Double(ingredientQuantity), !ingredientName.isEmpty else {
             return
         }
-        recipe.addIngredient(name: ingredientName, quantity: quantity, unit: ingredientUnit)
+        recipe.ingredients.append(
+            Ingredient(name: ingredientName, quantity: quantity, unit: ingredientUnit)
+        )
         ingredientName = ""
         ingredientQuantity = ""
-        ingredientUnit = ""
+        ingredientUnit = nil
     }
 
     private func removeIngredient(_ ingredient: Ingredient) {
-        recipe.removeIngredient(ingredient: ingredient)
+        if let index = recipe.ingredients.firstIndex(where: { $0 === ingredient }) {
+            recipe.ingredients.remove(at: index)
+        }
     }
 }
 
@@ -108,9 +117,11 @@ struct RecipeDetailView: View {
 
         let context = container.mainContext
         let recipe = Recipe(title: "Spaghetti Bolognese", details: "A classic Italian pasta dish.")
-        recipe.addIngredient(name: "Spaghetti", quantity: 200, unit: "g")
-        recipe.addIngredient(name: "Ground Beef", quantity: 300, unit: "g")
-        recipe.addIngredient(name: "Tomato Sauce", quantity: 400, unit: "ml")
+        recipe.ingredients.append(Ingredient(name: "Spaghetti", quantity: 200, unit: .gram))
+        recipe.ingredients.append(Ingredient(name: "Ground Beef", quantity: 300, unit: .gram))
+        recipe.ingredients.append(
+            Ingredient(name: "Tomato Sauce", quantity: 400, unit: .milliliter))
+        recipe.ingredients.append(Ingredient(name: "Salt", quantity: nil, unit: nil))
 
         context.insert(recipe)
 

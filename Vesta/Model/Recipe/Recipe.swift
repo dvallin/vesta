@@ -13,32 +13,34 @@ class Recipe {
         self.details = details
         self.ingredients = ingredients
     }
-
-    func addIngredient(name: String, quantity: Double, unit: String) {
-        let ingredient = Ingredient(name: name, quantity: quantity, unit: unit, recipe: self)
-        ingredients.append(ingredient)
-    }
-
-    func removeIngredient(ingredient: Ingredient) {
-        if let index = ingredients.firstIndex(where: { $0 === ingredient }) {
-            ingredients.remove(at: index)
-        }
-    }
 }
 
 @Model
 class Ingredient {
     var name: String
-    var quantity: Double
-    var unit: String
+    var quantity: Double?
+    var unit: Unit?
 
     @Relationship(inverse: \Recipe.ingredients)
     var recipe: Recipe?
 
-    init(name: String, quantity: Double, unit: String, recipe: Recipe? = nil) {
+    init(name: String, quantity: Double?, unit: Unit?, recipe: Recipe? = nil) {
         self.name = name
         self.quantity = quantity
         self.unit = unit
         self.recipe = recipe
     }
+}
+
+enum Unit: String, Codable, CaseIterable {
+    case teaspoon = "tsp"
+    case tablespoon = "tbsp"
+    case cup = "cup"
+    case milliliter = "ml"
+    case liter = "l"
+    case gram = "g"
+    case kilogram = "kg"
+    case ounce = "oz"
+    case pound = "lb"
+    case piece = "piece"
 }
