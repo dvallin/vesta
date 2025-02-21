@@ -15,6 +15,8 @@ struct TodoListView: View {
 
     @State private var toastMessages: [ToastMessage] = []
 
+    @State private var selectedTodoItem: TodoItem?
+
     init(filterMode: FilterMode = .all, showCompletedItems: Bool = false) {
         _filterMode = State(initialValue: filterMode)
         _showCompletedItems = State(initialValue: showCompletedItems)
@@ -41,9 +43,9 @@ struct TodoListView: View {
                             .disabled(item.isCompleted)
                             .buttonStyle(BorderlessButtonStyle())
 
-                            NavigationLink {
-                                TodoItemDetailView(item: item)
-                            } label: {
+                            Button(action: {
+                                selectedTodoItem = item
+                            }) {
                                 VStack(alignment: .leading) {
                                     Text(item.title)
                                         .font(.headline)
@@ -119,6 +121,9 @@ struct TodoListView: View {
                         .frame(maxWidth: 200)
                 }
             }
+        }
+        .sheet(item: $selectedTodoItem) { item in
+            TodoItemDetailView(item: item)
         }
         .sheet(isPresented: $isPresentingAddTodoItemView) {
             AddTodoItemView()

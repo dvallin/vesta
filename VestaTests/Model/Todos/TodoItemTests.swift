@@ -65,10 +65,9 @@ class TodoItemTests: XCTestCase {
         XCTAssertEqual(todo.events.count, 1)
         XCTAssertEqual(todo.events.first?.type, .markAsDone)
         // And the due date should be updated to the next day
-        XCTAssertEqual(
-            Calendar.current.date(byAdding: .day, value: 1, to: todo.events.first?.date ?? Date()),
-            todo.dueDate
-        )
+        let expectedDueDate = Calendar.current.date(
+            byAdding: .day, value: 1, to: todo.events.first!.date)!
+        XCTAssertEqual(todo.dueDate, expectedDueDate)
     }
 
     func testMarkAsDoneWithDailyFixedRecurrence() {
@@ -93,11 +92,11 @@ class TodoItemTests: XCTestCase {
         // And the item should not be marked as completed
         XCTAssertFalse(todo.isCompleted)
     }
-
+    
     func testMarkAsDoneWithDailyFlexibleRecurrence() {
         // Given that a TodoItem is created with daily flexible recurrence
-        let calendar = Calendar.current
-        let originalDueDate = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: Date())!
+        let originalDueDate = Calendar.current.date(
+            bySettingHour: 9, minute: 0, second: 0, of: Date())!
         let todo = TodoItem(
             title: "Flexible Daily Task",
             details: "Details",
@@ -110,10 +109,13 @@ class TodoItemTests: XCTestCase {
         // When the item is marked as done
         todo.markAsDone(modelContext: modelContext)
 
-        // Then the due date should be updated to one day from now
-        let nowPlusOneDay = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
-        let timeDifference = todo.dueDate!.timeIntervalSince(nowPlusOneDay)
-        XCTAssertTrue(abs(timeDifference) < 2.0, "Due date should be about 1 day from now.")
+        // Then the due date should be updated to one day from the event date
+        let eventDate = todo.events.first!.date
+        let expectedDueDate = Calendar.current.date(byAdding: .day, value: 1, to: eventDate)!
+        XCTAssertEqual(
+            todo.dueDate,
+            expectedDueDate,
+            "Due date should be about 1 day from the event date.")
         // And the item should not be marked as completed
         XCTAssertFalse(todo.isCompleted)
     }
@@ -129,14 +131,12 @@ class TodoItemTests: XCTestCase {
         let newRecurrenceType: RecurrenceType = .flexible
 
         // When the item is edited
-        todo.edit(
-            modelContext: modelContext,
-            title: newTitle,
-            details: newDetails,
-            dueDate: newDueDate,
-            recurrenceFrequency: newRecurrenceFrequency,
-            recurrenceType: newRecurrenceType
-        )
+        todo.setTitle(modelContext: modelContext, title: newTitle)
+        todo.setDetails(modelContext: modelContext, details: newDetails)
+        todo.setDueDate(modelContext: modelContext, dueDate: newDueDate)
+        todo.setRecurrenceFrequency(
+            modelContext: modelContext, recurrenceFrequency: newRecurrenceFrequency)
+        todo.setRecurrenceType(modelContext: modelContext, recurrenceType: newRecurrenceType)
 
         // Then the fields should be updated
         XCTAssertEqual(todo.title, newTitle)
@@ -144,9 +144,13 @@ class TodoItemTests: XCTestCase {
         XCTAssertEqual(todo.dueDate, newDueDate)
         XCTAssertEqual(todo.recurrenceFrequency, newRecurrenceFrequency)
         XCTAssertEqual(todo.recurrenceType, newRecurrenceType)
-        // And an event should be recorded
-        XCTAssertEqual(todo.events.count, 1)
-        XCTAssertEqual(todo.events.first?.type, .edit)
+        // And events should be recorded
+        XCTAssertEqual(todo.events.count, 5)
+        XCTAssertEqual(todo.events[0].type, .editTitle)
+        XCTAssertEqual(todo.events[1].type, .editDetails)
+        XCTAssertEqual(todo.events[2].type, .editDueDate)
+        XCTAssertEqual(todo.events[3].type, .editRecurrenceFrequency)
+        XCTAssertEqual(todo.events[4].type, .editRecurrenceType)
     }
 
     func testUndoLastEvent() {
@@ -173,13 +177,13 @@ class TodoItemTests: XCTestCase {
 
         // Given that the item is edited
         let newTitle = "New Title"
-        todo.edit(modelContext: modelContext, title: newTitle)
+        todo.setTitle(modelContext: modelContext, title: newTitle)
 
         // Then the title should be updated
         XCTAssertEqual(todo.title, newTitle)
         // And an event should be recorded
         XCTAssertEqual(todo.events.count, 1)
-        XCTAssertEqual(todo.events.first?.type, .edit)
+        XCTAssertEqual(todo.events.first?.type, .editTitle)
 
         // When the last event is undone
         todo.undoLastEvent(modelContext: modelContext)

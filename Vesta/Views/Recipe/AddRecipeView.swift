@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Temporary ingredient for the AddRecipeView
 struct TempIngredient: Identifiable {
     let id = UUID()
     let name: String
@@ -11,125 +12,149 @@ struct AddRecipeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
+    // Recipe properties
     @State private var title: String = ""
     @State private var details: String = ""
     @State private var tempIngredients: [TempIngredient] = []
 
+    // For entering new ingredient values
     @State private var ingredientName: String = ""
     @State private var ingredientQuantity: String = ""
     @State private var ingredientUnit: Unit? = nil
 
+    @State private var showingValidationAlert = false
+    @State private var validationMessage = ""
+    @State private var showingDiscardAlert = false
+    @State private var isSaving = false
+
     var body: some View {
         NavigationView {
-            VStack(alignment: .leading, spacing: 16) {
-                TextField("Title", text: $title)
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.horizontal)
+            Form {
+                // Title field – common subview.
+                RecipeTitleInputView(title: $title)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Ingredients")
-                        .font(.headline)
-                        .padding(.horizontal)
+                // Ingredients section – using a generic ingredients subview.
+                IngredientsSection(
+                    header: "Ingredients",
+                    ingredients: tempIngredients,
+                    removeHandler: removeTempIngredient,
+                    quantityText: { ingredient in
+                        let qtyPart =
+                            ingredient.quantity.map {
+                                NumberFormatter.localizedString(
+                                    from: NSNumber(value: $0), number: .decimal)
+                            } ?? ""
+                        let unitPart = ingredient.unit?.rawValue ?? ""
+                        return qtyPart + " " + unitPart
+                    },
+                    nameText: { $0.name },
+                    ingredientName: $ingredientName,
+                    ingredientQuantity: $ingredientQuantity,
+                    ingredientUnit: $ingredientUnit,
+                    onAdd: addTempIngredient
+                )
+                .environment(\.editMode, .constant(.active))
 
-                    HStack {
-                        TextField("Quantity", text: $ingredientQuantity)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .frame(width: 80)
-                            .keyboardType(.decimalPad)
-                        Picker("Unit", selection: $ingredientUnit) {
-                            Text("Unit").tag(Unit?.none)
-                            ForEach(Unit.allCases, id: \.self) { unit in
-                                Text(unit.rawValue).tag(unit as Unit?)
-                            }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                        TextField("Name", text: $ingredientName)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                        Button(action: addTempIngredient) {
-                            Image(systemName: "plus.circle")
-                                .foregroundColor(.green)
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    ForEach(tempIngredients) { ingredient in
-                        HStack {
-                            Text(
-                                "\(ingredient.quantity != nil ? NumberFormatter.localizedString(from: NSNumber(value: ingredient.quantity!), number: .decimal) : "") \(ingredient.unit?.rawValue ?? "")"
-                            )
-                            .frame(width: 100, alignment: .leading)
-                            Text(ingredient.name)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Spacer()
-                            Button(action: {
-                                removeTempIngredient(ingredient)
-                            }) {
-                                Image(systemName: "minus.circle")
-                                    .foregroundColor(.red)
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-
-                Spacer()
-                TextEditor(text: $details)
-                    .padding(8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8).stroke(.tertiary, lineWidth: 1)
-                    )
-                    .padding(.horizontal)
+                // Description (Details) field – common subview.
+                RecipeDetailsEditorView(details: $details)
             }
             .navigationTitle("Add Recipe")
-            #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
-                .navigationBarItems(
-                    leading: Button("Cancel") {
-                        dismiss()
-                    },
-                    trailing: Button("Save") {
-                        saveRecipe()
-                        dismiss()
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                // Leading cancel button.
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        if !title.isEmpty || !details.isEmpty || !tempIngredients.isEmpty {
+                            showingDiscardAlert = true
+                        } else {
+                            dismiss()
+                        }
                     }
-                )
-            #endif
+                }
+                // Trailing save button.
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        validateAndSave()
+                    }
+                    .disabled(isSaving)
+                }
+            }
+            // Alerts.
+            .alert("Validation Error", isPresented: $showingValidationAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(validationMessage)
+            }
+            .alert("Discard Changes?", isPresented: $showingDiscardAlert) {
+                Button("Discard", role: .destructive) { dismiss() }
+                Button("Continue Editing", role: .cancel) {}
+            }
         }
     }
 
+    // MARK: - Private Methods
+
     private func addTempIngredient() {
         guard !ingredientName.isEmpty else {
+            validationMessage = "Please enter an ingredient name."
+            showingValidationAlert = true
             return
         }
 
+        // Convert the quantity text to a Double; if conversion fails, it ends up as nil.
         let quantity = Double(ingredientQuantity)
         let newIngredient = TempIngredient(
-            name: ingredientName, quantity: quantity,
-            unit: ingredientUnit)
-        tempIngredients.append(newIngredient)
-        // Clean up text fields
+            name: ingredientName,
+            quantity: quantity,
+            unit: ingredientUnit
+        )
+
+        withAnimation {
+            tempIngredients.append(newIngredient)
+        }
+
+        // Reset the input fields.
         ingredientName = ""
         ingredientQuantity = ""
         ingredientUnit = nil
     }
 
     private func removeTempIngredient(_ ingredient: TempIngredient) {
-        tempIngredients.removeAll { $0.id == ingredient.id }
+        withAnimation {
+            tempIngredients.removeAll { $0.id == ingredient.id }
+        }
+    }
+
+    private func validateAndSave() {
+        guard !title.isEmpty else {
+            validationMessage = "Please enter a recipe title."
+            showingValidationAlert = true
+            return
+        }
+        guard !tempIngredients.isEmpty else {
+            validationMessage = "Please add at least one ingredient."
+            showingValidationAlert = true
+            return
+        }
+        saveRecipe()
     }
 
     private func saveRecipe() {
-        // Create a new recipe
-        let newRecipe = Recipe(title: title, details: details)
-
-        // Convert TempIngredients into proper Ingredient model objects.
-        // Here we add them using the Recipe's helper method which attaches the recipe
-        for temp in tempIngredients {
-            newRecipe.ingredients.append(
-                Ingredient(name: temp.name, quantity: temp.quantity, unit: temp.unit)
-            )
+        isSaving = true
+        do {
+            let newRecipe = Recipe(title: title, details: details)
+            for temp in tempIngredients {
+                newRecipe.ingredients.append(
+                    Ingredient(name: temp.name, quantity: temp.quantity, unit: temp.unit))
+            }
+            modelContext.insert(newRecipe)
+            try modelContext.save()
+            dismiss()
+        } catch {
+            validationMessage = "Error saving recipe: \(error.localizedDescription)"
+            showingValidationAlert = true
         }
-
-        modelContext.insert(newRecipe)
+        isSaving = false
     }
 }
 

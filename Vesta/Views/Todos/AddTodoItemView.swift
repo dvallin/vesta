@@ -6,114 +6,103 @@ struct AddTodoItemView: View {
 
     @State private var title: String = ""
     @State private var details: String = ""
-
     @State private var dueDate: Date? = nil
     @State private var recurrenceFrequency: RecurrenceFrequency? = nil
     @State private var recurrenceType: RecurrenceType? = nil
 
+    @State private var showingValidationAlert = false
+    @State private var validationMessage = ""
+    @State private var showingDiscardAlert = false
+    @State private var isSaving = false
+
+    @FocusState private var focusedField: String?
+
     var body: some View {
         NavigationView {
-            VStack(alignment: .leading, spacing: 16) {
-                TextField("Title", text: $title)
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.horizontal)
+            Form {
+                TitleDetailsSection(title: $title, details: $details, focusedField: $focusedField)
 
-                TextEditor(text: $details)
-                    .padding(8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8).stroke(.tertiary, lineWidth: 1)
-                    )
-                    .padding(.horizontal)
-
-                Spacer()
-
-                Toggle(
-                    "Enable Due Date",
-                    isOn: Binding(
-                        get: { dueDate != nil },
-                        set: { newValue in dueDate = newValue ? Date() : nil }
-                    )
+                DueDateRecurrenceSection(
+                    dueDate: $dueDate,
+                    recurrenceFrequency: $recurrenceFrequency,
+                    recurrenceType: $recurrenceType
                 )
-                .padding(.horizontal)
-
-                if let dd = dueDate {
-                    VStack(alignment: .leading, spacing: 8) {
-                        DatePicker(
-                            "Due Date",
-                            selection: Binding(
-                                get: { dd },
-                                set: { newValue in dueDate = newValue }
-                            ),
-                            displayedComponents: .date
-                        )
-                        .padding(.horizontal)
-
-                        Picker(
-                            "Recurrence",
-                            selection: Binding(
-                                get: { recurrenceFrequency },
-                                set: { newValue in recurrenceFrequency = newValue }
-                            )
-                        ) {
-                            Text("None").tag(Optional<RecurrenceFrequency>.none)
-                            Text("Daily").tag(RecurrenceFrequency?.some(.daily))
-                            Text("Weekly").tag(RecurrenceFrequency?.some(.weekly))
-                            Text("Monthly").tag(RecurrenceFrequency?.some(.monthly))
-                            Text("Yearly").tag(RecurrenceFrequency?.some(.yearly))
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                        .padding(.horizontal)
-
-                        Toggle(
-                            "Fixed Recurrence",
-                            isOn: Binding(
-                                get: { recurrenceType == .some(.fixed) },
-                                set: { newValue in
-                                    recurrenceType = newValue ? .fixed : .flexible
-                                }
-                            )
-                        )
-                        .padding(.horizontal)
-                    }
-                    .padding(.horizontal)
-                }
             }
             .navigationTitle("Add Todo Item")
-            #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
-                .navigationBarItems(
-                    leading: Button("Cancel") {
-                        dismiss()
-                    },
-                    trailing: Button("Save") {
-                        addTodoItem()
-                        dismiss()
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        if !title.isEmpty || !details.isEmpty {
+                            showingDiscardAlert = true
+                        } else {
+                            dismiss()
+                        }
                     }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        validateAndSave()
+                    }
+                    .disabled(isSaving)
+                }
+
+                ToolbarItem(placement: .keyboard) {
+                    Button("Done") {
+                        focusedField = nil
+                    }
+                }
+            }
+            .alert("Validation Error", isPresented: $showingValidationAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(validationMessage)
+            }
+            .alert("Discard Changes?", isPresented: $showingDiscardAlert) {
+                Button("Discard", role: .destructive) { dismiss() }
+                Button("Continue Editing", role: .cancel) {}
+            }
+        }
+    }
+
+    private func validateAndSave() {
+        guard !title.isEmpty else {
+            validationMessage = "Please enter a todo title"
+            showingValidationAlert = true
+            return
+        }
+        saveTodoItem()
+    }
+
+    private func saveTodoItem() {
+        isSaving = true
+        do {
+            let newItem = TodoItem(title: title, details: details)
+            modelContext.insert(newItem)
+
+            if let dueDate {
+                newItem.setDueDate(modelContext: modelContext, dueDate: dueDate)
+            }
+            if let recurrenceFrequency {
+                newItem.setRecurrenceFrequency(
+                    modelContext: modelContext,
+                    recurrenceFrequency: recurrenceFrequency
                 )
-            #endif
-        }
-    }
+            }
+            if let recurrenceType {
+                newItem.setRecurrenceType(
+                    modelContext: modelContext,
+                    recurrenceType: recurrenceType
+                )
+            }
 
-    private func addTodoItem() {
-        let newItem = TodoItem(
-            title: title,
-            details: details
-        )
-        modelContext.insert(newItem)
-        if let dueDate = dueDate {
-            newItem.setDueDate(modelContext: modelContext, dueDate: dueDate)
+            try modelContext.save()
+            dismiss()
+        } catch {
+            validationMessage = "Error saving todo item: \(error.localizedDescription)"
+            showingValidationAlert = true
         }
-        if let recurrenceFrequency = recurrenceFrequency {
-            newItem.setRecurrenceFrequency(
-                modelContext: modelContext, recurrenceFrequency: recurrenceFrequency)
-        }
-        if let recurrenceType = recurrenceType {
-            newItem.setRecurrenceType(modelContext: modelContext, recurrenceType: recurrenceType)
-        }
+        isSaving = false
     }
-}
-
-#Preview {
-    return AddTodoItemView()
 }

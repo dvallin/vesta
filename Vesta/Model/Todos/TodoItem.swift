@@ -41,12 +41,13 @@ class TodoItem {
     }
 
     func markAsDone(modelContext: ModelContext) {
-        createEvent(type: .markAsDone, previousDueDate: dueDate, previousIsCompleted: isCompleted)
+        let event = createEvent(
+            type: .markAsDone, previousDueDate: dueDate, previousIsCompleted: isCompleted)
 
         if let frequency = recurrenceFrequency {
             updateDueDate(
                 for: frequency,
-                basedOn: recurrenceType == .fixed ? (dueDate ?? Date()) : Date()
+                basedOn: recurrenceType == .fixed ? (dueDate ?? event.date) : event.date
             )
         } else {
             isCompleted = true
@@ -54,35 +55,35 @@ class TodoItem {
     }
 
     func setDetails(modelContext: ModelContext, details: String) {
-        createEvent(type: .editDetails, previousDetails: self.details)
+        let _ = createEvent(type: .editDetails, previousDetails: self.details)
         self.details = details
     }
 
     func setTitle(modelContext: ModelContext, title: String) {
-        createEvent(type: .editTitle, previousTitle: self.title)
+        let _ = createEvent(type: .editTitle, previousTitle: self.title)
         self.title = title
     }
 
     func setDueDate(modelContext: ModelContext, dueDate: Date?) {
-        createEvent(type: .editDueDate, previousDueDate: self.dueDate)
+        let _ = createEvent(type: .editDueDate, previousDueDate: self.dueDate)
         self.dueDate = dueDate
     }
 
     func setIsCompleted(modelContext: ModelContext, isCompleted: Bool) {
-        createEvent(type: .editIsCompleted, previousIsCompleted: self.isCompleted)
+        let _ = createEvent(type: .editIsCompleted, previousIsCompleted: self.isCompleted)
         self.isCompleted = isCompleted
     }
 
     func setRecurrenceFrequency(
         modelContext: ModelContext, recurrenceFrequency: RecurrenceFrequency?
     ) {
-        createEvent(
+        let _ = createEvent(
             type: .editRecurrenceFrequency, previousRecurrenceFrequency: self.recurrenceFrequency)
         self.recurrenceFrequency = recurrenceFrequency
     }
 
     func setRecurrenceType(modelContext: ModelContext, recurrenceType: RecurrenceType?) {
-        createEvent(type: .editRecurrenceType, previousRecurrenceType: self.recurrenceType)
+        let _ = createEvent(type: .editRecurrenceType, previousRecurrenceType: self.recurrenceType)
         self.recurrenceType = recurrenceType
     }
 
@@ -133,7 +134,7 @@ class TodoItem {
         previousIsCompleted: Bool? = nil,
         previousRecurrenceFrequency: RecurrenceFrequency? = nil,
         previousRecurrenceType: RecurrenceType? = nil
-    ) {
+    ) -> TodoItemEvent {
         let event = TodoItemEvent(
             type: type,
             date: Date(),
@@ -146,5 +147,6 @@ class TodoItem {
             previousRecurrenceType: previousRecurrenceType
         )
         events.append(event)
+        return event
     }
 }
