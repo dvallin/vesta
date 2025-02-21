@@ -30,10 +30,8 @@ struct AddRecipeView: View {
     var body: some View {
         NavigationView {
             Form {
-                // Title field – common subview.
                 RecipeTitleInputView(title: $title)
 
-                // Ingredients section – using a generic ingredients subview.
                 IngredientsSection(
                     header: "Ingredients",
                     ingredients: tempIngredients,
@@ -55,7 +53,6 @@ struct AddRecipeView: View {
                 )
                 .environment(\.editMode, .constant(.active))
 
-                // Description (Details) field – common subview.
                 RecipeDetailsEditorView(details: $details)
             }
             .navigationTitle("Add Recipe")

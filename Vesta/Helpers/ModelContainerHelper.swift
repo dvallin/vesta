@@ -6,12 +6,10 @@ class ModelContainerHelper {
             TodoItem.self,
             TodoItemEvent.self,
             Recipe.self,
+            Meal.self,
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: isStoredInMemoryOnly)
         return try ModelContainer(for: schema, configurations: [modelConfiguration])
     }
 }
-
-
-            

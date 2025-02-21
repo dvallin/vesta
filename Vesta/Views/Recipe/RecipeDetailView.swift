@@ -16,21 +16,12 @@ struct RecipeDetailView: View {
     var body: some View {
         NavigationView {
             Form {
-                // Title field – notice we bind directly to the recipe property.
-                Section(header: Text("Title")) {
-                    TextField(
-                        "Enter recipe title",
-                        text: Binding(
-                            get: { recipe.title },
-                            set: { recipe.title = $0 }
-                        )
-                    )
-                    .font(.largeTitle)
-                    .bold()
-                    .disableAutocorrection(true)
-                }
+                RecipeTitleInputView(
+                    title: Binding(
+                        get: { recipe.title },
+                        set: { recipe.title = $0 }
+                    ))
 
-                // Ingredients Section using our common ingredients subview.
                 IngredientsSection(
                     header: "Ingredients",
                     ingredients: recipe.ingredients,
@@ -50,31 +41,17 @@ struct RecipeDetailView: View {
                     ingredientUnit: $ingredientUnit,
                     onAdd: addIngredient
                 )
-                .environment(\.editMode, .constant(.active))  // Enable swipe-to-delete
+                .environment(\.editMode, .constant(.active))
 
-                // Description (Details) field.
-                Section(header: Text("Description")) {
-                    TextEditor(
-                        text: Binding(
-                            get: { recipe.details },
-                            set: { recipe.details = $0 }
-                        )
-                    )
-                    .frame(minHeight: 100)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(.tertiary, lineWidth: 1)
-                    )
-                }
+                RecipeDetailsEditorView(
+                    details: Binding(
+                        get: { recipe.details },
+                        set: { recipe.details = $0 }
+                    ))
             }
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()  // Add EditButton to enable swipe-to-delete
-                }
-            }
             .alert("Validation Error", isPresented: $showingValidationAlert) {
                 Button("OK", role: .cancel) {}
             } message: {
