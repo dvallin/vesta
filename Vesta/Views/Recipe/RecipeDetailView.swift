@@ -13,50 +13,73 @@ struct RecipeDetailView: View {
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
 
+    @State private var isEditingTitle = false
+    @State private var isEditingDetails = false
+
     var body: some View {
-        NavigationView {
-            Form {
-                RecipeTitleInputView(
-                    title: Binding(
-                        get: { recipe.title },
-                        set: { recipe.title = $0 }
-                    ))
+        Form {
+            Text(recipe.title)
+                .font(.title)
+                .bold()
+                .onTapGesture {
+                    isEditingTitle = true
+                }
 
-                IngredientsSection(
-                    header: "Ingredients",
-                    ingredients: recipe.ingredients,
-                    removeHandler: removeIngredient,
-                    quantityText: { ingredient in
-                        let qtyPart =
-                            ingredient.quantity.map {
-                                NumberFormatter.localizedString(
-                                    from: NSNumber(value: $0), number: .decimal)
-                            } ?? ""
-                        let unitPart = ingredient.unit?.rawValue ?? ""
-                        return qtyPart + " " + unitPart
-                    },
-                    nameText: { $0.name },
-                    ingredientName: $ingredientName,
-                    ingredientQuantity: $ingredientQuantity,
-                    ingredientUnit: $ingredientUnit,
-                    onAdd: addIngredient
-                )
-                .environment(\.editMode, .constant(.active))
+            IngredientsSection(
+                header: "Ingredients",
+                ingredients: recipe.ingredients,
+                removeHandler: removeIngredient,
+                quantityText: { ingredient in
+                    let qtyPart =
+                        ingredient.quantity.map {
+                            NumberFormatter.localizedString(
+                                from: NSNumber(value: $0), number: .decimal)
+                        } ?? ""
+                    let unitPart = ingredient.unit?.rawValue ?? ""
+                    return qtyPart + " " + unitPart
+                },
+                nameText: { $0.name },
+                ingredientName: $ingredientName,
+                ingredientQuantity: $ingredientQuantity,
+                ingredientUnit: $ingredientUnit,
+                onAdd: addIngredient
+            )
+            .environment(\.editMode, .constant(.active))
 
-                RecipeDetailsEditorView(
-                    details: Binding(
-                        get: { recipe.details },
-                        set: { recipe.details = $0 }
-                    ))
+            Section(header: Text("Description")) {
+                Text(recipe.details)
+                    .onTapGesture {
+                        isEditingDetails = true
+                    }
             }
-            #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .alert("Validation Error", isPresented: $showingValidationAlert) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(validationMessage)
-            }
+        }
+        #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .alert("Validation Error", isPresented: $showingValidationAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(validationMessage)
+        }
+        .sheet(isPresented: $isEditingTitle) {
+            EditTitleView(
+                navigationBarTitle: "Edit Title",
+                title: Binding(
+                    get: { recipe.title },
+                    set: { newValue in
+                        recipe.title = newValue
+                    }
+                ))
+        }
+        .sheet(isPresented: $isEditingDetails) {
+            EditDetailsView(
+                navigationBarTitle: "Edit Description",
+                details: Binding(
+                    get: { recipe.details },
+                    set: { newValue in
+                        recipe.details = newValue
+                    }
+                ))
         }
     }
 

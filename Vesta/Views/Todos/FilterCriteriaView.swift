@@ -27,6 +27,7 @@ struct FilterCriteriaView: View {
                     presentationMode.wrappedValue.dismiss()
                 })
         }
+        .presentationDetents([.medium, .large])
     }
 }
 
