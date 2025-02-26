@@ -10,7 +10,7 @@ struct FilterCriteriaView: View {
             Form {
                 Section(header: Text("Filter Mode")) {
                     Picker("Filter Mode", selection: $filterMode) {
-                        ForEach(FilterMode.allCases, id: \.self) { mode in
+                        ForEach(FilterMode.allCases.filter { $0 != .overdue }, id: \.self) { mode in
                             Text(mode.rawValue).tag(mode)
                         }
                     }
@@ -35,4 +35,5 @@ enum FilterMode: String, CaseIterable {
     case all = "Show All"
     case today = "Only Today"
     case noDueDate = "No Due Date"
+    case overdue = "Overdue"
 }

@@ -24,78 +24,109 @@ struct TodoListView: View {
 
     var body: some View {
         NavigationView {
-            ZStack {
-                List {
-                    ForEach(filteredTodoItems) { item in
-                        HStack {
-                            Button(action: {
-                                markAsDone(item: item)
-                            }) {
-                                Image(
-                                    systemName: item.isCompleted
-                                        ? "checkmark.circle.fill"
-                                        : "circle"
-                                )
-                                .foregroundColor(item.isCompleted ? .secondary : .accentColor)
-                                .scaleEffect(item.isCompleted ? 1 : 1.5)
-                                .animation(.easeInOut, value: item.isCompleted)
+            VStack {
+                if hasOverdueTasks {
+                    if filterMode != .overdue {
+                        Button(action: showRescheduleOverdueTasks) {
+                            HStack {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                Text("There are overdue tasks")
                             }
-                            .disabled(item.isCompleted)
-                            .buttonStyle(BorderlessButtonStyle())
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red)
+                        }
+                        .padding(.top, 8)
+                    } else {
+                        Button(action: rescheduleOverdueTasks) {
+                            HStack {
+                                Image(systemName: "calendar.badge.plus")
+                                Text("Reschedule all overdue tasks to today")
+                            }
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.accentColor)
+                        }
+                        .padding(.top, 4)
+                    }
+                }
 
-                            Button(action: {
-                                selectedTodoItem = item
-                            }) {
-                                VStack(alignment: .leading) {
-                                    Text(item.title)
-                                        .font(.headline)
-                                    if let dueDate = item.dueDate {
-                                        HStack(alignment: .bottom) {
-                                            if item.recurrenceType != nil {
-                                                Image(
-                                                    systemName: item.recurrenceType == .fixed
-                                                        ? "repeat"
-                                                        : "repeat"
+                ZStack {
+                    List {
+                        ForEach(filteredTodoItems) { item in
+                            HStack {
+                                Button(action: {
+                                    markAsDone(item: item)
+                                }) {
+                                    Image(
+                                        systemName: item.isCompleted
+                                            ? "checkmark.circle.fill"
+                                            : "circle"
+                                    )
+                                    .foregroundColor(item.isCompleted ? .secondary : .accentColor)
+                                    .scaleEffect(item.isCompleted ? 1 : 1.5)
+                                    .animation(.easeInOut, value: item.isCompleted)
+                                }
+                                .disabled(item.isCompleted)
+                                .buttonStyle(BorderlessButtonStyle())
+
+                                Button(action: {
+                                    selectedTodoItem = item
+                                }) {
+                                    VStack(alignment: .leading) {
+                                        Text(item.title)
+                                            .font(.headline)
+                                        if let dueDate = item.dueDate {
+                                            HStack(alignment: .bottom) {
+                                                if item.recurrenceType != nil {
+                                                    Image(
+                                                        systemName: item.recurrenceType == .fixed
+                                                            ? "repeat"
+                                                            : "repeat"
+                                                    )
+                                                    .foregroundColor(.secondary)
+                                                }
+                                                Text(
+                                                    dueDate,
+                                                    format: Date.FormatStyle(
+                                                        date: .numeric, time: .shortened)
                                                 )
+                                                .font(.subheadline)
                                                 .foregroundColor(.secondary)
                                             }
-                                            Text(
-                                                dueDate,
-                                                format: Date.FormatStyle(
-                                                    date: .numeric, time: .shortened)
-                                            )
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
+                                        } else {
+                                            Text("No due date")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
                                         }
-                                    } else {
-                                        Text("No due date")
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
                                     }
                                 }
                             }
                         }
+                        .onDelete(perform: deleteTodoItems)
                     }
-                    .onDelete(perform: deleteTodoItems)
-                }
 
-                VStack {
-                    Spacer()
-                    HStack {
+                    // Add Todo Button
+                    VStack {
                         Spacer()
-                        Button(action: {
-                            isPresentingAddTodoItemView = true
-                        }) {
-                            Image(systemName: "plus")
-                                .resizable()
-                                .frame(width: 24, height: 24)
-                                .padding()
-                                .background(Color.accentColor)
-                                .foregroundColor(.white)
-                                .clipShape(Circle())
-                                .shadow(radius: 10)
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                isPresentingAddTodoItemView = true
+                            }) {
+                                Image(systemName: "plus")
+                                    .resizable()
+                                    .frame(width: 24, height: 24)
+                                    .padding()
+                                    .background(Color.accentColor)
+                                    .foregroundColor(.white)
+                                    .clipShape(Circle())
+                                    .shadow(radius: 10)
+                            }
+                            .padding()
                         }
-                        .padding()
                     }
                 }
             }
@@ -141,7 +172,8 @@ struct TodoListView: View {
     private var filteredTodoItems: [TodoItem] {
         todoItems.filter { item in
             let matchesSearchText =
-                searchText.isEmpty || item.title.localizedCaseInsensitiveContains(searchText)
+                searchText.isEmpty
+                || item.title.localizedCaseInsensitiveContains(searchText)
                 || item.details.localizedCaseInsensitiveContains(searchText)
             let matchesCompleted = showCompletedItems || !item.isCompleted
             guard matchesSearchText && matchesCompleted else { return false }
@@ -153,7 +185,23 @@ struct TodoListView: View {
                 return Calendar.current.isDateInToday(item.dueDate ?? Date.distantPast)
             case .noDueDate:
                 return item.dueDate == nil
+            case .overdue:
+                if let dueDate = item.dueDate {
+                    return dueDate < Date() && !Calendar.current.isDateInToday(dueDate)
+                }
+                return false
             }
+        }
+    }
+
+    private var hasOverdueTasks: Bool {
+        todoItems.contains { item in
+            if let dueDate = item.dueDate {
+                return dueDate < Date()
+                    && !Calendar.current.isDateInToday(dueDate)
+                    && !item.isCompleted
+            }
+            return false
         }
     }
 
@@ -162,10 +210,12 @@ struct TodoListView: View {
             item.markAsDone(modelContext: modelContext)
             let id = UUID()
             let toastMessage = ToastMessage(
-                id: id, message: "\(item.title) marked as done",
+                id: id,
+                message: "\(item.title) marked as done",
                 undoAction: {
                     undoMarkAsDone(item: item, id: id)
-                })
+                }
+            )
             toastMessages.append(toastMessage)
         }
     }
@@ -184,6 +234,27 @@ struct TodoListView: View {
             }
         }
     }
+
+    private func showRescheduleOverdueTasks() {
+        filterMode = .overdue
+        showCompletedItems = false
+    }
+
+    private func rescheduleOverdueTasks() {
+        let today = Calendar.current.startOfDay(for: Date())
+
+        for item in filteredTodoItems {
+            if let dueDate = item.dueDate,
+                dueDate < Date(),
+                !Calendar.current.isDateInToday(dueDate),
+                !item.isCompleted
+            {
+                item.setDueDate(modelContext: modelContext, dueDate: today)
+            }
+        }
+
+        filterMode = .today
+    }
 }
 
 #Preview {
@@ -193,19 +264,23 @@ struct TodoListView: View {
         let context = container.mainContext
         let todoItems = [
             TodoItem(
-                title: "Buy groceries", details: "Milk, Bread, Eggs",
+                title: "Buy groceries",
+                details: "Milk, Bread, Eggs",
                 dueDate: Date().addingTimeInterval(3600),
                 recurrenceFrequency: .daily,
                 recurrenceType: .fixed
             ),
             TodoItem(
-                title: "Call John", details: "Discuss the project details",
+                title: "Call John",
+                details: "Discuss the project details",
                 dueDate: Date().addingTimeInterval(7200),
                 recurrenceFrequency: .weekly,
                 recurrenceType: .flexible
             ),
             TodoItem(
-                title: "Workout", details: "Go for a run", dueDate: nil
+                title: "Workout",
+                details: "Go for a run",
+                dueDate: nil
             ),
         ]
 
