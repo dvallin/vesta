@@ -106,3 +106,7 @@ struct AddTodoItemView: View {
         isSaving = false
     }
 }
+
+#Preview {
+    AddTodoItemView()
+}

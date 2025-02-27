@@ -57,3 +57,42 @@ struct AddMealView: View {
         }
     }
 }
+
+#Preview {
+    do {
+        let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
+        let context = container.mainContext
+
+        // Create sample recipes with ingredients
+        let spaghettiRecipe = Recipe(
+            title: "Spaghetti Bolognese",
+            details: "Classic Italian pasta dish",
+            ingredients: [
+                Ingredient(name: "Spaghetti", quantity: 500, unit: .gram),
+                Ingredient(name: "Ground Beef", quantity: 400, unit: .gram),
+                Ingredient(name: "Tomato Sauce", quantity: 2, unit: .cup),
+            ]
+        )
+
+        let curryRecipe = Recipe(
+            title: "Chicken Curry",
+            details: "Spicy Indian curry",
+            ingredients: [
+                Ingredient(name: "Chicken", quantity: 1, unit: .kilogram),
+                Ingredient(name: "Curry Powder", quantity: 2, unit: .tablespoon),
+                Ingredient(name: "Coconut Milk", quantity: 400, unit: .milliliter),
+            ]
+        )
+
+        // Insert recipes into the context
+        for recipe in [spaghettiRecipe, curryRecipe] {
+            context.insert(recipe)
+        }
+
+        return AddMealView(selectedDate: Date())
+            .modelContainer(container)
+
+    } catch {
+        return Text("Failed to create ModelContainer")
+    }
+}

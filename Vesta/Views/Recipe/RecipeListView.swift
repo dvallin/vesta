@@ -11,43 +11,14 @@ struct RecipeListView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                List {
-                    ForEach(filteredRecipes) { recipe in
-                        NavigationLink {
-                            RecipeDetailView(recipe: recipe)
-                        } label: {
-                            VStack(alignment: .leading) {
-                                Text(recipe.title)
-                                    .font(.headline)
-                                Text(recipe.details)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(2)
-                                    .truncationMode(.tail)
-                            }
-                        }
-                    }
-                    .onDelete(perform: deleteRecipes)
-                }
+                RecipeList(
+                    recipes: recipes,
+                    searchText: searchText,
+                    deleteRecipes: deleteRecipes
+                )
 
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            isPresentingAddRecipeView = true
-                        }) {
-                            Image(systemName: "plus")
-                                .resizable()
-                                .frame(width: 24, height: 24)
-                                .padding()
-                                .background(Color.accentColor)
-                                .foregroundColor(.white)
-                                .clipShape(Circle())
-                                .shadow(radius: 10)
-                        }
-                        .padding()
-                    }
+                FloatingAddButton {
+                    isPresentingAddRecipeView = true
                 }
             }
             .navigationTitle("Recipes")
@@ -61,13 +32,6 @@ struct RecipeListView: View {
         }
         .sheet(isPresented: $isPresentingAddRecipeView) {
             AddRecipeView()
-        }
-    }
-
-    private var filteredRecipes: [Recipe] {
-        recipes.filter { recipe in
-            searchText.isEmpty || recipe.title.localizedCaseInsensitiveContains(searchText)
-                || recipe.details.localizedCaseInsensitiveContains(searchText)
         }
     }
 

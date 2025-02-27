@@ -1,6 +1,5 @@
 import SwiftUI
 
-// Temporary ingredient for the AddRecipeView
 struct TempIngredient: Identifiable {
     let id = UUID()
     let name: String
@@ -12,12 +11,10 @@ struct AddRecipeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    // Recipe properties
     @State private var title: String = ""
     @State private var details: String = ""
     @State private var tempIngredients: [TempIngredient] = []
 
-    // For entering new ingredient values
     @State private var ingredientName: String = ""
     @State private var ingredientQuantity: String = ""
     @State private var ingredientUnit: Unit? = nil

@@ -37,3 +37,10 @@ enum FilterMode: String, CaseIterable {
     case noDueDate = "No Due Date"
     case overdue = "Overdue"
 }
+
+#Preview {
+    FilterCriteriaView(
+        filterMode: .constant(.all),
+        showCompletedItems: .constant(true)
+    )
+}
