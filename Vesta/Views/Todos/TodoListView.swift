@@ -3,42 +3,36 @@ import SwiftUI
 
 struct TodoListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var todoItems: [TodoItem]
+    @Query var todoItems: [TodoItem]
 
-    @State private var filterMode: FilterMode = .all
-    @State private var showCompletedItems: Bool = false
+    @StateObject var viewModel: TodoListViewModel
+
     @State private var searchText: String = ""
 
     @State private var isPresentingAddTodoItemView = false
     @State private var isPresentingTodoEventsView = false
     @State private var isPresentingFilterCriteriaView = false
 
-    @State private var toastMessages: [ToastMessage] = []
-
     @State private var selectedTodoItem: TodoItem?
 
     init(filterMode: FilterMode = .all, showCompletedItems: Bool = false) {
-        _filterMode = State(initialValue: filterMode)
-        _showCompletedItems = State(initialValue: showCompletedItems)
+        _viewModel = StateObject(
+            wrappedValue: TodoListViewModel(
+                filterMode: filterMode, showCompletedItems: showCompletedItems))
     }
 
     var body: some View {
         NavigationView {
             VStack {
-                OverdueTasksBanner(
-                    hasOverdueTasks: hasOverdueTasks,
-                    filterMode: filterMode,
-                    showRescheduleOverdueTasks: showRescheduleOverdueTasks,
-                    rescheduleOverdueTasks: rescheduleOverdueTasks
-                )
+                OverdueTasksBanner(viewModel: viewModel)
 
                 ZStack {
                     TodoList(
                         todoItems: todoItems,
                         selectedTodoItem: $selectedTodoItem,
                         searchText: $searchText,
-                        showCompletedItems: $showCompletedItems,
-                        filterMode: $filterMode,
+                        showCompletedItems: $viewModel.showCompletedItems,
+                        filterMode: $viewModel.filterMode,
                         markAsDone: markAsDone,
                         deleteTodoItems: deleteTodoItems
                     )
@@ -81,42 +75,27 @@ struct TodoListView: View {
             TodoEventsView()
         }
         .sheet(isPresented: $isPresentingFilterCriteriaView) {
-            FilterCriteriaView(filterMode: $filterMode, showCompletedItems: $showCompletedItems)
-                .presentationDetents([.medium, .large])
+            FilterCriteriaView(
+                filterMode: $viewModel.filterMode, showCompletedItems: $viewModel.showCompletedItems
+            )
+            .presentationDetents([.medium, .large])
         }
-        .toast(messages: $toastMessages)
-    }
-
-    private var hasOverdueTasks: Bool {
-        todoItems.contains { item in
-            if let dueDate = item.dueDate {
-                return dueDate < Date()
-                    && !Calendar.current.isDateInToday(dueDate)
-                    && !item.isCompleted
-            }
-            return false
+        .toast(messages: $viewModel.toastMessages)
+        .onAppear {
+            viewModel.configureContext(modelContext)
+            viewModel.todoItems = todoItems
         }
     }
 
     private func markAsDone(item: TodoItem) {
         withAnimation {
-            item.markAsDone(modelContext: modelContext)
-            let id = UUID()
-            let toastMessage = ToastMessage(
-                id: id,
-                message: "\(item.title) marked as done",
-                undoAction: {
-                    undoMarkAsDone(item: item, id: id)
-                }
-            )
-            toastMessages.append(toastMessage)
+            viewModel.markAsDone(item, undoAction: undoMarkAsDone)
         }
     }
 
     private func undoMarkAsDone(item: TodoItem, id: UUID) {
         withAnimation {
-            item.undoLastEvent(modelContext: modelContext)
-            toastMessages.removeAll { $0.id == id }
+            viewModel.markAsDone(item, id: id)
         }
     }
 
@@ -126,27 +105,6 @@ struct TodoListView: View {
                 modelContext.delete(todoItems[index])
             }
         }
-    }
-
-    private func showRescheduleOverdueTasks() {
-        filterMode = .overdue
-        showCompletedItems = false
-    }
-
-    private func rescheduleOverdueTasks() {
-        let today = Calendar.current.startOfDay(for: Date())
-
-        for item in todoItems {
-            if let dueDate = item.dueDate,
-                dueDate < Date(),
-                !Calendar.current.isDateInToday(dueDate),
-                !item.isCompleted
-            {
-                item.setDueDate(modelContext: modelContext, dueDate: today)
-            }
-        }
-
-        filterMode = .today
     }
 }
 

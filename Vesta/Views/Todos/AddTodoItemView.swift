@@ -78,24 +78,8 @@ struct AddTodoItemView: View {
     private func saveTodoItem() {
         isSaving = true
         do {
-            let newItem = TodoItem(title: title, details: details)
+            let newItem = TodoItem(title: title, details: details, dueDate: dueDate, recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType)
             modelContext.insert(newItem)
-
-            if let dueDate {
-                newItem.setDueDate(modelContext: modelContext, dueDate: dueDate)
-            }
-            if let recurrenceFrequency {
-                newItem.setRecurrenceFrequency(
-                    modelContext: modelContext,
-                    recurrenceFrequency: recurrenceFrequency
-                )
-            }
-            if let recurrenceType {
-                newItem.setRecurrenceType(
-                    modelContext: modelContext,
-                    recurrenceType: recurrenceType
-                )
-            }
 
             try modelContext.save()
             dismiss()
