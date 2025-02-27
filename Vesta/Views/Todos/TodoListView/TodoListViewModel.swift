@@ -5,9 +5,12 @@ class TodoListViewModel: ObservableObject {
     private var modelContext: ModelContext?
 
     @Published var toastMessages: [ToastMessage] = []
+
+    @Published var searchText: String = ""
     @Published var filterMode: FilterMode = .all
     @Published var showCompletedItems: Bool = false
-    @Published var todoItems: [TodoItem] = []
+
+    @Published var selectedTodoItem: TodoItem? = nil
 
     init(filterMode: FilterMode = .all, showCompletedItems: Bool = false) {
         self.filterMode = filterMode
@@ -16,6 +19,14 @@ class TodoListViewModel: ObservableObject {
 
     func configureContext(_ context: ModelContext) {
         self.modelContext = context
+    }
+
+    func saveContext() {
+        do {
+            try modelContext!.save()
+        } catch {
+            // handle error
+        }
     }
 
     func markAsDone(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
@@ -40,15 +51,12 @@ class TodoListViewModel: ObservableObject {
         toastMessages.removeAll { $0.id == id }
     }
 
-    func saveContext() {
-        do {
-            try modelContext!.save()
-        } catch {
-            // handle error
-        }
+    func deleteItem(_ item: TodoItem) {
+        modelContext!.delete(item)
+        saveContext()
     }
 
-    var hasOverdueTasks: Bool {
+    func hasOverdueTasks(todoItems: [TodoItem]) -> Bool {
         todoItems.contains { item in
             if let dueDate = item.dueDate {
                 return dueDate < Date()
@@ -64,7 +72,7 @@ class TodoListViewModel: ObservableObject {
         showCompletedItems = false
     }
 
-    func rescheduleOverdueTasks() {
+    func rescheduleOverdueTasks(todoItems: [TodoItem]) {
         let today = Calendar.current.startOfDay(for: Date())
 
         for item in todoItems {
@@ -76,7 +84,33 @@ class TodoListViewModel: ObservableObject {
                 item.setDueDate(modelContext: modelContext!, dueDate: today)
             }
         }
+        saveContext()
 
         filterMode = .today
+    }
+
+    func filterItems(todoItems: [TodoItem]) -> [TodoItem] {
+        return todoItems.filter { item in
+            let matchesSearchText =
+                searchText.isEmpty
+                || item.title.localizedCaseInsensitiveContains(searchText)
+                || item.details.localizedCaseInsensitiveContains(searchText)
+            let matchesCompleted = showCompletedItems || !item.isCompleted
+            guard matchesSearchText && matchesCompleted else { return false }
+
+            switch filterMode {
+            case .all:
+                return true
+            case .today:
+                return Calendar.current.isDateInToday(item.dueDate ?? Date.distantPast)
+            case .noDueDate:
+                return item.dueDate == nil
+            case .overdue:
+                if let dueDate = item.dueDate {
+                    return dueDate < Date() && !Calendar.current.isDateInToday(dueDate)
+                }
+                return false
+            }
+        }
     }
 }

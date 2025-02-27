@@ -7,13 +7,9 @@ struct TodoListView: View {
 
     @StateObject var viewModel: TodoListViewModel
 
-    @State private var searchText: String = ""
-
     @State private var isPresentingAddTodoItemView = false
     @State private var isPresentingTodoEventsView = false
     @State private var isPresentingFilterCriteriaView = false
-
-    @State private var selectedTodoItem: TodoItem?
 
     init(filterMode: FilterMode = .all, showCompletedItems: Bool = false) {
         _viewModel = StateObject(
@@ -24,17 +20,12 @@ struct TodoListView: View {
     var body: some View {
         NavigationView {
             VStack {
-                OverdueTasksBanner(viewModel: viewModel)
+                OverdueTasksBanner(viewModel: viewModel, todoItems: todoItems)
 
                 ZStack {
                     TodoList(
-                        todoItems: todoItems,
-                        selectedTodoItem: $selectedTodoItem,
-                        searchText: $searchText,
-                        showCompletedItems: $viewModel.showCompletedItems,
-                        filterMode: $viewModel.filterMode,
-                        markAsDone: markAsDone,
-                        deleteTodoItems: deleteTodoItems
+                        viewModel: viewModel,
+                        todoItems: todoItems
                     )
 
                     FloatingAddButton {
@@ -59,13 +50,13 @@ struct TodoListView: View {
                     }
                 }
                 ToolbarItem(placement: .principal) {
-                    TextField("Search", text: $searchText)
+                    TextField("Search", text: $viewModel.searchText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .frame(maxWidth: 200)
                 }
             }
         }
-        .sheet(item: $selectedTodoItem) { item in
+        .sheet(item: $viewModel.selectedTodoItem) { item in
             TodoItemDetailView(item: item)
         }
         .sheet(isPresented: $isPresentingAddTodoItemView) {
@@ -75,35 +66,12 @@ struct TodoListView: View {
             TodoEventsView()
         }
         .sheet(isPresented: $isPresentingFilterCriteriaView) {
-            FilterCriteriaView(
-                filterMode: $viewModel.filterMode, showCompletedItems: $viewModel.showCompletedItems
-            )
-            .presentationDetents([.medium, .large])
+            FilterCriteriaView(viewModel: viewModel)
+                .presentationDetents([.medium, .large])
         }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
             viewModel.configureContext(modelContext)
-            viewModel.todoItems = todoItems
-        }
-    }
-
-    private func markAsDone(item: TodoItem) {
-        withAnimation {
-            viewModel.markAsDone(item, undoAction: undoMarkAsDone)
-        }
-    }
-
-    private func undoMarkAsDone(item: TodoItem, id: UUID) {
-        withAnimation {
-            viewModel.markAsDone(item, id: id)
-        }
-    }
-
-    private func deleteTodoItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(todoItems[index])
-            }
         }
     }
 }

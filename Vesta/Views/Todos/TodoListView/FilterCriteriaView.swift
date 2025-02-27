@@ -1,15 +1,15 @@
 import SwiftUI
 
 struct FilterCriteriaView: View {
-    @Binding var filterMode: FilterMode
-    @Binding var showCompletedItems: Bool
+    @ObservedObject var viewModel: TodoListViewModel
+
     @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Filter Mode")) {
-                    Picker("Filter Mode", selection: $filterMode) {
+                    Picker("Filter Mode", selection: $viewModel.filterMode) {
                         ForEach(FilterMode.allCases.filter { $0 != .overdue }, id: \.self) { mode in
                             Text(mode.rawValue).tag(mode)
                         }
@@ -18,7 +18,7 @@ struct FilterCriteriaView: View {
                 }
 
                 Section {
-                    Toggle("Show Completed Items", isOn: $showCompletedItems)
+                    Toggle("Show Completed Items", isOn: $viewModel.showCompletedItems)
                 }
             }
             .navigationTitle("Filter Criteria")
@@ -39,8 +39,5 @@ enum FilterMode: String, CaseIterable {
 }
 
 #Preview {
-    FilterCriteriaView(
-        filterMode: .constant(.all),
-        showCompletedItems: .constant(true)
-    )
+    FilterCriteriaView(viewModel: TodoListViewModel())
 }

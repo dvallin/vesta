@@ -3,8 +3,10 @@ import SwiftUI
 struct OverdueTasksBanner: View {
     @ObservedObject var viewModel: TodoListViewModel
 
+    let todoItems: [TodoItem]
+
     var body: some View {
-        if viewModel.hasOverdueTasks {
+        if viewModel.hasOverdueTasks(todoItems: todoItems) {
             if viewModel.filterMode != .overdue {
                 Button(action: viewModel.showRescheduleOverdueTasks) {
                     HStack {
@@ -18,7 +20,9 @@ struct OverdueTasksBanner: View {
                 }
                 .padding(.top, 8)
             } else {
-                Button(action: viewModel.rescheduleOverdueTasks) {
+                Button(action: {
+                    viewModel.rescheduleOverdueTasks(todoItems: todoItems)
+                }) {
                     HStack {
                         Image(systemName: "calendar.badge.plus")
                         Text("Reschedule all overdue tasks to today")

@@ -1,22 +1,16 @@
 import SwiftUI
 
 struct TodoList: View {
-    var todoItems: [TodoItem]
-    @Binding var selectedTodoItem: TodoItem?
-    @Binding var searchText: String
-    @Binding var showCompletedItems: Bool
-    @Binding var filterMode: FilterMode
+    @ObservedObject var viewModel: TodoListViewModel
 
-    var markAsDone: (TodoItem) -> Void
-    var deleteTodoItems: (IndexSet) -> Void
+    var todoItems: [TodoItem]
 
     var body: some View {
         List {
             ForEach(filteredTodoItems) { item in
                 TodoListItem(
-                    item: item,
-                    markAsDone: markAsDone,
-                    selectItem: { selectedTodoItem = item }
+                    viewModel: viewModel,
+                    item: item
                 )
             }
             .onDelete(perform: deleteTodoItems)
@@ -24,26 +18,13 @@ struct TodoList: View {
     }
 
     private var filteredTodoItems: [TodoItem] {
-        todoItems.filter { item in
-            let matchesSearchText =
-                searchText.isEmpty
-                || item.title.localizedCaseInsensitiveContains(searchText)
-                || item.details.localizedCaseInsensitiveContains(searchText)
-            let matchesCompleted = showCompletedItems || !item.isCompleted
-            guard matchesSearchText && matchesCompleted else { return false }
+        viewModel.filterItems(todoItems: todoItems)
+    }
 
-            switch filterMode {
-            case .all:
-                return true
-            case .today:
-                return Calendar.current.isDateInToday(item.dueDate ?? Date.distantPast)
-            case .noDueDate:
-                return item.dueDate == nil
-            case .overdue:
-                if let dueDate = item.dueDate {
-                    return dueDate < Date() && !Calendar.current.isDateInToday(dueDate)
-                }
-                return false
+    private func deleteTodoItems(offsets: IndexSet) {
+        withAnimation {
+            for index in offsets {
+                viewModel.deleteItem(todoItems[index])
             }
         }
     }
@@ -81,13 +62,8 @@ struct TodoList: View {
 
     return NavigationView {
         TodoList(
-            todoItems: todoItems,
-            selectedTodoItem: .constant(nil),
-            searchText: .constant(""),
-            showCompletedItems: .constant(true),
-            filterMode: .constant(.all),
-            markAsDone: { _ in },
-            deleteTodoItems: { _ in }
+            viewModel: TodoListViewModel(),
+            todoItems: todoItems
         )
     }
 }
@@ -108,13 +84,8 @@ struct TodoList: View {
 
     return NavigationView {
         TodoList(
-            todoItems: todoItems,
-            selectedTodoItem: .constant(nil),
-            searchText: .constant("Buy"),
-            showCompletedItems: .constant(true),
-            filterMode: .constant(.all),
-            markAsDone: { _ in },
-            deleteTodoItems: { _ in }
+            viewModel: TodoListViewModel(),
+            todoItems: todoItems
         )
     }
 }
@@ -140,13 +111,8 @@ struct TodoList: View {
 
     return NavigationView {
         TodoList(
-            todoItems: todoItems,
-            selectedTodoItem: .constant(nil),
-            searchText: .constant(""),
-            showCompletedItems: .constant(true),
-            filterMode: .constant(.today),
-            markAsDone: { _ in },
-            deleteTodoItems: { _ in }
+            viewModel: TodoListViewModel(filterMode: .today),
+            todoItems: todoItems
         )
     }
 }
