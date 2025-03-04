@@ -12,6 +12,10 @@ class TodoListViewModel: ObservableObject {
 
     @Published var selectedTodoItem: TodoItem? = nil
 
+    @Published var isPresentingAddTodoItemView = false
+    @Published var isPresentingTodoEventsView = false
+    @Published var isPresentingFilterCriteriaView = false
+
     init(filterMode: FilterMode = .all, showCompletedItems: Bool = false) {
         self.filterMode = filterMode
         self.showCompletedItems = showCompletedItems
