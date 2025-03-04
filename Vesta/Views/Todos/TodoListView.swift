@@ -7,10 +7,6 @@ struct TodoListView: View {
 
     @StateObject var viewModel: TodoListViewModel
 
-    @State private var isPresentingAddTodoItemView = false
-    @State private var isPresentingTodoEventsView = false
-    @State private var isPresentingFilterCriteriaView = false
-
     init(filterMode: FilterMode = .all, showCompletedItems: Bool = false) {
         _viewModel = StateObject(
             wrappedValue: TodoListViewModel(
@@ -29,7 +25,7 @@ struct TodoListView: View {
                     )
 
                     FloatingAddButton {
-                        isPresentingAddTodoItemView = true
+                        viewModel.isPresentingAddTodoItemView = true
                     }
                 }
             }
@@ -37,14 +33,14 @@ struct TodoListView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
-                        isPresentingFilterCriteriaView = true
+                        viewModel.isPresentingFilterCriteriaView = true
                     }) {
                         Image(systemName: "line.horizontal.3.decrease.circle")
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        isPresentingTodoEventsView = true
+                        viewModel.isPresentingTodoEventsView = true
                     }) {
                         Image(systemName: "clock.arrow.circlepath")
                     }
@@ -59,13 +55,13 @@ struct TodoListView: View {
         .sheet(item: $viewModel.selectedTodoItem) { item in
             TodoItemDetailView(item: item)
         }
-        .sheet(isPresented: $isPresentingAddTodoItemView) {
+        .sheet(isPresented: $viewModel.isPresentingAddTodoItemView) {
             AddTodoItemView()
         }
-        .sheet(isPresented: $isPresentingTodoEventsView) {
+        .sheet(isPresented: $viewModel.isPresentingTodoEventsView) {
             TodoEventsView()
         }
-        .sheet(isPresented: $isPresentingFilterCriteriaView) {
+        .sheet(isPresented: $viewModel.isPresentingFilterCriteriaView) {
             FilterCriteriaView(viewModel: viewModel)
                 .presentationDetents([.medium, .large])
         }

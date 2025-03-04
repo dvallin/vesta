@@ -4,48 +4,37 @@ struct AddTodoItemView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @State private var title: String = ""
-    @State private var details: String = ""
-    @State private var dueDate: Date? = nil
-    @State private var recurrenceFrequency: RecurrenceFrequency? = nil
-    @State private var recurrenceType: RecurrenceType? = nil
-
-    @State private var showingValidationAlert = false
-    @State private var validationMessage = ""
-    @State private var showingDiscardAlert = false
-    @State private var isSaving = false
+    @StateObject var viewModel: AddTodoItemViewModel = AddTodoItemViewModel()
 
     @FocusState private var focusedField: String?
 
     var body: some View {
         NavigationView {
             Form {
-                TitleDetailsSection(title: $title, details: $details, focusedField: $focusedField)
+                TitleDetailsSection(
+                    title: $viewModel.title, details: $viewModel.details,
+                    focusedField: $focusedField)
 
                 DueDateRecurrenceSection(
-                    dueDate: $dueDate,
-                    recurrenceFrequency: $recurrenceFrequency,
-                    recurrenceType: $recurrenceType
+                    dueDate: $viewModel.dueDate,
+                    recurrenceFrequency: $viewModel.recurrenceFrequency,
+                    recurrenceType: $viewModel.recurrenceType
                 )
             }
-            .navigationTitle("Add Todo Item")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
-                        if !title.isEmpty || !details.isEmpty {
-                            showingDiscardAlert = true
-                        } else {
-                            dismiss()
+                        Task {
+                            viewModel.cancel()
                         }
                     }
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        validateAndSave()
+                        viewModel.save()
                     }
-                    .disabled(isSaving)
+                    .disabled(viewModel.isSaving)
                 }
 
                 ToolbarItem(placement: .keyboard) {
@@ -54,42 +43,25 @@ struct AddTodoItemView: View {
                     }
                 }
             }
-            .alert("Validation Error", isPresented: $showingValidationAlert) {
+            .alert("Validation Error", isPresented: $viewModel.showingValidationAlert) {
                 Button("OK", role: .cancel) {}
             } message: {
-                Text(validationMessage)
+                Text(viewModel.validationMessage)
             }
-            .alert("Discard Changes?", isPresented: $showingDiscardAlert) {
-                Button("Discard", role: .destructive) { dismiss() }
+            .alert("Discard Changes?", isPresented: $viewModel.showingDiscardAlert) {
+                Button("Discard", role: .destructive) {
+                    Task {
+                        viewModel.discard()
+                    }
+                }
                 Button("Continue Editing", role: .cancel) {}
             }
         }
-    }
-
-    private func validateAndSave() {
-        guard !title.isEmpty else {
-            validationMessage = "Please enter a todo title"
-            showingValidationAlert = true
-            return
+        .navigationTitle("Add Todo Item")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            viewModel.configureEnvironment(modelContext, dismiss)
         }
-        saveTodoItem()
-    }
-
-    private func saveTodoItem() {
-        isSaving = true
-        do {
-            let newItem = TodoItem(
-                title: title, details: details, dueDate: dueDate,
-                recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType)
-            modelContext.insert(newItem)
-
-            try modelContext.save()
-            dismiss()
-        } catch {
-            validationMessage = "Error saving todo item: \(error.localizedDescription)"
-            showingValidationAlert = true
-        }
-        isSaving = false
     }
 }
 
