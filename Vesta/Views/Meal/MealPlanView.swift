@@ -5,18 +5,16 @@ struct MealPlanView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var meals: [Meal]
 
-    @State private var selectedMeal: Meal?
-    @State private var isPresentingAddMealView = false
-    @State private var isPresentingRecipeListView = false
+    @StateObject var viewModel = MealPlanViewModel()
 
     var body: some View {
         NavigationView {
             ZStack {
                 List {
-                    if let nextMeal = nextUpcomingMeal {
+                    if let nextMeal = viewModel.nextUpcomingMeal {
                         Section(header: Text("Next Meal")) {
                             Button(action: {
-                                selectedMeal = nextMeal
+                                viewModel.selectedMeal = nextMeal
                             }) {
                                 VStack(alignment: .leading) {
                                     Text(nextMeal.recipe.title)
@@ -37,34 +35,38 @@ struct MealPlanView: View {
                         }
                     }
 
-                    ForEach(weeks, id: \.self) { week in
+                    ForEach(viewModel.weeks, id: \.self) { week in
                         weekSection(for: week)
                     }
                 }
 
                 FloatingAddButton {
-                    isPresentingAddMealView = true
+                    viewModel.isPresentingAddMealView = true
                 }
             }
         }
-        .sheet(item: $selectedMeal) { meal in
+        .sheet(item: $viewModel.selectedMeal) { meal in
             MealDetailView(meal: meal)
         }
-        .sheet(isPresented: $isPresentingAddMealView) {
+        .sheet(isPresented: $viewModel.isPresentingAddMealView) {
             AddMealView(selectedDate: Date())
         }
-        .sheet(isPresented: $isPresentingRecipeListView) {
+        .sheet(isPresented: $viewModel.isPresentingRecipeListView) {
             RecipeListView()
         }
         .navigationTitle("Meal Plan")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
-                    isPresentingRecipeListView = true
+                    viewModel.isPresentingRecipeListView = true
                 }) {
                     Label("Recipes", systemImage: "book")
                 }
             }
+        }
+        .onAppear {
+            viewModel.configureContext(modelContext)
+            viewModel.meals = meals
         }
     }
 }
@@ -75,7 +77,7 @@ extension MealPlanView {
     @ViewBuilder
     private func weekSection(for week: [Date]) -> some View {
         if let firstDate = week.first {
-            Section(header: Text("Week \(weekNumber(for: firstDate))")) {
+            Section(header: Text("Week \(viewModel.weekNumber(for: firstDate))")) {
                 ForEach(week, id: \.self) { date in
                     daySection(for: date)
                 }
@@ -86,9 +88,9 @@ extension MealPlanView {
     @ViewBuilder
     private func daySection(for date: Date) -> some View {
         Section(header: Text(date, style: .date)) {
-            ForEach(mealsForDate(date)) { meal in
+            ForEach(viewModel.mealsForDate(date)) { meal in
                 Button(action: {
-                    selectedMeal = meal
+                    viewModel.selectedMeal = meal
                 }) {
                     VStack(alignment: .leading) {
                         Text(meal.recipe.title)
@@ -100,69 +102,9 @@ extension MealPlanView {
                 }
             }
             .onDelete { indexSet in
-                deleteMeal(at: indexSet, for: date)
+                viewModel.deleteMeal(at: indexSet, for: date)
             }
         }
-    }
-}
-
-// MARK: - Supporting Methods and Computed Properties
-
-extension MealPlanView {
-    private var weeks: [[Date]] {
-        let calendar = Calendar.current
-        let today = Date()
-        let startOfWeek = calendar.date(
-            from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
-        )!
-        let dates = (0..<14).compactMap {
-            calendar.date(byAdding: .day, value: $0, to: startOfWeek)
-        }
-        return stride(from: 0, to: dates.count, by: 7).map {
-            Array(dates[$0..<min($0 + 7, dates.count)])
-        }
-    }
-
-    private func weekNumber(for date: Date) -> Int {
-        Calendar.current.component(.weekOfYear, from: date)
-    }
-
-    private func mealsForDate(_ date: Date) -> [Meal] {
-        let calendar = Calendar.current
-        return meals.filter { meal in
-            guard let dueDate = meal.todoItem.dueDate else { return false }
-            return calendar.isDate(dueDate, inSameDayAs: date)
-        }
-    }
-
-    private var nextUpcomingMeal: Meal? {
-        let now = Date()
-        return
-            meals
-            .filter { meal in
-                guard let dueDate = meal.todoItem.dueDate else { return false }
-                return dueDate > now
-            }
-            .min { a, b in
-                guard let dateA = a.todoItem.dueDate,
-                    let dateB = b.todoItem.dueDate
-                else { return false }
-                return dateA < dateB
-            }
-    }
-
-    private func deleteMeal(at offsets: IndexSet, for date: Date) {
-        withAnimation {
-            let mealsForDate = mealsForDate(date)
-            offsets.map { mealsForDate[$0] }.forEach { meal in
-                modelContext.delete(meal)
-            }
-        }
-    }
-
-    private func isDateInPast(_ date: Date) -> Bool {
-        let calendar = Calendar.current
-        return calendar.compare(date, to: Date(), toGranularity: .day) == .orderedAscending
     }
 }
 
