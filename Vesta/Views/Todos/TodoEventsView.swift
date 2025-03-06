@@ -41,6 +41,7 @@ struct TodoEventsView: View {
                 }
             }
             .navigationTitle("Todo Events")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 

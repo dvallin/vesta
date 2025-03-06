@@ -12,7 +12,7 @@ struct MealPlanView: View {
             ZStack {
                 List {
                     if let nextMeal = viewModel.nextUpcomingMeal {
-                        Section(header: Text("Next Meal")) {
+                        Section {
                             Button(action: {
                                 viewModel.selectedMeal = nextMeal
                             }) {
@@ -31,12 +31,77 @@ struct MealPlanView: View {
                                     .foregroundColor(.secondary)
                                 }
                             }
-                            .listRowBackground(Color.accentColor.opacity(0.2))
+                        } header: {
+                            Text("Next Meal")
+                                .font(.title)
+                                .foregroundColor(.primary)
                         }
                     }
 
-                    ForEach(viewModel.weeks, id: \.self) { week in
-                        weekSection(for: week)
+                    ForEach(viewModel.dayGroups) { group in
+                        Section {
+                            ForEach(group.meals) { meal in
+                                HStack {
+                                    Button(action: {
+                                        viewModel.markAsDone(meal.todoItem)
+                                    }) {
+                                        Image(
+                                            systemName: meal.todoItem.isCompleted
+                                                ? "checkmark.circle.fill"
+                                                : "circle"
+                                        )
+                                        .foregroundColor(
+                                            meal.todoItem.isCompleted ? .secondary : .accentColor
+                                        )
+                                        .scaleEffect(meal.todoItem.isCompleted ? 1 : 1.5)
+                                        .animation(.easeInOut, value: meal.todoItem.isCompleted)
+                                    }
+                                    .disabled(meal.todoItem.isCompleted)
+                                    .buttonStyle(BorderlessButtonStyle())
+
+                                    Button(action: {
+                                        viewModel.selectedMeal = meal
+                                    }) {
+                                        VStack(alignment: .leading) {
+                                            Text(meal.recipe.title)
+                                                .font(.headline)
+                                            Text(
+                                                "Scaling Factor: \(meal.scalingFactor, specifier: "%.2f")"
+                                            )
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                        }
+                                    }
+                                }
+                            }
+                            .onDelete { indexSet in
+                                viewModel.deleteMeal(at: indexSet, for: group.date)
+                            }
+                        } header: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                if let weekTitle = group.weekTitle {
+                                    Text(weekTitle)
+                                        .font(.title2)
+                                        .padding(.bottom, 2)
+                                        .foregroundColor(.primary)
+                                }
+                                Text(group.date, style: .date)
+                                    .font(.headline)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                }
+                .listStyle(InsetGroupedListStyle())
+                .navigationTitle("Meal Plan")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            viewModel.isPresentingRecipeListView = true
+                        }) {
+                            Label("Recipes", systemImage: "book")
+                        }
                     }
                 }
 
@@ -44,65 +109,18 @@ struct MealPlanView: View {
                     viewModel.isPresentingAddMealView = true
                 }
             }
-        }
-        .sheet(item: $viewModel.selectedMeal) { meal in
-            MealDetailView(meal: meal)
-        }
-        .sheet(isPresented: $viewModel.isPresentingAddMealView) {
-            AddMealView(selectedDate: Date())
-        }
-        .sheet(isPresented: $viewModel.isPresentingRecipeListView) {
-            RecipeListView()
-        }
-        .navigationTitle("Meal Plan")
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    viewModel.isPresentingRecipeListView = true
-                }) {
-                    Label("Recipes", systemImage: "book")
-                }
+            .sheet(item: $viewModel.selectedMeal) { meal in
+                MealDetailView(meal: meal)
             }
-        }
-        .onAppear {
-            viewModel.configureContext(modelContext)
-            viewModel.meals = meals
-        }
-    }
-}
-
-// MARK: - Smaller “Sub-Views” or Helper Functions
-
-extension MealPlanView {
-    @ViewBuilder
-    private func weekSection(for week: [Date]) -> some View {
-        if let firstDate = week.first {
-            Section(header: Text("Week \(viewModel.weekNumber(for: firstDate))")) {
-                ForEach(week, id: \.self) { date in
-                    daySection(for: date)
-                }
+            .sheet(isPresented: $viewModel.isPresentingAddMealView) {
+                AddMealView(selectedDate: Date())
             }
-        }
-    }
-
-    @ViewBuilder
-    private func daySection(for date: Date) -> some View {
-        Section(header: Text(date, style: .date)) {
-            ForEach(viewModel.mealsForDate(date)) { meal in
-                Button(action: {
-                    viewModel.selectedMeal = meal
-                }) {
-                    VStack(alignment: .leading) {
-                        Text(meal.recipe.title)
-                            .font(.headline)
-                        Text("Scaling Factor: \(meal.scalingFactor, specifier: "%.2f")")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
+            .sheet(isPresented: $viewModel.isPresentingRecipeListView) {
+                RecipeListView()
             }
-            .onDelete { indexSet in
-                viewModel.deleteMeal(at: indexSet, for: date)
+            .onAppear {
+                viewModel.configureContext(modelContext)
+                viewModel.meals = meals
             }
         }
     }
@@ -113,7 +131,6 @@ extension MealPlanView {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
-        // Create sample recipes
         let recipes = [
             Recipe(
                 title: "Spaghetti Bolognese",
@@ -162,19 +179,16 @@ extension MealPlanView {
             ),
         ]
 
-        // Insert todo items
         for todoItem in todoItems {
             context.insert(todoItem)
         }
 
-        // Create meals linking recipes and todo items
         let meals = [
             Meal(scalingFactor: 1.0, todoItem: todoItems[0], recipe: recipes[0]),
             Meal(scalingFactor: 2.0, todoItem: todoItems[1], recipe: recipes[1]),
             Meal(scalingFactor: 1.5, todoItem: todoItems[2], recipe: recipes[0]),
         ]
 
-        // Insert meals
         for meal in meals {
             context.insert(meal)
         }

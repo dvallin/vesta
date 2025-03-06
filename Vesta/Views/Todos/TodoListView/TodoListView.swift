@@ -29,7 +29,6 @@ struct TodoListView: View {
                     }
                 }
             }
-            .navigationTitle("Todo List")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
