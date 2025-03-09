@@ -3,32 +3,51 @@ import SwiftUI
 
 struct MealDetailView: View {
     @Environment(\.modelContext) private var modelContext
-    @Bindable var meal: Meal
+    @StateObject private var viewModel: MealDetailViewModel
+
+    init(meal: Meal) {
+        _viewModel = StateObject(wrappedValue: MealDetailViewModel(meal: meal))
+    }
 
     var body: some View {
         VStack {
-            RecipeDetailView(recipe: meal.recipe)
+            ReadOnlyRecipeDetailView(
+                recipe: viewModel.meal.recipe, scalingFactor: viewModel.meal.scalingFactor
+            )
             HStack {
                 Text("Scaling Factor:")
                 TextField(
-                    "Scaling Factor", value: $meal.scalingFactor, formatter: NumberFormatter()
+                    "Scaling Factor", value: $viewModel.meal.scalingFactor,
+                    formatter: NumberFormatter()
                 )
                 .keyboardType(.decimalPad)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
             }
             .padding()
+
+            HStack {
+                Text("Meal Type:")
+                Picker("Meal Type", selection: $viewModel.meal.mealType) {
+                    Text("Breakfast").tag(MealType.breakfast)
+                    Text("Lunch").tag(MealType.lunch)
+                    Text("Dinner").tag(MealType.dinner)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .onChange(of: viewModel.meal.mealType) { newMealType in
+                    viewModel.updateTodoItemDueDate(for: newMealType)
+                }
+            }
         }
         .navigationTitle("Meal Details")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Save") {
-                    do {
-                        try modelContext.save()
-                    } catch {
-                        // show validation issue
-                    }
+                    viewModel.save()
                 }
             }
+        }
+        .onAppear {
+            viewModel.configureEnvironment(modelContext)
         }
     }
 }

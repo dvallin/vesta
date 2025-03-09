@@ -14,15 +14,14 @@ class MealPlanViewModel: ObservableObject {
     @Published var selectedMeal: Meal?
     @Published var isPresentingAddMealView = false
     @Published var isPresentingRecipeListView = false
-    @Published var meals: [Meal] = []
 
     func configureContext(_ context: ModelContext) {
         self.modelContext = context
     }
 
-    var dayGroups: [DayGroup] {
+    func dayGroups(for meals: [Meal]) -> [DayGroup] {
         var groups: [DayGroup] = []
-        for week in weeksWithMeals {
+        for week in weeksWithMeals(for: meals) {
             let sortedDays = week.keys.sorted()
             for (index, day) in sortedDays.enumerated() {
                 let weekHeader: String? =
@@ -35,7 +34,7 @@ class MealPlanViewModel: ObservableObject {
         return groups.sorted(by: { $0.date < $1.date })
     }
 
-    var weeksWithMeals: [[Date: [Meal]]] {
+    func weeksWithMeals(for meals: [Meal]) -> [[Date: [Meal]]] {
         let calendar = Calendar.current
         let today = Date()
         let startOfWeek = calendar.date(
@@ -63,7 +62,7 @@ class MealPlanViewModel: ObservableObject {
         Calendar.current.component(.weekOfYear, from: date)
     }
 
-    func mealsForDate(_ date: Date) -> [Meal] {
+    func mealsForDate(meals: [Meal], in date: Date) -> [Meal] {
         let calendar = Calendar.current
         return meals.filter { meal in
             guard let dueDate = meal.todoItem.dueDate else { return false }
@@ -71,7 +70,7 @@ class MealPlanViewModel: ObservableObject {
         }
     }
 
-    var nextUpcomingMeal: Meal? {
+    func nextUpcomingMeal(meals: [Meal]) -> Meal? {
         let now = Date()
         return meals.filter { meal in
             guard let dueDate = meal.todoItem.dueDate else { return false }
@@ -84,9 +83,9 @@ class MealPlanViewModel: ObservableObject {
         }
     }
 
-    func deleteMeal(at offsets: IndexSet, for date: Date) {
+    func deleteMeal(meals: [Meal], at offsets: IndexSet, for date: Date) {
         withAnimation {
-            let mealsForDate = mealsForDate(date)
+            let mealsForDate = mealsForDate(meals: meals, in: date)
             offsets.map { mealsForDate[$0] }.forEach { meal in
                 modelContext?.delete(meal)
             }

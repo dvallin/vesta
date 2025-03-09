@@ -25,6 +25,13 @@ struct AddMealView: View {
                     "Scaling Factor", value: $viewModel.scalingFactor, formatter: NumberFormatter()
                 )
                 .keyboardType(.decimalPad)
+
+                Picker("Meal Type", selection: $viewModel.selectedMealType) {
+                    Text("Breakfast").tag(MealType.breakfast)
+                    Text("Lunch").tag(MealType.lunch)
+                    Text("Dinner").tag(MealType.dinner)
+                }
+                .pickerStyle(SegmentedPickerStyle())
             }
             .navigationTitle("Add Meal")
             .toolbar {

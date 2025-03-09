@@ -11,85 +11,25 @@ struct MealPlanView: View {
         NavigationView {
             ZStack {
                 List {
-                    if let nextMeal = viewModel.nextUpcomingMeal {
-                        Section {
-                            Button(action: {
-                                viewModel.selectedMeal = nextMeal
-                            }) {
-                                VStack(alignment: .leading) {
-                                    Text(nextMeal.recipe.title)
-                                        .font(.headline)
-                                    if let dueDate = nextMeal.todoItem.dueDate {
-                                        Text(dueDate, style: .date)
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    Text(
-                                        "Scaling Factor: \(nextMeal.scalingFactor, specifier: "%.2f")"
-                                    )
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                }
-                            }
-                        } header: {
-                            Text("Next Meal")
-                                .font(.title)
-                                .foregroundColor(.primary)
+                    if let nextMeal = viewModel.nextUpcomingMeal(meals: meals) {
+                        NextMealView(meal: nextMeal) {
+                            viewModel.selectedMeal = nextMeal
                         }
                     }
 
-                    ForEach(viewModel.dayGroups) { group in
-                        Section {
-                            ForEach(group.meals) { meal in
-                                HStack {
-                                    Button(action: {
-                                        viewModel.markAsDone(meal.todoItem)
-                                    }) {
-                                        Image(
-                                            systemName: meal.todoItem.isCompleted
-                                                ? "checkmark.circle.fill"
-                                                : "circle"
-                                        )
-                                        .foregroundColor(
-                                            meal.todoItem.isCompleted ? .secondary : .accentColor
-                                        )
-                                        .scaleEffect(meal.todoItem.isCompleted ? 1 : 1.5)
-                                        .animation(.easeInOut, value: meal.todoItem.isCompleted)
-                                    }
-                                    .disabled(meal.todoItem.isCompleted)
-                                    .buttonStyle(BorderlessButtonStyle())
-
-                                    Button(action: {
-                                        viewModel.selectedMeal = meal
-                                    }) {
-                                        VStack(alignment: .leading) {
-                                            Text(meal.recipe.title)
-                                                .font(.headline)
-                                            Text(
-                                                "Scaling Factor: \(meal.scalingFactor, specifier: "%.2f")"
-                                            )
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                        }
-                                    }
-                                }
+                    ForEach(viewModel.dayGroups(for: meals)) { group in
+                        DayGroupSectionView(
+                            group: group,
+                            onMealSelect: { meal in
+                                viewModel.selectedMeal = meal
+                            },
+                            onDelete: { indexSet in
+                                viewModel.deleteMeal(meals: meals, at: indexSet, for: group.date)
+                            },
+                            onMarkAsDone: { todoItem in
+                                viewModel.markAsDone(todoItem)
                             }
-                            .onDelete { indexSet in
-                                viewModel.deleteMeal(at: indexSet, for: group.date)
-                            }
-                        } header: {
-                            VStack(alignment: .leading, spacing: 4) {
-                                if let weekTitle = group.weekTitle {
-                                    Text(weekTitle)
-                                        .font(.title2)
-                                        .padding(.bottom, 2)
-                                        .foregroundColor(.primary)
-                                }
-                                Text(group.date, style: .date)
-                                    .font(.headline)
-                            }
-                            .padding(.vertical, 4)
-                        }
+                        )
                     }
                 }
                 .listStyle(InsetGroupedListStyle())
@@ -120,7 +60,6 @@ struct MealPlanView: View {
             }
             .onAppear {
                 viewModel.configureContext(modelContext)
-                viewModel.meals = meals
             }
         }
     }
