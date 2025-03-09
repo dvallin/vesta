@@ -3,7 +3,7 @@ import SwiftUI
 
 struct RecipeDetailView: View {
     @Environment(\.modelContext) private var modelContext
-    @Bindable var recipe: Recipe
+    @StateObject private var viewModel: RecipeDetailViewModel
 
     // For entering new ingredient values.
     @State private var ingredientName: String = ""
@@ -16,9 +16,13 @@ struct RecipeDetailView: View {
     @State private var isEditingTitle = false
     @State private var isEditingDetails = false
 
+    init(recipe: Recipe) {
+        _viewModel = StateObject(wrappedValue: RecipeDetailViewModel(recipe: recipe))
+    }
+
     var body: some View {
         Form {
-            Text(recipe.title)
+            Text(viewModel.recipe.title)
                 .font(.title)
                 .bold()
                 .onTapGesture {
@@ -27,8 +31,8 @@ struct RecipeDetailView: View {
 
             IngredientsSection(
                 header: "Ingredients",
-                ingredients: recipe.ingredients,
-                removeHandler: removeIngredient,
+                ingredients: viewModel.recipe.ingredients,
+                removeHandler: viewModel.removeIngredient,
                 quantityText: { ingredient in
                     let qtyPart =
                         ingredient.quantity.map {
@@ -47,7 +51,7 @@ struct RecipeDetailView: View {
             .environment(\.editMode, .constant(.active))
 
             Section(header: Text("Description")) {
-                Text(recipe.details)
+                Text(viewModel.recipe.details)
                     .onTapGesture {
                         isEditingDetails = true
                     }
@@ -65,9 +69,9 @@ struct RecipeDetailView: View {
             EditTitleView(
                 navigationBarTitle: "Edit Title",
                 title: Binding(
-                    get: { recipe.title },
+                    get: { viewModel.recipe.title },
                     set: { newValue in
-                        recipe.title = newValue
+                        viewModel.recipe.title = newValue
                     }
                 ))
         }
@@ -75,11 +79,21 @@ struct RecipeDetailView: View {
             EditDetailsView(
                 navigationBarTitle: "Edit Description",
                 details: Binding(
-                    get: { recipe.details },
+                    get: { viewModel.recipe.details },
                     set: { newValue in
-                        recipe.details = newValue
+                        viewModel.recipe.details = newValue
                     }
                 ))
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Save") {
+                    viewModel.save()
+                }
+            }
+        }
+        .onAppear {
+            viewModel.configureEnvironment(modelContext)
         }
     }
 
@@ -93,25 +107,12 @@ struct RecipeDetailView: View {
         }
 
         let quantity = Double(ingredientQuantity)
-        let newIngredient = Ingredient(
-            name: ingredientName, quantity: quantity, unit: ingredientUnit)
-
-        withAnimation {
-            recipe.ingredients.append(newIngredient)
-        }
+        viewModel.addIngredient(name: ingredientName, quantity: quantity, unit: ingredientUnit)
 
         // Reset the input fields.
         ingredientName = ""
         ingredientQuantity = ""
         ingredientUnit = nil
-    }
-
-    private func removeIngredient(_ ingredient: Ingredient) {
-        withAnimation {
-            if let index = recipe.ingredients.firstIndex(where: { $0 === ingredient }) {
-                recipe.ingredients.remove(at: index)
-            }
-        }
     }
 }
 

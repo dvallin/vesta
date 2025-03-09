@@ -8,6 +8,7 @@ class AddMealViewModel: ObservableObject {
     @Published var selectedRecipe: Recipe?
     @Published var selectedDate: Date
     @Published var scalingFactor: Double = 1.0
+    @Published var selectedMealType: MealType = .dinner
 
     @Published var showingValidationAlert = false
     @Published var validationMessage = ""
@@ -39,8 +40,10 @@ class AddMealViewModel: ObservableObject {
                 title: recipe.title, details: recipe.details,
                 dueDate: selectedDate)
             let meal = Meal(
-                scalingFactor: scalingFactor, todoItem: todoItem, recipe: recipe
+                scalingFactor: scalingFactor, todoItem: todoItem, recipe: recipe,
+                mealType: selectedMealType
             )
+            meal.updateTodoItemDueDate(for: selectedMealType, on: selectedDate)
             modelContext!.insert(todoItem)
             modelContext!.insert(meal)
             try modelContext!.save()

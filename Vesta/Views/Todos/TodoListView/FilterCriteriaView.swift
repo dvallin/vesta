@@ -22,6 +22,7 @@ struct FilterCriteriaView: View {
                 }
             }
             .navigationTitle("Filter Criteria")
+            .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(
                 trailing: Button("Done") {
                     presentationMode.wrappedValue.dismiss()
