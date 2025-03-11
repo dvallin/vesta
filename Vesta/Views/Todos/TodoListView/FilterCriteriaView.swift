@@ -22,11 +22,13 @@ struct FilterCriteriaView: View {
                 }
             }
             .navigationTitle("Filter Criteria")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(
-                trailing: Button("Done") {
-                    presentationMode.wrappedValue.dismiss()
-                })
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarItems(
+                    trailing: Button("Done") {
+                        presentationMode.wrappedValue.dismiss()
+                    })
+            #endif
         }
         .presentationDetents([.medium, .large])
     }

@@ -70,7 +70,9 @@ struct TodoItemDetailView: View {
                 )
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
+        #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+        #endif
         .sheet(isPresented: $isEditingTitle) {
             EditTitleView(
                 navigationBarTitle: "Edit Title",

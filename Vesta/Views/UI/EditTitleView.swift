@@ -14,7 +14,7 @@ struct EditTitleView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 TextField("Title", text: $value)
                     .font(.title)
@@ -23,19 +23,24 @@ struct EditTitleView: View {
                         onSave()
                     }
             }
-            .navigationBarTitle(navigationBarTitle, displayMode: .inline)
+            .navigationTitle(navigationBarTitle)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        presentationMode.wrappedValue.dismiss()
+                #if os(iOS)
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            presentationMode.wrappedValue.dismiss()
+                        }
                     }
-                }
 
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        onSave()
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Save") {
+                            onSave()
+                        }
                     }
-                }
+                #endif
             }
         }
         .presentationDetents([.medium, .large])

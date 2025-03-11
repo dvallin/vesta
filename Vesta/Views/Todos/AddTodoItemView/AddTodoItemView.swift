@@ -22,20 +22,22 @@ struct AddTodoItemView: View {
                 )
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        Task {
-                            viewModel.cancel()
+                #if os(iOS)
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            Task {
+                                viewModel.cancel()
+                            }
                         }
                     }
-                }
 
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        viewModel.save()
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Save") {
+                            viewModel.save()
+                        }
+                        .disabled(viewModel.isSaving)
                     }
-                    .disabled(viewModel.isSaving)
-                }
+                #endif
 
                 ToolbarItem(placement: .keyboard) {
                     Button("Done") {
@@ -58,7 +60,9 @@ struct AddTodoItemView: View {
             }
         }
         .navigationTitle("Add Todo Item")
-        .navigationBarTitleDisplayMode(.inline)
+        #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+        #endif
         .onAppear {
             viewModel.configureEnvironment(modelContext, dismiss)
         }

@@ -30,20 +30,22 @@ struct TodoListView: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        viewModel.isPresentingFilterCriteriaView = true
-                    }) {
-                        Image(systemName: "line.horizontal.3.decrease.circle")
+                #if os(iOS)
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            viewModel.isPresentingFilterCriteriaView = true
+                        }) {
+                            Image(systemName: "line.horizontal.3.decrease.circle")
+                        }
                     }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        viewModel.isPresentingTodoEventsView = true
-                    }) {
-                        Image(systemName: "clock.arrow.circlepath")
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            viewModel.isPresentingTodoEventsView = true
+                        }) {
+                            Image(systemName: "clock.arrow.circlepath")
+                        }
                     }
-                }
+                #endif
                 ToolbarItem(placement: .principal) {
                     TextField("Search", text: $viewModel.searchText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
