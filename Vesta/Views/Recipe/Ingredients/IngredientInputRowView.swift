@@ -19,7 +19,9 @@ struct IngredientInputRowView: View {
             TextField("Quantity", text: $ingredientQuantity)
                 .focused($focusedField, equals: .quantity)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .keyboardType(.decimalPad)
+                #if os(iOS)
+                    .keyboardType(.decimalPad)
+                #endif
                 .submitLabel(.next)
                 .onSubmit {
                     focusedField = .name

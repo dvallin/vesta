@@ -32,17 +32,21 @@ struct MealPlanView: View {
                         )
                     }
                 }
-                .listStyle(InsetGroupedListStyle())
                 .navigationTitle("Meal Plan")
-                .navigationBarTitleDisplayMode(.inline)
+                #if os(iOS)
+                    .listStyle(InsetGroupedListStyle())
+                    .navigationBarTitleDisplayMode(.inline)
+                #endif
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            viewModel.isPresentingRecipeListView = true
-                        }) {
-                            Label("Recipes", systemImage: "book")
+                    #if os(iOS)
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: {
+                                viewModel.isPresentingRecipeListView = true
+                            }) {
+                                Label("Recipes", systemImage: "book")
+                            }
                         }
-                    }
+                    #endif
                 }
 
                 FloatingAddButton {

@@ -39,7 +39,6 @@ struct FloatingAddButton: View {
     FloatingAddButton {
         print("Add button tapped")
     }
-    .previewLayout(.sizeThatFits)
     .padding()
 }
 

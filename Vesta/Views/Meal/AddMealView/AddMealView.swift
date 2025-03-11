@@ -24,7 +24,9 @@ struct AddMealView: View {
                 TextField(
                     "Scaling Factor", value: $viewModel.scalingFactor, formatter: NumberFormatter()
                 )
-                .keyboardType(.decimalPad)
+                #if os(iOS)
+                    .keyboardType(.decimalPad)
+                #endif
 
                 Picker("Meal Type", selection: $viewModel.selectedMealType) {
                     Text("Breakfast").tag(MealType.breakfast)
@@ -35,20 +37,22 @@ struct AddMealView: View {
             }
             .navigationTitle("Add Meal")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        Task {
-                            viewModel.cancel()
+                #if os(iOS)
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            Task {
+                                viewModel.cancel()
+                            }
                         }
                     }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        Task {
-                            viewModel.save()
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Save") {
+                            Task {
+                                viewModel.save()
+                            }
                         }
                     }
-                }
+                #endif
             }
             .alert("Validation Error", isPresented: $viewModel.showingValidationAlert) {
                 Button("OK", role: .cancel) {}

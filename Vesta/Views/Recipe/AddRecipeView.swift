@@ -48,32 +48,35 @@ struct AddRecipeView: View {
                     ingredientUnit: $ingredientUnit,
                     onAdd: addTempIngredient
                 )
-                .environment(\.editMode, .constant(.active))
+                #if os(iOS)
+                    .environment(\.editMode, .constant(.active))
+                #endif
 
                 RecipeDetailsEditorView(details: $details)
             }
             .navigationTitle("Add Recipe")
-            .navigationBarTitleDisplayMode(.inline)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                // Leading cancel button.
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        if !title.isEmpty || !details.isEmpty || !tempIngredients.isEmpty {
-                            showingDiscardAlert = true
-                        } else {
-                            dismiss()
+                #if os(iOS)
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            if !title.isEmpty || !details.isEmpty || !tempIngredients.isEmpty {
+                                showingDiscardAlert = true
+                            } else {
+                                dismiss()
+                            }
                         }
                     }
-                }
-                // Trailing save button.
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        validateAndSave()
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Save") {
+                            validateAndSave()
+                        }
+                        .disabled(isSaving)
                     }
-                    .disabled(isSaving)
-                }
+                #endif
             }
-            // Alerts.
             .alert("Validation Error", isPresented: $showingValidationAlert) {
                 Button("OK", role: .cancel) {}
             } message: {

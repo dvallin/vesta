@@ -20,7 +20,9 @@ struct MealDetailView: View {
                     "Scaling Factor", value: $viewModel.meal.scalingFactor,
                     formatter: NumberFormatter()
                 )
-                .keyboardType(.decimalPad)
+                #if os(iOS)
+                    .keyboardType(.decimalPad)
+                #endif
                 .textFieldStyle(RoundedBorderTextFieldStyle())
             }
             .padding()
@@ -33,18 +35,20 @@ struct MealDetailView: View {
                     Text("Dinner").tag(MealType.dinner)
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                .onChange(of: viewModel.meal.mealType) { newMealType in
+                .onChange(of: viewModel.meal.mealType) { newMealType, _ in
                     viewModel.updateTodoItemDueDate(for: newMealType)
                 }
             }
         }
         .navigationTitle("Meal Details")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Save") {
-                    viewModel.save()
+            #if os(iOS)
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        viewModel.save()
+                    }
                 }
-            }
+            #endif
         }
         .onAppear {
             viewModel.configureEnvironment(modelContext)

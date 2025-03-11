@@ -48,7 +48,9 @@ struct RecipeDetailView: View {
                 ingredientUnit: $ingredientUnit,
                 onAdd: addIngredient
             )
-            .environment(\.editMode, .constant(.active))
+            #if os(iOS)
+                .environment(\.editMode, .constant(.active))
+            #endif
 
             Section(header: Text("Description")) {
                 Text(viewModel.recipe.details)
@@ -86,11 +88,13 @@ struct RecipeDetailView: View {
                 ))
         }
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Save") {
-                    viewModel.save()
+            #if os(iOS)
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        viewModel.save()
+                    }
                 }
-            }
+            #endif
         }
         .onAppear {
             viewModel.configureEnvironment(modelContext)
