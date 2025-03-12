@@ -10,18 +10,18 @@ class ShoppingListItem {
     @Relationship(deleteRule: .cascade)
     var todoItem: TodoItem
     @Relationship(deleteRule: .nullify)
-    var meal: Meal?
+    var meals: [Meal]
 
     init(
         name: String, quantity: Double? = nil, unit: Unit? = nil, isPurchased: Bool = false,
-        todoItem: TodoItem, meal: Meal? = nil
+        todoItem: TodoItem, meals: [Meal] = []
     ) {
         self.name = name
         self.quantity = quantity
         self.unit = unit
         self.isPurchased = isPurchased
         self.todoItem = todoItem
-        self.meal = meal
+        self.meals = meals
     }
 
     func markAsPurchased() {

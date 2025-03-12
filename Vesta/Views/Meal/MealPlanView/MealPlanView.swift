@@ -46,6 +46,13 @@ struct MealPlanView: View {
                                 Label("Recipes", systemImage: "book")
                             }
                         }
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: {
+                                viewModel.isPresentingShoppingListGenerator = true
+                            }) {
+                                Label("Generate Shopping List", systemImage: "cart")
+                            }
+                        }
                     #endif
                 }
 
@@ -61,6 +68,9 @@ struct MealPlanView: View {
             }
             .sheet(isPresented: $viewModel.isPresentingRecipeListView) {
                 RecipeListView()
+            }
+            .sheet(isPresented: $viewModel.isPresentingShoppingListGenerator) {
+                ShoppingListGeneratorView(meals: meals)
             }
             .onAppear {
                 viewModel.configureContext(modelContext)

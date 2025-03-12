@@ -29,6 +29,7 @@ struct TodoListView: View {
                     }
                 }
             }
+            .navigationTitle(viewModel.displayTitle)
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {

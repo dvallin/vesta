@@ -14,6 +14,7 @@ class MealPlanViewModel: ObservableObject {
     @Published var selectedMeal: Meal?
     @Published var isPresentingAddMealView = false
     @Published var isPresentingRecipeListView = false
+    @Published var isPresentingShoppingListGenerator = false
 
     func configureContext(_ context: ModelContext) {
         self.modelContext = context

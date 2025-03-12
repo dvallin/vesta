@@ -19,10 +19,18 @@ struct ShoppingItemDetailView: View {
                         .disabled(true)
                 }
 
-                if let meal = item.meal {
-                    Section(header: Text("Related Meal")) {
-                        Text("Recipe: \(meal.recipe.title)")
-                        Text("Meal Type: \(meal.mealType.rawValue.capitalized)")
+                if !item.meals.isEmpty {
+                    Section(header: Text("Related Meals")) {
+                        ForEach(item.meals) { meal in
+                            VStack(alignment: .leading) {
+                                Text("Recipe: \(meal.recipe.title)")
+                                Text("Meal Type: \(meal.mealType.rawValue.capitalized)")
+                                if let dueDate = meal.todoItem.dueDate {
+                                    Text("Planned for: \(dueDate, format: .dateTime)")
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
                     }
                 }
 
@@ -40,16 +48,22 @@ struct ShoppingItemDetailView: View {
 
 #Preview {
     let todoItem = TodoItem(title: "Grocery Shopping", details: "Weekly groceries", dueDate: Date())
-    let recipe = Recipe(title: "Pasta Carbonara", details: "Classic Italian dish")
-    let mealTodo = TodoItem(title: "Make dinner", details: "Pasta night")
-    let meal = Meal(scalingFactor: 1.0, todoItem: mealTodo, recipe: recipe, mealType: .dinner)
+
+    // Create multiple meals
+    let recipe1 = Recipe(title: "Pasta Carbonara", details: "Classic Italian dish")
+    let mealTodo1 = TodoItem(title: "Make dinner", details: "Pasta night")
+    let meal1 = Meal(scalingFactor: 1.0, todoItem: mealTodo1, recipe: recipe1, mealType: .dinner)
+
+    let recipe2 = Recipe(title: "Pasta Primavera", details: "Vegetarian pasta")
+    let mealTodo2 = TodoItem(title: "Make lunch", details: "Light pasta")
+    let meal2 = Meal(scalingFactor: 1.0, todoItem: mealTodo2, recipe: recipe2, mealType: .lunch)
 
     let shoppingItem = ShoppingListItem(
         name: "Pasta",
         quantity: 500,
         unit: .gram,
         todoItem: todoItem,
-        meal: meal
+        meals: [meal1, meal2]
     )
 
     return ShoppingItemDetailView(item: shoppingItem)

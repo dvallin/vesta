@@ -77,15 +77,16 @@ class TodoListViewModel: ObservableObject {
     }
 
     func rescheduleOverdueTasks(todoItems: [TodoItem]) {
-        let today = Calendar.current.startOfDay(for: Date())
+        let today = DateUtils.calendar.startOfDay(for: Date())
 
         for item in todoItems {
             if let dueDate = item.dueDate,
                 dueDate < Date(),
-                !Calendar.current.isDateInToday(dueDate),
+                !DateUtils.calendar.isDateInToday(dueDate),
                 !item.isCompleted
             {
-                item.setDueDate(modelContext: modelContext!, dueDate: today)
+                let newDueDate = DateUtils.preserveTime(from: dueDate, applying: today)
+                item.setDueDate(modelContext: modelContext!, dueDate: newDueDate)
             }
         }
         saveContext()
@@ -115,6 +116,19 @@ class TodoListViewModel: ObservableObject {
                 }
                 return false
             }
+        }
+    }
+
+    var displayTitle: String {
+        switch filterMode {
+        case .all:
+            return "All Tasks"
+        case .today:
+            return "Today's Tasks"
+        case .noDueDate:
+            return "Tasks Without Due Date"
+        case .overdue:
+            return "Overdue Tasks"
         }
     }
 }

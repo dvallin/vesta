@@ -39,6 +39,22 @@ struct MealDetailView: View {
                     viewModel.updateTodoItemDueDate(for: newMealType)
                 }
             }
+            .padding(.horizontal)
+
+            HStack {
+                Text("Due Date:")
+                DatePicker(
+                    "",
+                    selection: Binding(
+                        get: { viewModel.meal.todoItem.dueDate ?? Date() },
+                        set: { newValue in
+                            viewModel.meal.updateDueDate(newValue)
+                        }
+                    ),
+                    displayedComponents: .date
+                )
+            }
+            .padding()
         }
         .navigationTitle("Meal Details")
         .toolbar {

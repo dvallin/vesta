@@ -26,7 +26,7 @@ struct DueDateRecurrenceSection: View {
                             dueDate = newValue
                         }
                     ),
-                    displayedComponents: .date
+                    displayedComponents: [.date, .hourAndMinute]
                 )
 
                 Picker("Recurrence", selection: $recurrenceFrequency) {

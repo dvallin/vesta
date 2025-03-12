@@ -15,6 +15,28 @@ struct TodoList: View {
             }
             .onDelete(perform: deleteTodoItems)
         }
+        .overlay {
+            if filteredTodoItems.isEmpty {
+                ContentUnavailableView(
+                    label: {
+                        Label("No Todo Items", systemImage: "checklist")
+                    },
+                    description: {
+                        Text("No items visible right now.")
+                    },
+                    actions: {
+                        HStack {
+                            if viewModel.filterMode != .all || viewModel.showCompletedItems != true {
+                                Button("Show All") {
+                                    viewModel.filterMode = .all
+                                    viewModel.showCompletedItems = true
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+        }
     }
 
     private var filteredTodoItems: [TodoItem] {
@@ -112,6 +134,43 @@ struct TodoList: View {
     return NavigationView {
         TodoList(
             viewModel: TodoListViewModel(filterMode: .today),
+            todoItems: todoItems
+        )
+    }
+}
+
+
+#Preview("Empty List") {
+    return NavigationView {
+        TodoList(
+            viewModel: TodoListViewModel(),
+            todoItems: []
+        )
+    }
+}
+
+#Preview("All Filtered") {
+    let todoItems = [
+        TodoItem(
+            title: "Completed task",
+            details: "This is done",
+            dueDate: Date(),
+            isCompleted: true
+        ),
+        TodoItem(
+            title: "Another completed task",
+            details: "This is also done",
+            dueDate: Date(),
+            isCompleted: true
+        )
+    ]
+    
+    let viewModel = TodoListViewModel()
+    viewModel.showCompletedItems = false
+    
+    return NavigationView {
+        TodoList(
+            viewModel: viewModel,
             todoItems: todoItems
         )
     }
