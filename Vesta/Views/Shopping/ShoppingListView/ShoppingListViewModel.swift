@@ -33,11 +33,12 @@ class ShoppingListViewModel: ObservableObject {
     func togglePurchased(
         _ item: ShoppingListItem, undoAction: @escaping (ShoppingListItem, UUID) -> Void
     ) {
-        item.isPurchased.toggle()
+        item.todoItem.isCompleted.toggle()
         saveContext()
 
         let id = UUID()
-        let actionText = item.isPurchased ? "marked as purchased" : "marked as not purchased"
+        let actionText =
+            item.todoItem.isCompleted ? "marked as purchased" : "marked as not purchased"
         let toastMessage = ToastMessage(
             id: id,
             message: "\(item.name) \(actionText)",
@@ -49,7 +50,7 @@ class ShoppingListViewModel: ObservableObject {
     }
 
     func togglePurchased(_ item: ShoppingListItem, id: UUID) {
-        item.isPurchased.toggle()
+        item.todoItem.isCompleted.toggle()
         saveContext()
 
         toastMessages.removeAll { $0.id == id }
@@ -66,14 +67,14 @@ class ShoppingListViewModel: ObservableObject {
                 searchText.isEmpty
                 || item.name.localizedCaseInsensitiveContains(searchText)
 
-            let matchesPurchased = showPurchased || !item.isPurchased
+            let matchesPurchased = showPurchased || !item.todoItem.isCompleted
 
             return matchesSearchText && matchesPurchased
         }
         .sorted { first, second in
             // First sort by purchased status (non-purchased first)
-            if first.isPurchased != second.isPurchased {
-                return !first.isPurchased
+            if first.todoItem.isCompleted != second.todoItem.isCompleted {
+                return !first.todoItem.isCompleted
             }
 
             // Then sort by due date if available

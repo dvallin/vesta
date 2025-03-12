@@ -8,6 +8,7 @@ class ShoppingListGeneratorViewModel: ObservableObject {
         let meals: [Meal]
         var isSelected: Bool
         var quantity: Double
+        var earliestDueDate: Date
         var unit: Unit?
     }
 
@@ -30,21 +31,30 @@ class ShoppingListGeneratorViewModel: ObservableObject {
             let totalQuantity = ingredientMealPairs.reduce(0.0) { sum, pair in
                 sum + (pair.0.quantity ?? 0) * pair.1.scalingFactor
             }
+            let earliestDueDate =
+                ingredientMealPairs.compactMap { $0.1.todoItem.dueDate }.min() ?? Date()
+
             return IngredientSelection(
                 ingredient: firstIngredient,
                 meals: ingredientMealPairs.map { $0.1 },
                 isSelected: true,
                 quantity: totalQuantity,
+                earliestDueDate: earliestDueDate,
                 unit: firstIngredient.unit
             )
-        }
+        }.sorted { l, r in l.earliestDueDate < r.earliestDueDate }
     }
 
     func generateShoppingList(modelContext: ModelContext) {
-        let todoItem = TodoItem(title: "Shopping List", details: "Generated from meal plan")
-        modelContext.insert(todoItem)
-
         for selection in ingredientSelections where selection.isSelected {
+            let todoItem = TodoItem(
+                title: "buy \(selection.ingredient.name)",
+                details: "Buy for: "
+                    + selection.meals.map { $0.recipe.title }.joined(separator: ", "),
+                dueDate: selection.earliestDueDate
+            )
+            modelContext.insert(todoItem)
+
             let shoppingListItem = ShoppingListItem(
                 name: selection.ingredient.name,
                 quantity: selection.quantity,

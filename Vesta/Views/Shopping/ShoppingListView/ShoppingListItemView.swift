@@ -7,10 +7,10 @@ struct ShoppingListItemRow: View {
     var body: some View {
         HStack {
             Button(action: togglePurchased) {
-                Image(systemName: item.isPurchased ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(item.isPurchased ? .secondary : .accentColor)
-                    .scaleEffect(item.isPurchased ? 1 : 1.5)
-                    .animation(.easeInOut, value: item.isPurchased)
+                Image(systemName: item.todoItem.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(item.todoItem.isCompleted ? .secondary : .accentColor)
+                    .scaleEffect(item.todoItem.isCompleted ? 1 : 1.5)
+                    .animation(.easeInOut, value: item.todoItem.isCompleted)
             }
             .buttonStyle(BorderlessButtonStyle())
 
@@ -18,8 +18,8 @@ struct ShoppingListItemRow: View {
                 VStack(alignment: .leading) {
                     Text(item.name)
                         .font(.headline)
-                        .strikethrough(item.isPurchased)
-                        .foregroundColor(item.isPurchased ? .secondary : .primary)
+                        .strikethrough(item.todoItem.isCompleted)
+                        .foregroundColor(item.todoItem.isCompleted ? .secondary : .primary)
 
                     if let quantity = item.quantity, let unit = item.unit {
                         Text("\(quantity, specifier: "%.1f") \(unit.rawValue)")
@@ -102,7 +102,7 @@ struct ShoppingListItemRow: View {
         ShoppingListItemRow(
             viewModel: viewModel,
             item: ShoppingListItem(
-                name: "Bread", quantity: 2, unit: .piece, isPurchased: true, todoItem: todoItem)
+                name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem)
         )
 
         // Item without quantity/unit

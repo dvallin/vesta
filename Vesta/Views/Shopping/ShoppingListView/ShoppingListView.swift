@@ -71,7 +71,7 @@ struct ShoppingListView: View {
             ShoppingListItem(name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem1),
             ShoppingListItem(name: "Eggs", quantity: 12, unit: .piece, todoItem: todoItem1),
             ShoppingListItem(
-                name: "Wine", quantity: 2, unit: .piece, isPurchased: true, todoItem: todoItem2),
+                name: "Wine", quantity: 2, unit: .piece, todoItem: todoItem2),
         ]
 
         for item in items {

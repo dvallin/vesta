@@ -57,7 +57,7 @@ struct ShoppingList: View {
         ShoppingListItem(name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem),
         ShoppingListItem(name: "Eggs", quantity: 12, unit: .piece, todoItem: todoItem),
         ShoppingListItem(
-            name: "Wine", quantity: 2, unit: .piece, isPurchased: true, todoItem: todoItem),
+            name: "Wine", quantity: 2, unit: .piece, todoItem: todoItem),
     ]
 
     return NavigationView {

@@ -15,7 +15,7 @@ struct ShoppingItemDetailView: View {
                         Text("No quantity specified")
                     }
 
-                    Toggle("Purchased", isOn: .constant(item.isPurchased))
+                    Toggle("Purchased", isOn: .constant(item.todoItem.isCompleted))
                         .disabled(true)
                 }
 

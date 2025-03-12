@@ -12,33 +12,7 @@ struct ShoppingListGeneratorView: View {
         NavigationView {
             List {
                 ForEach($viewModel.ingredientSelections) { $selection in
-                    HStack {
-                        Text(selection.ingredient.name)
-                            .font(.body)
-
-                        Spacer()
-
-                        HStack(spacing: 4) {
-                            TextField("Qty", value: $selection.quantity, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 60)
-                                .multilineTextAlignment(.trailing)
-
-                            if let unit = selection.unit {
-                                Text(unit.rawValue)
-                                    .foregroundColor(.secondary)
-                                    .frame(width: 50, alignment: .leading)
-                            }
-                        }
-                    }
-                    .swipeActions(edge: .trailing) {
-                        Button(selection.isSelected ? "Exclude" : "Include") {
-                            selection.isSelected.toggle()
-                        }
-                        .tint(selection.isSelected ? .red : .green)
-                    }
-                    .listRowBackground(
-                        selection.isSelected ? Color(.systemBackground) : Color(.systemGray6))
+                    IngredientSelectionRow(selection: $selection)
                 }
             }
             .navigationTitle("Generate Shopping List")
