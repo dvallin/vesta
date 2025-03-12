@@ -29,8 +29,9 @@ struct ReadOnlyRecipeDetailView: View {
 
     private func formattedQuantity(for ingredient: Ingredient) -> String {
         let scaledQuantity = (ingredient.quantity ?? 0) * scalingFactor
-        let qtyPart = NumberFormatter.localizedString(from: NSNumber(value: scaledQuantity), number: .decimal)
-        let unitPart = ingredient.unit?.rawValue ?? ""
+        let qtyPart = NumberFormatter.localizedString(
+            from: NSNumber(value: scaledQuantity), number: .decimal)
+        let unitPart = ingredient.unit?.displayName ?? ""
         return qtyPart + " " + unitPart
     }
 }

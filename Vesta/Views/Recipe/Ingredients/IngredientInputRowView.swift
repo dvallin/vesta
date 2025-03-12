@@ -31,7 +31,7 @@ struct IngredientInputRowView: View {
             Picker("", selection: $ingredientUnit) {
                 Text("Unit").tag(Unit?.none)
                 ForEach(Unit.allCases, id: \.self) { unit in
-                    Text(unit.rawValue).tag(unit as Unit?)
+                    Text(unit.displayName).tag(unit as Unit?)
                 }
             }
             .pickerStyle(MenuPickerStyle())

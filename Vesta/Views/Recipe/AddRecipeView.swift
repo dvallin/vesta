@@ -39,7 +39,7 @@ struct AddRecipeView: View {
                                 NumberFormatter.localizedString(
                                     from: NSNumber(value: $0), number: .decimal)
                             } ?? ""
-                        let unitPart = ingredient.unit?.rawValue ?? ""
+                        let unitPart = ingredient.unit?.displayName ?? ""
                         return qtyPart + " " + unitPart
                     },
                     nameText: { $0.name },

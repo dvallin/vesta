@@ -15,7 +15,7 @@ struct NextMealView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
-                    Text("Scaling Factor: \(meal.scalingFactor, specifier: "%.2f")")
+                    Text(meal.mealType.rawValue)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }

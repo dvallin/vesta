@@ -33,11 +33,9 @@ struct DayGroupSectionView: View {
                         VStack(alignment: .leading) {
                             Text(meal.recipe.title)
                                 .font(.headline)
-                            Text(
-                                "Scaling Factor: \(meal.scalingFactor, specifier: "%.2f")"
-                            )
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            Text(meal.mealType.rawValue)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                         }
                     }
                 }

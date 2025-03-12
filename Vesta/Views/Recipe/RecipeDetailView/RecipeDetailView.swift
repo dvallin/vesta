@@ -34,12 +34,10 @@ struct RecipeDetailView: View {
                 ingredients: viewModel.recipe.ingredients,
                 removeHandler: viewModel.removeIngredient,
                 quantityText: { ingredient in
-                    let qtyPart =
-                        ingredient.quantity.map {
-                            NumberFormatter.localizedString(
-                                from: NSNumber(value: $0), number: .decimal)
-                        } ?? ""
-                    let unitPart = ingredient.unit?.rawValue ?? ""
+                    let qtyPart = ingredient.quantity.map {
+                        NumberFormatter.localizedString(from: NSNumber(value: $0), number: .decimal)
+                    } ?? ""
+                    let unitPart = ingredient.unit?.displayName ?? ""
                     return qtyPart + " " + unitPart
                 },
                 nameText: { $0.name },
