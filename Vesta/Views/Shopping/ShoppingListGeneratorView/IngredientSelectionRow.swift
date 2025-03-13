@@ -58,3 +58,49 @@ struct IngredientSelectionRow: View {
         }
     }
 }
+
+#Preview {
+    List {
+        // Regular ingredient with quantity and unit
+        IngredientSelectionRow(
+            selection: .constant(
+                ShoppingListGeneratorViewModel.IngredientSelection(
+                    ingredient: Ingredient(name: "Tomatoes", quantity: 4, unit: .piece),
+                    meals: [],
+                    isSelected: true,
+                    quantity: 4,
+                    earliestDueDate: Date().addingTimeInterval(24 * 3600),
+                    unit: .piece
+                )
+            )
+        )
+
+        // Ingredient for today without unit
+        IngredientSelectionRow(
+            selection: .constant(
+                ShoppingListGeneratorViewModel.IngredientSelection(
+                    ingredient: Ingredient(name: "Salt", quantity: 1, unit: nil),
+                    meals: [],
+                    isSelected: true,
+                    quantity: 1,
+                    earliestDueDate: Date(),
+                    unit: nil
+                )
+            )
+        )
+
+        // Deselected ingredient with future date
+        IngredientSelectionRow(
+            selection: .constant(
+                ShoppingListGeneratorViewModel.IngredientSelection(
+                    ingredient: Ingredient(name: "Flour", quantity: 500, unit: .gram),
+                    meals: [],
+                    isSelected: false,
+                    quantity: 500,
+                    earliestDueDate: Date().addingTimeInterval(3 * 24 * 3600),
+                    unit: .gram
+                )
+            )
+        )
+    }
+}

@@ -1,0 +1,160 @@
+// Common UI Elements
+"Cancel" = "取消";
+"Save" = "保存";
+"Done" = "完成";
+"OK" = "确定";
+"Title" = "标题";
+"Description" = "描述";
+"Search" = "搜索";
+"Name" = "名称";
+"None" = "无";
+"Undo" = "撤销";
+"Discard" = "放弃";
+"Continue Editing" = "继续编辑";
+"Discard Changes?" = "放弃更改？";
+"Validation Error" = "验证错误";
+"Environment not configured" = "环境未配置";
+
+// Recipe Related
+"Recipes" = "菜谱";
+"Add Recipe" = "添加菜谱";
+"Enter recipe title" = "输入菜谱标题";
+"Ingredients" = "食材";
+"Unit" = "单位";
+"Quantity" = "数量";
+"Please enter an ingredient name." = "请输入食材名称。";
+"Please enter a recipe title." = "请输入菜谱标题。";
+"Please add at least one ingredient." = "请至少添加一种食材。";
+"Error saving recipe: %@" = "保存菜谱时出错：%@";
+"Edit Title" = "编辑标题";
+"Edit Description" = "编辑描述";
+
+// Shopping List
+"Shopping List" = "购物清单";
+"No Shopping Items" = "无购物项目";
+"Add items to your shopping list" = "添加项目到购物清单";
+"Add Item" = "添加项目";
+"Item Details" = "项目详情";
+"Item Name" = "项目名称";
+"Shopping item" = "购物项目";
+"Filter Shopping List" = "筛选购物清单";
+"Show Purchased Items" = "显示已购买项目";
+"Generate Shopping List" = "生成购物清单";
+"Generate" = "生成";
+"Exclude" = "排除";
+"Include" = "包含";
+"Purchased" = "已购买";
+"Buy %@" = "购买%@";
+"Buy for: %@" = "为%@购买";
+"%@ marked as purchased" = "%@已标记为已购买";
+"%@ marked as not purchased" = "%@已标记为未购买";
+"%@ marked as %@" = "%@已标记为%@";
+"purchased" = "已购买";
+"not purchased" = "未购买";
+"Qty" = "数量";
+"today" = "今天";
+"%dd" = "%d天";
+"1d" = "1天";
+
+// Shopping Item Details
+"Name: %@" = "名称：%@";
+"Quantity: %.1f %@" = "数量：%.1f %@";
+"No quantity specified" = "未指定数量";
+"Related Meals" = "相关餐食";
+"Recipe: %@" = "菜谱：%@";
+"Meal Type: %@" = "餐食类型：%@";
+"Planned for: %@" = "计划用于：%@";
+
+// Meal Related
+"Add Meal" = "添加餐食";
+"Date" = "日期";
+"Recipe" = "菜谱";
+"Scaling Factor" = "份量系数";
+"Meal Type" = "餐食类型";
+"Please select a recipe" = "请选择菜谱";
+"Error saving meal: %@" = "保存餐食时出错：%@";
+"Scaling Factor:" = "份量系数：";
+"Meal Type:" = "餐食类型：";
+"Due Date:" = "截止日期：";
+"Meal Details" = "餐食详情";
+"Week %d" = "第%d周";
+"Meal Plan" = "餐食计划";
+"Next Meal" = "下一餐";
+
+// Todo Items
+"Todo Item" = "待办事项";
+"Add Todo Item" = "添加待办事项";
+"Todo Details" = "待办详情";
+"Due Date" = "截止日期";
+"Due Date & Recurrence" = "截止日期和重复";
+"Actions" = "操作";
+"Title: %@" = "标题：%@";
+"Due Date: %@" = "截止日期：%@";
+"Needed by: %@" = "需要日期：%@";
+"Enable Due Date" = "启用截止日期";
+"Please enter a todo title" = "请输入待办标题";
+"Error saving todo item: %@" = "保存待办事项时出错：%@";
+"Todo Events" = "待办事件";
+"Unknown Item" = "未知项目";
+
+// Todo List Views
+"All Tasks" = "所有任务";
+"Today's Tasks" = "今日任务";
+"No Due Date" = "无截止日期";
+"Overdue Tasks" = "逾期任务";
+"No Todo Items" = "无待办事项";
+"No items visible right now." = "当前没有可见项目。";
+"Show All" = "显示全部";
+"There are overdue tasks" = "有逾期任务";
+"Reschedule all overdue tasks to today" = "将所有逾期任务重排至今天";
+"No due date" = "无截止日期";
+
+// Meal Types
+"breakfast" = "早餐";
+"lunch" = "午餐";
+"dinner" = "晚餐";
+
+// Units
+"tsp" = "茶匙";
+"tbsp" = "汤匙";
+"cup" = "杯";
+"ml" = "毫升";
+"l" = "升";
+"g" = "克";
+"kg" = "千克";
+"oz" = "盎司";
+"lb" = "磅";
+"pc" = "个";
+
+// Recurrence
+"Recurrence" = "重复";
+"Daily" = "每天";
+"Weekly" = "每周";
+"Monthly" = "每月";
+"Yearly" = "每年";
+"Fixed" = "固定";
+"Flexible" = "灵活";
+"Fixed Recurrence" = "固定重复";
+
+// Actions & Status
+"Mark as Done" = "标记完成";
+"Edit Title" = "编辑标题";
+"Edit Details" = "编辑详情";
+"Edit Due Date" = "编辑截止日期";
+"Edit Recurrence Frequency" = "编辑重复频率";
+"Edit Recurrence Type" = "编辑重复类型";
+"Edit Is Completed" = "编辑完成状态";
+"Completed" = "已完成";
+
+// Filter Options
+"Filter Mode" = "筛选模式";
+"Filter Criteria" = "筛选条件";
+"Show Completed Items" = "显示已完成项目";
+"Only Today" = "仅今天";
+"No Due Date" = "无截止日期";
+"Overdue" = "逾期";
+
+// Main Tabs
+"Today" = "今天";
+"Meals" = "餐食";
+"Shopping" = "购物";

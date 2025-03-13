@@ -42,3 +42,47 @@ struct OverdueTasksBanner: View {
         }
     }
 }
+
+#Preview {
+    VStack {
+        // Warning banner
+        let warningViewModel = TodoListViewModel(filterMode: .all)
+        OverdueTasksBanner(
+            viewModel: warningViewModel,
+            todoItems: [
+                TodoItem(
+                    title: "Overdue Task 1",
+                    details: "This task is overdue",
+                    dueDate: Calendar.current.date(byAdding: .day, value: -2, to: Date())!
+                ),
+                TodoItem(
+                    title: "Future Task",
+                    details: "This task is not overdue",
+                    dueDate: Date().addingTimeInterval(86400)
+                ),
+            ]
+        )
+
+        Divider()
+            .padding(.vertical)
+
+        // Reschedule banner
+        let rescheduleViewModel = TodoListViewModel(filterMode: .overdue)
+        OverdueTasksBanner(
+            viewModel: rescheduleViewModel,
+            todoItems: [
+                TodoItem(
+                    title: "Overdue Task 1",
+                    details: "This task is overdue",
+                    dueDate: Calendar.current.date(byAdding: .day, value: -2, to: Date())!
+                ),
+                TodoItem(
+                    title: "Overdue Task 2",
+                    details: "This task is also overdue",
+                    dueDate: Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+                ),
+            ]
+        )
+    }
+    .padding()
+}

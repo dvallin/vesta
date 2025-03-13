@@ -27,3 +27,30 @@ struct NextMealView: View {
         }
     }
 }
+
+#Preview {
+    List {
+        NextMealView(
+            meal: Meal(
+                scalingFactor: 1.0,
+                todoItem: TodoItem(
+                    title: "Cook Spaghetti Carbonara",
+                    details: "Make dinner",
+                    dueDate: Date().addingTimeInterval(3600)
+                ),
+                recipe: Recipe(
+                    title: "Spaghetti Carbonara",
+                    details: "Classic Italian pasta dish",
+                    ingredients: [
+                        Ingredient(name: "Spaghetti", quantity: 500, unit: .gram),
+                        Ingredient(name: "Eggs", quantity: 4, unit: .piece),
+                        Ingredient(name: "Pecorino Romano", quantity: 100, unit: .gram),
+                    ]
+                ),
+                mealType: .dinner
+            )
+        ) {
+            print("Meal selected")
+        }
+    }
+}

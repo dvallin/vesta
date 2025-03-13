@@ -53,3 +53,29 @@ struct EditTitleView: View {
         presentationMode.wrappedValue.dismiss()
     }
 }
+
+#Preview {
+    EditTitleView(
+        navigationBarTitle: "Edit Title",
+        title: .constant("Sample Task Title")
+    )
+    .modelContainer(for: TodoItem.self)
+}
+
+#Preview("Empty") {
+    EditTitleView(
+        navigationBarTitle: "Edit Title",
+        title: .constant("")
+    )
+    .modelContainer(for: TodoItem.self)
+}
+
+#Preview("Long Title") {
+    EditTitleView(
+        navigationBarTitle: "Edit Title",
+        title: .constant(
+            "This is a very long task title that might need to wrap to multiple lines or be truncated depending on the available space"
+        )
+    )
+    .modelContainer(for: TodoItem.self)
+}

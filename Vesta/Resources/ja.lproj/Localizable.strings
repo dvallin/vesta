@@ -1,0 +1,160 @@
+// Common UI Elements
+"Cancel" = "キャンセル";
+"Save" = "保存";
+"Done" = "完了";
+"OK" = "OK";
+"Title" = "タイトル";
+"Description" = "説明";
+"Search" = "検索";
+"Name" = "名前";
+"None" = "なし";
+"Undo" = "元に戻す";
+"Discard" = "破棄";
+"Continue Editing" = "編集を続ける";
+"Discard Changes?" = "変更を破棄しますか？";
+"Validation Error" = "入力エラー";
+"Environment not configured" = "環境が設定されていません";
+
+// Recipe Related
+"Recipes" = "レシピ";
+"Add Recipe" = "レシピを追加";
+"Enter recipe title" = "レシピ名を入力";
+"Ingredients" = "材料";
+"Unit" = "単位";
+"Quantity" = "量";
+"Please enter an ingredient name." = "材料名を入力してください。";
+"Please enter a recipe title." = "レシピ名を入力してください。";
+"Please add at least one ingredient." = "少なくとも1つの材料を追加してください。";
+"Error saving recipe: %@" = "レシピの保存エラー: %@";
+"Edit Title" = "タイトルを編集";
+"Edit Description" = "説明を編集";
+
+// Shopping List
+"Shopping List" = "買い物リスト";
+"No Shopping Items" = "買い物項目なし";
+"Add items to your shopping list" = "買い物リストに項目を追加";
+"Add Item" = "項目を追加";
+"Item Details" = "項目の詳細";
+"Item Name" = "項目名";
+"Shopping item" = "買い物項目";
+"Filter Shopping List" = "買い物リストを絞り込む";
+"Show Purchased Items" = "購入済み項目を表示";
+"Generate Shopping List" = "買い物リストを生成";
+"Generate" = "生成";
+"Exclude" = "除外";
+"Include" = "含める";
+"Purchased" = "購入済み";
+"Buy %@" = "%@を購入";
+"Buy for: %@" = "%@用に購入";
+"%@ marked as purchased" = "%@を購入済みとしてマーク";
+"%@ marked as not purchased" = "%@を未購入としてマーク";
+"%@ marked as %@" = "%@を%@としてマーク";
+"purchased" = "購入済み";
+"not purchased" = "未購入";
+"Qty" = "数量";
+"today" = "今日";
+"%dd" = "%d日";
+"1d" = "1日";
+
+// Shopping Item Details
+"Name: %@" = "名前: %@";
+"Quantity: %.1f %@" = "数量: %.1f %@";
+"No quantity specified" = "数量未指定";
+"Related Meals" = "関連する食事";
+"Recipe: %@" = "レシピ: %@";
+"Meal Type: %@" = "食事タイプ: %@";
+"Planned for: %@" = "予定日: %@";
+
+// Meal Related
+"Add Meal" = "食事を追加";
+"Date" = "日付";
+"Recipe" = "レシピ";
+"Scaling Factor" = "倍率";
+"Meal Type" = "食事タイプ";
+"Please select a recipe" = "レシピを選択してください";
+"Error saving meal: %@" = "食事の保存エラー: %@";
+"Scaling Factor:" = "倍率:";
+"Meal Type:" = "食事タイプ:";
+"Due Date:" = "期限:";
+"Meal Details" = "食事の詳細";
+"Week %d" = "第%d週";
+"Meal Plan" = "食事プラン";
+"Next Meal" = "次の食事";
+
+// Todo Items
+"Todo Item" = "ToDo項目";
+"Add Todo Item" = "ToDoを追加";
+"Todo Details" = "ToDoの詳細";
+"Due Date" = "期限";
+"Due Date & Recurrence" = "期限と繰り返し";
+"Actions" = "アクション";
+"Title: %@" = "タイトル: %@";
+"Due Date: %@" = "期限: %@";
+"Needed by: %@" = "必要日: %@";
+"Enable Due Date" = "期限を設定";
+"Please enter a todo title" = "ToDoのタイトルを入力してください";
+"Error saving todo item: %@" = "ToDoの保存エラー: %@";
+"Todo Events" = "ToDoイベント";
+"Unknown Item" = "不明な項目";
+
+// Todo List Views
+"All Tasks" = "すべてのタスク";
+"Today's Tasks" = "今日のタスク";
+"No Due Date" = "期限なし";
+"Overdue Tasks" = "期限超過タスク";
+"No Todo Items" = "ToDo項目なし";
+"No items visible right now." = "表示項目がありません。";
+"Show All" = "すべて表示";
+"There are overdue tasks" = "期限超過タスクがあります";
+"Reschedule all overdue tasks to today" = "すべての期限超過タスクを今日に再設定";
+"No due date" = "期限なし";
+
+// Meal Types
+"breakfast" = "朝食";
+"lunch" = "昼食";
+"dinner" = "夕食";
+
+// Units
+"tsp" = "小さじ";
+"tbsp" = "大さじ";
+"cup" = "カップ";
+"ml" = "ml";
+"l" = "l";
+"g" = "g";
+"kg" = "kg";
+"oz" = "オンス";
+"lb" = "ポンド";
+"pc" = "個";
+
+// Recurrence
+"Recurrence" = "繰り返し";
+"Daily" = "毎日";
+"Weekly" = "毎週";
+"Monthly" = "毎月";
+"Yearly" = "毎年";
+"Fixed" = "固定";
+"Flexible" = "柔軟";
+"Fixed Recurrence" = "固定繰り返し";
+
+// Actions & Status
+"Mark as Done" = "完了としてマーク";
+"Edit Title" = "タイトルを編集";
+"Edit Details" = "詳細を編集";
+"Edit Due Date" = "期限を編集";
+"Edit Recurrence Frequency" = "繰り返し頻度を編集";
+"Edit Recurrence Type" = "繰り返しタイプを編集";
+"Edit Is Completed" = "完了状態を編集";
+"Completed" = "完了";
+
+// Filter Options
+"Filter Mode" = "フィルターモード";
+"Filter Criteria" = "フィルター条件";
+"Show Completed Items" = "完了項目を表示";
+"Only Today" = "今日のみ";
+"No Due Date" = "期限なし";
+"Overdue" = "期限超過";
+
+// Main Tabs
+"Today" = "今日";
+"Meals" = "食事";
+"Shopping" = "買い物";
