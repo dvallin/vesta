@@ -8,24 +8,36 @@ struct FilterCriteriaView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Filter Mode")) {
-                    Picker("Filter Mode", selection: $viewModel.filterMode) {
+                Section(
+                    header: Text(
+                        NSLocalizedString("Filter Mode", comment: "Filter criteria section header"))
+                ) {
+                    Picker(
+                        NSLocalizedString("Filter Mode", comment: "Filter mode picker label"),
+                        selection: $viewModel.filterMode
+                    ) {
                         ForEach(FilterMode.allCases.filter { $0 != .overdue }, id: \.self) { mode in
-                            Text(mode.rawValue).tag(mode)
+                            Text(mode.displayName).tag(mode)
                         }
                     }
                     .pickerStyle(SegmentedPickerStyle())
                 }
 
                 Section {
-                    Toggle("Show Completed Items", isOn: $viewModel.showCompletedItems)
+                    Toggle(
+                        NSLocalizedString(
+                            "Show Completed Items", comment: "Toggle for showing completed items"),
+                        isOn: $viewModel.showCompletedItems)
                 }
             }
-            .navigationTitle("Filter Criteria")
+            .navigationTitle(
+                NSLocalizedString(
+                    "Filter Criteria", comment: "Navigation title for filter criteria view")
+            )
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
                 .navigationBarItems(
-                    trailing: Button("Done") {
+                    trailing: Button(NSLocalizedString("Done", comment: "Done button")) {
                         presentationMode.wrappedValue.dismiss()
                     })
             #endif
@@ -35,10 +47,24 @@ struct FilterCriteriaView: View {
 }
 
 enum FilterMode: String, CaseIterable {
-    case all = "Show All"
-    case today = "Only Today"
-    case noDueDate = "No Due Date"
-    case overdue = "Overdue"
+    case all
+    case today
+    case noDueDate
+    case overdue
+
+    var displayName: String {
+        switch self {
+        case .all:
+            return NSLocalizedString("Show All", comment: "Filter mode: show all items")
+        case .today:
+            return NSLocalizedString("Only Today", comment: "Filter mode: show only today's items")
+        case .noDueDate:
+            return NSLocalizedString(
+                "No Due Date", comment: "Filter mode: show items with no due date")
+        case .overdue:
+            return NSLocalizedString("Overdue", comment: "Filter mode: show overdue items")
+        }
+    }
 }
 
 #Preview {

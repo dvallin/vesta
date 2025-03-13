@@ -15,38 +15,47 @@ struct AddMealView: View {
     var body: some View {
         NavigationView {
             Form {
-                DatePicker("Date", selection: $viewModel.selectedDate, displayedComponents: .date)
-                Picker("Recipe", selection: $viewModel.selectedRecipe) {
+                DatePicker(
+                    NSLocalizedString("Date", comment: "Date picker label"),
+                    selection: $viewModel.selectedDate, displayedComponents: .date)
+                Picker(
+                    NSLocalizedString("Recipe", comment: "Recipe picker label"),
+                    selection: $viewModel.selectedRecipe
+                ) {
                     ForEach(recipes) { recipe in
                         Text(recipe.title).tag(recipe as Recipe?)
                     }
                 }
                 TextField(
-                    "Scaling Factor", value: $viewModel.scalingFactor, formatter: NumberFormatter()
+                    NSLocalizedString("Scaling Factor", comment: "Scaling factor input field"),
+                    value: $viewModel.scalingFactor, formatter: NumberFormatter()
                 )
                 #if os(iOS)
                     .keyboardType(.decimalPad)
                 #endif
 
-                Picker("Meal Type", selection: $viewModel.selectedMealType) {
-                    Text("Breakfast").tag(MealType.breakfast)
-                    Text("Lunch").tag(MealType.lunch)
-                    Text("Dinner").tag(MealType.dinner)
+                Picker(
+                    NSLocalizedString("Meal Type", comment: "Meal type picker label"),
+                    selection: $viewModel.selectedMealType
+                ) {
+                    ForEach(MealType.allCases, id: \.self) { mealType in
+                        Text(mealType.displayName).tag(mealType)
+                    }
                 }
                 .pickerStyle(SegmentedPickerStyle())
             }
-            .navigationTitle("Add Meal")
+            .navigationTitle(NSLocalizedString("Add Meal", comment: "Add meal screen title"))
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
+                        Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
                             Task {
                                 viewModel.cancel()
                             }
                         }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Save") {
+                        Button(NSLocalizedString("Save", comment: "Save button")) {
                             Task {
                                 viewModel.save()
                             }
@@ -54,8 +63,14 @@ struct AddMealView: View {
                     }
                 #endif
             }
-            .alert("Validation Error", isPresented: $viewModel.showingValidationAlert) {
-                Button("OK", role: .cancel) {}
+            .alert(
+                NSLocalizedString("Validation Error", comment: "Validation error alert title"),
+                isPresented: $viewModel.showingValidationAlert
+            ) {
+                Button(
+                    NSLocalizedString("OK", comment: "Validation error accept button"),
+                    role: .cancel
+                ) {}
             } message: {
                 Text(viewModel.validationMessage)
             }

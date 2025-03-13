@@ -21,12 +21,15 @@ struct RecipeListView: View {
                     isPresentingAddRecipeView = true
                 }
             }
-            .navigationTitle("Recipes")
+            .navigationTitle(NSLocalizedString("Recipes", comment: "Navigation title"))
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    TextField("Search", text: $searchText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .frame(maxWidth: 200)
+                    TextField(
+                        NSLocalizedString("Search", comment: "Search field placeholder"),
+                        text: $searchText
+                    )
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .frame(maxWidth: 200)
                 }
             }
         }

@@ -8,14 +8,24 @@ struct ShoppingListFilterView: View {
         NavigationView {
             Form {
                 Section {
-                    Toggle("Show Purchased Items", isOn: $viewModel.showPurchased)
+                    Toggle(
+                        NSLocalizedString(
+                            "Show Purchased Items",
+                            comment: "Filter option for showing purchased items"),
+                        isOn: $viewModel.showPurchased
+                    )
                 }
             }
-            .navigationTitle("Filter Shopping List")
+            .navigationTitle(
+                NSLocalizedString(
+                    "Filter Shopping List", comment: "Navigation title for shopping list filter")
+            )
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
                 .navigationBarItems(
-                    trailing: Button("Done") {
+                    trailing: Button(
+                        NSLocalizedString("Done", comment: "Button to dismiss filter view")
+                    ) {
                         presentationMode.wrappedValue.dismiss()
                     })
             #endif

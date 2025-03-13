@@ -15,9 +15,10 @@ struct MealDetailView: View {
                 recipe: viewModel.meal.recipe, scalingFactor: viewModel.meal.scalingFactor
             )
             HStack {
-                Text("Scaling Factor:")
+                Text(NSLocalizedString("Scaling Factor:", comment: "Scaling factor label"))
                 TextField(
-                    "Scaling Factor", value: $viewModel.meal.scalingFactor,
+                    NSLocalizedString("Scaling Factor", comment: "Scaling factor input field"),
+                    value: $viewModel.meal.scalingFactor,
                     formatter: NumberFormatter()
                 )
                 #if os(iOS)
@@ -28,11 +29,14 @@ struct MealDetailView: View {
             .padding()
 
             HStack {
-                Text("Meal Type:")
-                Picker("Meal Type", selection: $viewModel.meal.mealType) {
-                    Text("Breakfast").tag(MealType.breakfast)
-                    Text("Lunch").tag(MealType.lunch)
-                    Text("Dinner").tag(MealType.dinner)
+                Text(NSLocalizedString("Meal Type:", comment: "Meal type label"))
+                Picker(
+                    NSLocalizedString("Meal Type", comment: "Meal type picker label"),
+                    selection: $viewModel.meal.mealType
+                ) {
+                    ForEach(MealType.allCases, id: \.self) { mealType in
+                        Text(mealType.displayName).tag(mealType)
+                    }
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .onChange(of: viewModel.meal.mealType) { newMealType, _ in
@@ -42,7 +46,7 @@ struct MealDetailView: View {
             .padding(.horizontal)
 
             HStack {
-                Text("Due Date:")
+                Text(NSLocalizedString("Due Date:", comment: "Due date label"))
                 DatePicker(
                     "",
                     selection: Binding(
@@ -56,11 +60,11 @@ struct MealDetailView: View {
             }
             .padding()
         }
-        .navigationTitle("Meal Details")
+        .navigationTitle(NSLocalizedString("Meal Details", comment: "Meal details screen title"))
         .toolbar {
             #if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button(NSLocalizedString("Save", comment: "Save button")) {
                         viewModel.save()
                     }
                 }

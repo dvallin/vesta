@@ -11,7 +11,9 @@ struct OverdueTasksBanner: View {
                 Button(action: viewModel.showRescheduleOverdueTasks) {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
-                        Text("There are overdue tasks")
+                        Text(
+                            NSLocalizedString(
+                                "There are overdue tasks", comment: "Warning about overdue tasks"))
                     }
                     .foregroundColor(.white)
                     .padding()
@@ -25,7 +27,10 @@ struct OverdueTasksBanner: View {
                 }) {
                     HStack {
                         Image(systemName: "calendar.badge.plus")
-                        Text("Reschedule all overdue tasks to today")
+                        Text(
+                            NSLocalizedString(
+                                "Reschedule all overdue tasks to today",
+                                comment: "Button to reschedule overdue tasks"))
                     }
                     .foregroundColor(.white)
                     .padding()

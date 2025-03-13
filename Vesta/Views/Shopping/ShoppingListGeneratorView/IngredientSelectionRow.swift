@@ -12,13 +12,17 @@ struct IngredientSelectionRow: View {
             Spacer()
 
             HStack(spacing: 4) {
-                TextField("Qty", value: $selection.quantity, format: .number)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 60)
-                    .multilineTextAlignment(.trailing)
+                TextField(
+                    NSLocalizedString("Qty", comment: "Quantity input field placeholder"),
+                    value: $selection.quantity,
+                    format: .number
+                )
+                .textFieldStyle(.roundedBorder)
+                .frame(width: 60)
+                .multilineTextAlignment(.trailing)
 
                 if let unit = selection.unit {
-                    Text(unit.rawValue)
+                    Text(unit.displayName)
                         .foregroundColor(.secondary)
                         .frame(width: 50, alignment: .leading)
                 }
@@ -26,7 +30,11 @@ struct IngredientSelectionRow: View {
         }
         .badge(formatDaysBadge(selection.earliestDueDate))
         .swipeActions(edge: .trailing) {
-            Button(selection.isSelected ? "Exclude" : "Include") {
+            Button(
+                selection.isSelected
+                    ? NSLocalizedString("Exclude", comment: "Button to exclude ingredient")
+                    : NSLocalizedString("Include", comment: "Button to include ingredient")
+            ) {
                 selection.isSelected.toggle()
             }
             .tint(selection.isSelected ? .red : .green)
@@ -42,9 +50,11 @@ struct IngredientSelectionRow: View {
 
         let days = calendar.dateComponents([.day], from: startOfToday, to: date).day ?? 0
         switch days {
-        case 0: return "today"
-        case 1: return "1d"
-        default: return "\(days)d"
+        case 0: return NSLocalizedString("today", comment: "Badge text for today")
+        case 1: return NSLocalizedString("1d", comment: "Badge text for tomorrow")
+        default:
+            return String(
+                format: NSLocalizedString("%dd", comment: "Badge text for future days"), days)
         }
     }
 }

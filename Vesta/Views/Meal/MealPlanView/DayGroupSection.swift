@@ -33,7 +33,7 @@ struct DayGroupSectionView: View {
                         VStack(alignment: .leading) {
                             Text(meal.recipe.title)
                                 .font(.headline)
-                            Text(meal.mealType.rawValue)
+                            Text(meal.mealType.displayName)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }

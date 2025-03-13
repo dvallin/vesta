@@ -15,16 +15,20 @@ struct ShoppingListGeneratorView: View {
                     IngredientSelectionRow(selection: $selection)
                 }
             }
-            .navigationTitle("Generate Shopping List")
+            .navigationTitle(
+                NSLocalizedString(
+                    "Generate Shopping List",
+                    comment: "Navigation title for shopping list generator")
+            )
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
                         dismiss()
                     }
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Generate") {
+                    Button(NSLocalizedString("Generate", comment: "Generate button")) {
                         viewModel.generateShoppingList(modelContext: modelContext)
                         dismiss()
                     }

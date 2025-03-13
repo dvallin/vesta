@@ -16,7 +16,10 @@ struct TodoItemDetailView: View {
                     isEditingTitle = true
                 }
 
-            Section(header: Text("Description")) {
+            Section(
+                header: Text(
+                    NSLocalizedString("Description", comment: "Description section header"))
+            ) {
                 Text(item.details)
                     .onTapGesture {
                         isEditingDetails = true
@@ -50,14 +53,16 @@ struct TodoItemDetailView: View {
                 )
             )
 
-            Section("Actions") {
+            Section(NSLocalizedString("Actions", comment: "Actions section header")) {
                 Button(action: markAsDone) {
-                    Label("Mark as Done", systemImage: "checkmark.circle")
+                    Label(
+                        NSLocalizedString("Mark as Done", comment: "Mark as done button"),
+                        systemImage: "checkmark.circle")
                 }
                 .disabled(item.isCompleted)
 
                 Toggle(
-                    "Completed",
+                    NSLocalizedString("Completed", comment: "Completed toggle label"),
                     isOn: Binding(
                         get: { item.isCompleted },
                         set: { newValue in
@@ -75,7 +80,8 @@ struct TodoItemDetailView: View {
         #endif
         .sheet(isPresented: $isEditingTitle) {
             EditTitleView(
-                navigationBarTitle: "Edit Title",
+                navigationBarTitle: NSLocalizedString(
+                    "Edit Title", comment: "Edit title view header"),
                 title: Binding(
                     get: { item.title },
                     set: { newValue in
@@ -85,7 +91,8 @@ struct TodoItemDetailView: View {
         }
         .sheet(isPresented: $isEditingDetails) {
             EditDetailsView(
-                navigationBarTitle: "Edit Description",
+                navigationBarTitle: NSLocalizedString(
+                    "Edit Description", comment: "Edit description view header"),
                 details: Binding(
                     get: { item.details },
                     set: { newValue in

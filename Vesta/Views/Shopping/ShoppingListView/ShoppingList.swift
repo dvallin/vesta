@@ -22,13 +22,24 @@ struct ShoppingList: View {
             if filteredShoppingItems.isEmpty {
                 ContentUnavailableView(
                     label: {
-                        Label("No Shopping Items", systemImage: "cart")
+                        Label(
+                            NSLocalizedString(
+                                "No Shopping Items", comment: "Empty shopping list title"),
+                            systemImage: "cart"
+                        )
                     },
                     description: {
-                        Text("Add items to your shopping list")
+                        Text(
+                            NSLocalizedString(
+                                "Add items to your shopping list",
+                                comment: "Empty shopping list description"
+                            )
+                        )
                     },
                     actions: {
-                        Button("Add Item") {
+                        Button(
+                            NSLocalizedString("Add Item", comment: "Button to add shopping item")
+                        ) {
                             viewModel.isPresentingAddShoppingItemView = true
                         }
                     }

@@ -15,13 +15,13 @@ struct NextMealView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
-                    Text(meal.mealType.rawValue)
+                    Text(meal.mealType.displayName)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
             }
         } header: {
-            Text("Next Meal")
+            Text(NSLocalizedString("Next Meal", comment: "Next meal section header"))
                 .font(.title)
                 .foregroundColor(.primary)
         }

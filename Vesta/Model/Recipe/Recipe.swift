@@ -47,25 +47,25 @@ enum Unit: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .teaspoon:
-            return "tsp"
+            return NSLocalizedString("tsp", comment: "Teaspoon unit abbreviation")
         case .tablespoon:
-            return "tbsp"
+            return NSLocalizedString("tbsp", comment: "Tablespoon unit abbreviation")
         case .cup:
-            return "cup"
+            return NSLocalizedString("cup", comment: "Cup unit abbreviation")
         case .milliliter:
-            return "ml"
+            return NSLocalizedString("ml", comment: "Milliliter unit abbreviation")
         case .liter:
-            return "l"
+            return NSLocalizedString("l", comment: "Liter unit abbreviation")
         case .gram:
-            return "g"
+            return NSLocalizedString("g", comment: "Gram unit abbreviation")
         case .kilogram:
-            return "kg"
+            return NSLocalizedString("kg", comment: "Kilogram unit abbreviation")
         case .ounce:
-            return "oz"
+            return NSLocalizedString("oz", comment: "Ounce unit abbreviation")
         case .pound:
-            return "lb"
+            return NSLocalizedString("lb", comment: "Pound unit abbreviation")
         case .piece:
-            return "pc"
+            return NSLocalizedString("pc", comment: "Piece unit abbreviation")
         }
     }
 }

@@ -24,12 +24,15 @@ class AddTodoItemViewModel: ObservableObject {
     @MainActor
     func save() {
         guard !title.isEmpty else {
-            validationMessage = "Please enter a todo title"
+            validationMessage = NSLocalizedString(
+                "Please enter a todo title", comment: "Validation error for empty todo title")
             showingValidationAlert = true
             return
         }
         guard modelContext != nil else {
-            validationMessage = "Environment not configured"
+            validationMessage = NSLocalizedString(
+                "Environment not configured",
+                comment: "Error when environment is not properly configured")
             showingValidationAlert = true
             return
         }
@@ -45,7 +48,12 @@ class AddTodoItemViewModel: ObservableObject {
 
             dismiss!()
         } catch {
-            validationMessage = "Error saving todo item: \(error.localizedDescription)"
+            validationMessage = String(
+                format: NSLocalizedString(
+                    "Error saving todo item: %@",
+                    comment: "Error message when saving todo item fails"),
+                error.localizedDescription
+            )
             showingValidationAlert = true
         }
         isSaving = false

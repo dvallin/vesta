@@ -14,9 +14,15 @@ struct VestaApp: App {
     var body: some Scene {
         WindowGroup {
             TabView {
-                TodayView().tabItem { Label("Today", systemImage: "list.bullet") }
-                MealsView().tabItem { Label("Meals", systemImage: "fork.knife") }
-                ShoppingView().tabItem { Label("Shopping", systemImage: "cart") }
+                TodayView().tabItem {
+                    Label("Today", systemImage: "list.bullet")
+                }
+                MealsView().tabItem {
+                    Label("Meals", systemImage: "fork.knife")
+                }
+                ShoppingView().tabItem {
+                    Label("Shopping", systemImage: "cart")
+                }
             }
         }
         .modelContainer(sharedModelContainer)

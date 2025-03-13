@@ -7,11 +7,11 @@ struct ReadOnlyRecipeDetailView: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Title")) {
+            Section(header: Text(NSLocalizedString("Title", comment: "Section header"))) {
                 Text(recipe.title)
             }
 
-            Section(header: Text("Ingredients")) {
+            Section(header: Text(NSLocalizedString("Ingredients", comment: "Section header"))) {
                 ForEach(recipe.ingredients, id: \.self) { ingredient in
                     HStack {
                         Text(ingredient.name)
@@ -21,7 +21,7 @@ struct ReadOnlyRecipeDetailView: View {
                 }
             }
 
-            Section(header: Text("Details")) {
+            Section(header: Text(NSLocalizedString("Description", comment: "Section header"))) {
                 Text(recipe.details)
             }
         }

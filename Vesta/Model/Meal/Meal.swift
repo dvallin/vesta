@@ -1,10 +1,21 @@
 import Foundation
 import SwiftData
 
-enum MealType: String, Codable {
+enum MealType: String, Codable, CaseIterable {
     case breakfast
     case lunch
     case dinner
+
+    var displayName: String {
+        switch self {
+        case .breakfast:
+            return NSLocalizedString("breakfast", comment: "Breakfast meal type")
+        case .lunch:
+            return NSLocalizedString("lunch", comment: "Lunch meal type")
+        case .dinner:
+            return NSLocalizedString("dinner", comment: "Dinner meal type")
+        }
+    }
 }
 
 @Model

@@ -6,27 +6,59 @@ struct ShoppingItemDetailView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Item Details")) {
-                    Text("Name: \(item.name)")
+                Section(
+                    header: Text(
+                        NSLocalizedString(
+                            "Item Details", comment: "Section header for item details"))
+                ) {
+                    Text(
+                        String(
+                            format: NSLocalizedString("Name: %@", comment: "Item name format"),
+                            item.name))
 
                     if let quantity = item.quantity, let unit = item.unit {
-                        Text("Quantity: \(quantity, specifier: "%.1f") \(unit.rawValue)")
+                        Text(
+                            String(
+                                format: NSLocalizedString(
+                                    "Quantity: %.1f %@", comment: "Item quantity format"),
+                                quantity, unit.displayName))
                     } else {
-                        Text("No quantity specified")
+                        Text(
+                            NSLocalizedString(
+                                "No quantity specified", comment: "No quantity message"))
                     }
 
-                    Toggle("Purchased", isOn: .constant(item.todoItem.isCompleted))
-                        .disabled(true)
+                    Toggle(
+                        NSLocalizedString("Purchased", comment: "Purchase status toggle"),
+                        isOn: .constant(item.todoItem.isCompleted)
+                    )
+                    .disabled(true)
                 }
 
                 if !item.meals.isEmpty {
-                    Section(header: Text("Related Meals")) {
+                    Section(
+                        header: Text(
+                            NSLocalizedString(
+                                "Related Meals", comment: "Section header for related meals"))
+                    ) {
                         ForEach(item.meals) { meal in
                             VStack(alignment: .leading) {
-                                Text("Recipe: \(meal.recipe.title)")
-                                Text("Meal Type: \(meal.mealType.rawValue.capitalized)")
+                                Text(
+                                    String(
+                                        format: NSLocalizedString(
+                                            "Recipe: %@", comment: "Recipe name format"),
+                                        meal.recipe.title))
+                                Text(
+                                    String(
+                                        format: NSLocalizedString(
+                                            "Meal Type: %@", comment: "Meal type format"),
+                                        meal.mealType.displayName))
                                 if let dueDate = meal.todoItem.dueDate {
-                                    Text("Planned for: \(dueDate, format: .dateTime)")
+                                    Text(
+                                        String(
+                                            format: NSLocalizedString(
+                                                "Planned for: %@", comment: "Planned date format"),
+                                            dueDate.formatted(.dateTime)))
                                 }
                             }
                             .padding(.vertical, 4)
@@ -34,10 +66,20 @@ struct ShoppingItemDetailView: View {
                     }
                 }
 
-                Section(header: Text("Todo Item")) {
-                    Text("Title: \(item.todoItem.title)")
+                Section(
+                    header: Text(
+                        NSLocalizedString("Todo Item", comment: "Section header for todo item"))
+                ) {
+                    Text(
+                        String(
+                            format: NSLocalizedString("Title: %@", comment: "Todo title format"),
+                            item.todoItem.title))
                     if let dueDate = item.todoItem.dueDate {
-                        Text("Due Date: \(dueDate, format: .dateTime)")
+                        Text(
+                            String(
+                                format: NSLocalizedString(
+                                    "Due Date: %@", comment: "Due date format"),
+                                dueDate.formatted(.dateTime)))
                     }
                 }
             }

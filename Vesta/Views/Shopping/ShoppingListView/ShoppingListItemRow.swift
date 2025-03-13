@@ -22,14 +22,17 @@ struct ShoppingListItemRow: View {
                         .foregroundColor(item.todoItem.isCompleted ? .secondary : .primary)
 
                     if let quantity = item.quantity, let unit = item.unit {
-                        Text("\(quantity, specifier: "%.1f") \(unit.rawValue)")
+                        Text("\(quantity, specifier: "%.1f") \(unit.displayName)")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
 
                     if let dueDate = item.todoItem.dueDate {
                         Text(
-                            "Needed by: \(dueDate, format: .dateTime.day().month().hour().minute())"
+                            String(
+                                format: NSLocalizedString(
+                                    "Needed by: %@", comment: "Shopping item due date"),
+                                dueDate.formatted(.dateTime.day().month().hour().minute()))
                         )
                         .font(.caption)
                         .foregroundColor(.secondary)

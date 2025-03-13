@@ -6,8 +6,11 @@ struct TitleDetailsSection: View {
     @FocusState.Binding var focusedField: String?
 
     var body: some View {
-        Section(header: Text("Todo Details")) {
-            TextField("Title", text: $title)
+        Section(
+            header: Text(
+                NSLocalizedString("Todo Details", comment: "Section header for todo details"))
+        ) {
+            TextField(NSLocalizedString("Title", comment: "Title field placeholder"), text: $title)
                 .focused($focusedField, equals: "title")
                 .font(.title)
                 .submitLabel(.next)

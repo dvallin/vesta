@@ -10,7 +10,7 @@ struct ToastView: View {
                 .font(.subheadline)
             Spacer()
             Button(action: undoAction) {
-                Text("Undo")
+                Text(NSLocalizedString("Undo", comment: "Undo button"))
                     .font(.subheadline)
                     .foregroundColor(.accentColor)
             }

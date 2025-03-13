@@ -27,7 +27,9 @@ class MealPlanViewModel: ObservableObject {
             for (index, day) in sortedDays.enumerated() {
                 let weekHeader: String? =
                     (index == 0)
-                    ? "Week \(weekNumber(for: day))"
+                    ? String(
+                        format: NSLocalizedString("Week %d", comment: "Week number in meal plan"),
+                        weekNumber(for: day))
                     : nil
                 groups.append(DayGroup(date: day, meals: week[day] ?? [], weekTitle: weekHeader))
             }

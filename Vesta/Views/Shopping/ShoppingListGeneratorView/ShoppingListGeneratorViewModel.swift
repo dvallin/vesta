@@ -47,10 +47,17 @@ class ShoppingListGeneratorViewModel: ObservableObject {
 
     func generateShoppingList(modelContext: ModelContext) {
         for selection in ingredientSelections where selection.isSelected {
+            let todoTitle = String(
+                format: NSLocalizedString("Buy %@", comment: "Shopping list item title"),
+                selection.ingredient.name)
+
+            let todoDetails = String(
+                format: NSLocalizedString("Buy for: %@", comment: "Shopping list item details"),
+                selection.meals.map { $0.recipe.title }.joined(separator: ", "))
+
             let todoItem = TodoItem(
-                title: "buy \(selection.ingredient.name)",
-                details: "Buy for: "
-                    + selection.meals.map { $0.recipe.title }.joined(separator: ", "),
+                title: todoTitle,
+                details: todoDetails,
                 dueDate: selection.earliestDueDate
             )
             modelContext.insert(todoItem)

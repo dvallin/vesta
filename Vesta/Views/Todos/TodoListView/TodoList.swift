@@ -19,15 +19,26 @@ struct TodoList: View {
             if filteredTodoItems.isEmpty {
                 ContentUnavailableView(
                     label: {
-                        Label("No Todo Items", systemImage: "checklist")
+                        Label(
+                            NSLocalizedString("No Todo Items", comment: "Empty todo list title"),
+                            systemImage: "checklist"
+                        )
                     },
                     description: {
-                        Text("No items visible right now.")
+                        Text(
+                            NSLocalizedString(
+                                "No items visible right now.",
+                                comment: "Empty todo list description"
+                            )
+                        )
                     },
                     actions: {
                         HStack {
-                            if viewModel.filterMode != .all || viewModel.showCompletedItems != true {
-                                Button("Show All") {
+                            if viewModel.filterMode != .all || viewModel.showCompletedItems != true
+                            {
+                                Button(
+                                    NSLocalizedString("Show All", comment: "Show all todos button")
+                                ) {
                                     viewModel.filterMode = .all
                                     viewModel.showCompletedItems = true
                                 }
@@ -139,7 +150,6 @@ struct TodoList: View {
     }
 }
 
-
 #Preview("Empty List") {
     return NavigationView {
         TodoList(
@@ -162,12 +172,12 @@ struct TodoList: View {
             details: "This is also done",
             dueDate: Date(),
             isCompleted: true
-        )
+        ),
     ]
-    
+
     let viewModel = TodoListViewModel()
     viewModel.showCompletedItems = false
-    
+
     return NavigationView {
         TodoList(
             viewModel: viewModel,

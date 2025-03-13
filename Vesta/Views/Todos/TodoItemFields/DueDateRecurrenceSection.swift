@@ -6,9 +6,14 @@ struct DueDateRecurrenceSection: View {
     @Binding var recurrenceType: RecurrenceType?
 
     var body: some View {
-        Section(header: Text("Due Date & Recurrence")) {
+        Section(
+            header: Text(
+                NSLocalizedString(
+                    "DueDateRecurrenceHeader", comment: "Section header for due date and recurrence"
+                ))
+        ) {
             Toggle(
-                "Enable Due Date",
+                NSLocalizedString("Enable Due Date", comment: "Toggle for enabling due date"),
                 isOn: Binding(
                     get: { dueDate != nil },
                     set: { newValue in
@@ -19,7 +24,7 @@ struct DueDateRecurrenceSection: View {
 
             if let actualDueDate = dueDate {
                 DatePicker(
-                    "Due Date",
+                    NSLocalizedString("Due Date", comment: "Label for due date picker"),
                     selection: Binding(
                         get: { actualDueDate },
                         set: { newValue in
@@ -29,17 +34,20 @@ struct DueDateRecurrenceSection: View {
                     displayedComponents: [.date, .hourAndMinute]
                 )
 
-                Picker("Recurrence", selection: $recurrenceFrequency) {
-                    Text("None").tag(Optional<RecurrenceFrequency>.none)
-                    Text("Daily").tag(RecurrenceFrequency?.some(.daily))
-                    Text("Weekly").tag(RecurrenceFrequency?.some(.weekly))
-                    Text("Monthly").tag(RecurrenceFrequency?.some(.monthly))
-                    Text("Yearly").tag(RecurrenceFrequency?.some(.yearly))
+                Picker(
+                    NSLocalizedString("Recurrence", comment: "Label for recurrence picker"),
+                    selection: $recurrenceFrequency
+                ) {
+                    Text(NSLocalizedString("None", comment: "No recurrence option"))
+                        .tag(Optional<RecurrenceFrequency>.none)
+                    ForEach(RecurrenceFrequency.allCases, id: \.self) { frequency in
+                        Text(frequency.displayName).tag(Optional(frequency))
+                    }
                 }
                 .pickerStyle(.segmented)
 
                 Toggle(
-                    "Fixed Recurrence",
+                    NSLocalizedString("Fixed Recurrence", comment: "Toggle for fixed recurrence"),
                     isOn: Binding(
                         get: { recurrenceType == .some(.fixed) },
                         set: { newValue in

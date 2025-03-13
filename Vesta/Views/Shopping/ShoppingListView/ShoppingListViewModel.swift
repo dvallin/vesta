@@ -37,11 +37,18 @@ class ShoppingListViewModel: ObservableObject {
         saveContext()
 
         let id = UUID()
-        let actionText =
-            item.todoItem.isCompleted ? "marked as purchased" : "marked as not purchased"
         let toastMessage = ToastMessage(
             id: id,
-            message: "\(item.name) \(actionText)",
+            message: String(
+                format: NSLocalizedString(
+                    "%@ marked as %@",
+                    comment: "Toast message for marking item as purchased/not purchased"
+                ),
+                item.name,
+                item.todoItem.isCompleted
+                    ? NSLocalizedString("purchased", comment: "Purchased status")
+                    : NSLocalizedString("not purchased", comment: "Not purchased status")
+            ),
             undoAction: {
                 undoAction(item, id)
             }

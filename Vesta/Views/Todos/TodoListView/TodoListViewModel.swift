@@ -40,7 +40,11 @@ class TodoListViewModel: ObservableObject {
         let id = UUID()
         let toastMessage = ToastMessage(
             id: id,
-            message: "\(item.title) marked as done",
+            message: String(
+                format: NSLocalizedString(
+                    "%@ marked as done", comment: "Toast message for marking todo as done"),
+                item.title
+            ),
             undoAction: {
                 undoAction(item, id)
             }
@@ -122,13 +126,14 @@ class TodoListViewModel: ObservableObject {
     var displayTitle: String {
         switch filterMode {
         case .all:
-            return "All Tasks"
+            return NSLocalizedString("All Tasks", comment: "Filter mode: all tasks")
         case .today:
-            return "Today's Tasks"
+            return NSLocalizedString("Today's Tasks", comment: "Filter mode: today's tasks")
         case .noDueDate:
-            return "Tasks Without Due Date"
+            return NSLocalizedString(
+                "No Due Date", comment: "Filter mode: tasks without due date")
         case .overdue:
-            return "Overdue Tasks"
+            return NSLocalizedString("Overdue Tasks", comment: "Filter mode: overdue tasks")
         }
     }
 }
