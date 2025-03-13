@@ -1,0 +1,160 @@
+// Common UI Elements
+"Cancel" = "Cancelar";
+"Save" = "Guardar";
+"Done" = "Listo";
+"OK" = "Aceptar";
+"Title" = "Título";
+"Description" = "Descripción";
+"Search" = "Buscar";
+"Name" = "Nombre";
+"None" = "Ninguno";
+"Undo" = "Deshacer";
+"Discard" = "Descartar";
+"Continue Editing" = "Continuar editando";
+"Discard Changes?" = "¿Descartar cambios?";
+"Validation Error" = "Error de validación";
+"Environment not configured" = "Entorno no configurado";
+
+// Recipe Related
+"Recipes" = "Recetas";
+"Add Recipe" = "Añadir receta";
+"Enter recipe title" = "Introducir título de la receta";
+"Ingredients" = "Ingredientes";
+"Unit" = "Unidad";
+"Quantity" = "Cantidad";
+"Please enter an ingredient name." = "Por favor, introduce un nombre de ingrediente.";
+"Please enter a recipe title." = "Por favor, introduce un título para la receta.";
+"Please add at least one ingredient." = "Por favor, añade al menos un ingrediente.";
+"Error saving recipe: %@" = "Error al guardar la receta: %@";
+"Edit Title" = "Editar título";
+"Edit Description" = "Editar descripción";
+
+// Shopping List
+"Shopping List" = "Lista de la compra";
+"No Shopping Items" = "No hay artículos";
+"Add items to your shopping list" = "Añadir artículos a tu lista de la compra";
+"Add Item" = "Añadir artículo";
+"Item Details" = "Detalles del artículo";
+"Item Name" = "Nombre del artículo";
+"Shopping item" = "Artículo";
+"Filter Shopping List" = "Filtrar lista de la compra";
+"Show Purchased Items" = "Mostrar artículos comprados";
+"Generate Shopping List" = "Generar lista de la compra";
+"Generate" = "Generar";
+"Exclude" = "Excluir";
+"Include" = "Incluir";
+"Purchased" = "Comprado";
+"Buy %@" = "Comprar %@";
+"Buy for: %@" = "Comprar para: %@";
+"%@ marked as purchased" = "%@ marcado como comprado";
+"%@ marked as not purchased" = "%@ marcado como no comprado";
+"%@ marked as %@" = "%@ marcado como %@";
+"purchased" = "comprado";
+"not purchased" = "no comprado";
+"Qty" = "Cant";
+"today" = "hoy";
+"%dd" = "%dd";
+"1d" = "1d";
+
+// Shopping Item Details
+"Name: %@" = "Nombre: %@";
+"Quantity: %.1f %@" = "Cantidad: %.1f %@";
+"No quantity specified" = "Cantidad no especificada";
+"Related Meals" = "Comidas relacionadas";
+"Recipe: %@" = "Receta: %@";
+"Meal Type: %@" = "Tipo de comida: %@";
+"Planned for: %@" = "Planificado para: %@";
+
+// Meal Related
+"Add Meal" = "Añadir comida";
+"Date" = "Fecha";
+"Recipe" = "Receta";
+"Scaling Factor" = "Factor de escala";
+"Meal Type" = "Tipo de comida";
+"Please select a recipe" = "Por favor, selecciona una receta";
+"Error saving meal: %@" = "Error al guardar la comida: %@";
+"Scaling Factor:" = "Factor de escala:";
+"Meal Type:" = "Tipo de comida:";
+"Due Date:" = "Fecha límite:";
+"Meal Details" = "Detalles de la comida";
+"Week %d" = "Semana %d";
+"Meal Plan" = "Plan de comidas";
+"Next Meal" = "Próxima comida";
+
+// Todo Items
+"Todo Item" = "Tarea pendiente";
+"Add Todo Item" = "Añadir tarea";
+"Todo Details" = "Detalles de la tarea";
+"Due Date" = "Fecha límite";
+"Due Date & Recurrence" = "Fecha límite y repetición";
+"Actions" = "Acciones";
+"Title: %@" = "Título: %@";
+"Due Date: %@" = "Fecha límite: %@";
+"Needed by: %@" = "Necesario para: %@";
+"Enable Due Date" = "Activar fecha límite";
+"Please enter a todo title" = "Por favor, introduce un título para la tarea";
+"Error saving todo item: %@" = "Error al guardar la tarea: %@";
+"Todo Events" = "Eventos pendientes";
+"Unknown Item" = "Artículo desconocido";
+
+// Todo List Views
+"All Tasks" = "Todas las tareas";
+"Today's Tasks" = "Tareas de hoy";
+"No Due Date" = "Sin fecha límite";
+"Overdue Tasks" = "Tareas vencidas";
+"No Todo Items" = "No hay tareas";
+"No items visible right now." = "No hay elementos visibles ahora.";
+"Show All" = "Mostrar todo";
+"There are overdue tasks" = "Hay tareas vencidas";
+"Reschedule all overdue tasks to today" = "Reprogramar todas las tareas vencidas para hoy";
+"No due date" = "Sin fecha límite";
+
+// Meal Types
+"breakfast" = "Desayuno";
+"lunch" = "Almuerzo";
+"dinner" = "Cena";
+
+// Units
+"tsp" = "cdta";
+"tbsp" = "cda";
+"cup" = "taza";
+"ml" = "ml";
+"l" = "l";
+"g" = "g";
+"kg" = "kg";
+"oz" = "oz";
+"lb" = "lb";
+"pc" = "ud";
+
+// Recurrence
+"Recurrence" = "Repetición";
+"Daily" = "Diario";
+"Weekly" = "Semanal";
+"Monthly" = "Mensual";
+"Yearly" = "Anual";
+"Fixed" = "Fijo";
+"Flexible" = "Flexible";
+"Fixed Recurrence" = "Repetición fija";
+
+// Actions & Status
+"Mark as Done" = "Marcar como completado";
+"Edit Title" = "Editar título";
+"Edit Details" = "Editar detalles";
+"Edit Due Date" = "Editar fecha límite";
+"Edit Recurrence Frequency" = "Editar frecuencia de repetición";
+"Edit Recurrence Type" = "Editar tipo de repetición";
+"Edit Is Completed" = "Editar estado de completado";
+"Completed" = "Completado";
+
+// Filter Options
+"Filter Mode" = "Modo de filtro";
+"Filter Criteria" = "Criterios de filtro";
+"Show Completed Items" = "Mostrar elementos completados";
+"Only Today" = "Solo hoy";
+"No Due Date" = "Sin fecha límite";
+"Overdue" = "Vencido";
+
+// Main Tabs
+"Today" = "Hoy";
+"Meals" = "Comidas";
+"Shopping" = "Compras";

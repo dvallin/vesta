@@ -56,3 +56,80 @@ struct DayGroupSectionView: View {
         }
     }
 }
+
+#Preview {
+    List {
+        // Preview with multiple meals on a single day
+        DayGroupSectionView(
+            group: DayGroup(
+                date: Date(),
+                meals: [
+                    Meal(
+                        scalingFactor: 1.0,
+                        todoItem: TodoItem(
+                            title: "Cook Spaghetti Carbonara",
+                            details: "Classic Italian pasta dish",
+                            dueDate: Date(),
+                            isCompleted: false
+                        ),
+                        recipe: Recipe(
+                            title: "Spaghetti Carbonara",
+                            details: "Traditional Roman pasta"
+                        ),
+                        mealType: .dinner
+                    ),
+                    Meal(
+                        scalingFactor: 1.0,
+                        todoItem: TodoItem(
+                            title: "Make Pancakes",
+                            details: "Fluffy breakfast pancakes",
+                            dueDate: Date(),
+                            isCompleted: true
+                        ),
+                        recipe: Recipe(
+                            title: "Classic Pancakes",
+                            details: "American style pancakes"
+                        ),
+                        mealType: .breakfast
+                    ),
+                    Meal(
+                        scalingFactor: 1.0,
+                        todoItem: TodoItem(
+                            title: "Prepare Caesar Salad",
+                            details: "Fresh lunch salad",
+                            dueDate: Date(),
+                            isCompleted: false
+                        ),
+                        recipe: Recipe(
+                            title: "Caesar Salad",
+                            details: "Classic Caesar salad"
+                        ),
+                        mealType: .lunch
+                    ),
+                ],
+                weekTitle: "This Week"
+            ),
+            onMealSelect: { _ in },
+            onDelete: { _ in },
+            onMarkAsDone: { _ in }
+        )
+    }
+    .modelContainer(for: [Meal.self, TodoItem.self, Recipe.self])
+}
+
+#Preview("Empty Day") {
+    List {
+        // Preview with no meals
+        DayGroupSectionView(
+            group: DayGroup(
+                date: Date().addingTimeInterval(86400),  // Tomorrow
+                meals: [],
+                weekTitle: "Next Week"
+            ),
+            onMealSelect: { _ in },
+            onDelete: { _ in },
+            onMarkAsDone: { _ in }
+        )
+    }
+    .modelContainer(for: [Meal.self, TodoItem.self, Recipe.self])
+}

@@ -74,7 +74,7 @@
 "Due Date:" = "Fälligkeitsdatum:";
 "Meal Details" = "Mahlzeitendetails";
 "Week %d" = "Woche %d";
-"Meal Plan" = "Mahlzeitenplan";
+"Meal Plan" = "Essensplan";
 "Next Meal" = "Nächste Mahlzeit";
 
 // Todo Items
@@ -152,5 +152,5 @@
 
 // Main Tabs
 "Today" = "Heute";
-"Meals" = "Mahlzeiten";
+"Meals" = "Essensplan";
 "Shopping" = "Einkauf";

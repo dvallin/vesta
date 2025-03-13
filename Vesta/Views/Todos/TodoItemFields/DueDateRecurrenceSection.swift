@@ -59,3 +59,43 @@ struct DueDateRecurrenceSection: View {
         }
     }
 }
+
+#Preview {
+    Form {
+        DueDateRecurrenceSection(
+            dueDate: .constant(Date()),
+            recurrenceFrequency: .constant(.weekly),
+            recurrenceType: .constant(.fixed)
+        )
+    }
+}
+
+#Preview("No Due Date") {
+    Form {
+        DueDateRecurrenceSection(
+            dueDate: .constant(nil),
+            recurrenceFrequency: .constant(nil),
+            recurrenceType: .constant(nil)
+        )
+    }
+}
+
+#Preview("With Different Recurrence") {
+    Form {
+        DueDateRecurrenceSection(
+            dueDate: .constant(Date()),
+            recurrenceFrequency: .constant(.monthly),
+            recurrenceType: .constant(.flexible)
+        )
+    }
+}
+
+#Preview("Due Date Only") {
+    Form {
+        DueDateRecurrenceSection(
+            dueDate: .constant(Date()),
+            recurrenceFrequency: .constant(nil),
+            recurrenceType: .constant(nil)
+        )
+    }
+}

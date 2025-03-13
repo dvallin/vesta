@@ -48,3 +48,56 @@ struct EditDetailsView: View {
         presentationMode.wrappedValue.dismiss()
     }
 }
+
+#Preview {
+    // Create a sample binding for details
+    @State var details =
+        "Sample recipe details: \n\n1. Preheat oven to 350°F\n2. Mix ingredients\n3. Bake for 30 minutes"
+
+    return NavigationStack {
+        EditDetailsView(
+            navigationBarTitle: "Edit Recipe Details",
+            details: $details
+        )
+    }
+}
+
+#Preview("Empty Details") {
+    @State var emptyDetails = ""
+
+    return NavigationStack {
+        EditDetailsView(
+            navigationBarTitle: "Add Description",
+            details: $emptyDetails
+        )
+    }
+}
+
+#Preview("Long Details") {
+    @State var longDetails = """
+        Detailed Instructions:
+
+        1. Gather all ingredients
+        2. Prepare the workspace
+        3. Follow each step carefully
+        4. Mix dry ingredients first
+        5. Combine wet ingredients separately
+        6. Fold everything together
+        7. Transfer to baking dish
+        8. Bake until golden brown
+        9. Let cool for 10 minutes
+        10. Serve and enjoy!
+
+        Notes:
+        - Keep an eye on temperature
+        - Don't overmix
+        - Best served warm
+        """
+
+    return NavigationStack {
+        EditDetailsView(
+            navigationBarTitle: "Edit Instructions",
+            details: $longDetails
+        )
+    }
+}

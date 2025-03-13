@@ -15,3 +15,15 @@ struct RecipeTitleInputView: View {
         }
     }
 }
+
+#Preview("Empty") {
+    Form {
+        RecipeTitleInputView(title: .constant(""))
+    }
+}
+
+#Preview("With Title") {
+    Form {
+        RecipeTitleInputView(title: .constant("Spaghetti Carbonara"))
+    }
+}
