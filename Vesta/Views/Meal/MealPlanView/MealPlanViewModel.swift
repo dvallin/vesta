@@ -14,6 +14,7 @@ class MealPlanViewModel: ObservableObject {
     @Published var selectedMeal: Meal?
     @Published var isPresentingAddMealView = false
     @Published var isPresentingRecipeListView = false
+    @Published var isPresentingShoppingListGenerator = false
 
     func configureContext(_ context: ModelContext) {
         self.modelContext = context
@@ -26,7 +27,9 @@ class MealPlanViewModel: ObservableObject {
             for (index, day) in sortedDays.enumerated() {
                 let weekHeader: String? =
                     (index == 0)
-                    ? "Week \(weekNumber(for: day))"
+                    ? String(
+                        format: NSLocalizedString("Week %d", comment: "Week number in meal plan"),
+                        weekNumber(for: day))
                     : nil
                 groups.append(DayGroup(date: day, meals: week[day] ?? [], weekTitle: weekHeader))
             }

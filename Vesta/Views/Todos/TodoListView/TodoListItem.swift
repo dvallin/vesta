@@ -43,9 +43,12 @@ struct TodoListItem: View {
                             .foregroundColor(.secondary)
                         }
                     } else {
-                        Text("No due date")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        Text(
+                            NSLocalizedString(
+                                "No due date", comment: "Label for items without due date")
+                        )
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                     }
                 }
             }

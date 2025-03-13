@@ -9,6 +9,26 @@ enum TodoItemEventType: String, Codable {
     case editRecurrenceFrequency
     case editRecurrenceType
     case editIsCompleted
+
+    var displayName: String {
+        switch self {
+        case .markAsDone:
+            return NSLocalizedString("Mark as Done", comment: "Mark as Done event")
+        case .editTitle:
+            return NSLocalizedString("Edit Title", comment: "Edit Title event")
+        case .editDetails:
+            return NSLocalizedString("Edit Details", comment: "Edit Details event")
+        case .editDueDate:
+            return NSLocalizedString("Edit Due Date", comment: "Edit Due Date event")
+        case .editRecurrenceFrequency:
+            return NSLocalizedString(
+                "Edit Recurrence Frequency", comment: "Edit Recurrence Frequency event")
+        case .editRecurrenceType:
+            return NSLocalizedString("Edit Recurrence Type", comment: "Edit Recurrence Type event")
+        case .editIsCompleted:
+            return NSLocalizedString("Edit Is Completed", comment: "Edit Is Completed event")
+        }
+    }
 }
 
 @Model

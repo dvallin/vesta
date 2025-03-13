@@ -25,12 +25,14 @@ class AddMealViewModel: ObservableObject {
     @MainActor
     func save() {
         guard let recipe = selectedRecipe else {
-            validationMessage = "Please select a recipe"
+            validationMessage = NSLocalizedString(
+                "Please select a recipe", comment: "Recipe selection validation message")
             showingValidationAlert = true
             return
         }
         guard modelContext != nil else {
-            validationMessage = "Environment not configured"
+            validationMessage = NSLocalizedString(
+                "Environment not configured", comment: "Environment configuration error message")
             showingValidationAlert = true
             return
         }
@@ -49,7 +51,10 @@ class AddMealViewModel: ObservableObject {
             try modelContext!.save()
             dismiss!()
         } catch {
-            validationMessage = "Error saving meal: \(error.localizedDescription)"
+            validationMessage = String(
+                format: NSLocalizedString(
+                    "Error saving meal: %@", comment: "Error saving meal message"),
+                error.localizedDescription)
             showingValidationAlert = true
         }
     }

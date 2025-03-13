@@ -32,7 +32,7 @@ struct MealPlanView: View {
                         )
                     }
                 }
-                .navigationTitle("Meal Plan")
+                .navigationTitle(NSLocalizedString("Meal Plan", comment: "Meal plan screen title"))
                 #if os(iOS)
                     .listStyle(InsetGroupedListStyle())
                     .navigationBarTitleDisplayMode(.inline)
@@ -43,7 +43,20 @@ struct MealPlanView: View {
                             Button(action: {
                                 viewModel.isPresentingRecipeListView = true
                             }) {
-                                Label("Recipes", systemImage: "book")
+                                Label(
+                                    NSLocalizedString("Recipes", comment: "Recipes button"),
+                                    systemImage: "book")
+                            }
+                        }
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: {
+                                viewModel.isPresentingShoppingListGenerator = true
+                            }) {
+                                Label(
+                                    NSLocalizedString(
+                                        "Generate Shopping List",
+                                        comment: "Generate shopping list button"),
+                                    systemImage: "cart")
                             }
                         }
                     #endif
@@ -61,6 +74,9 @@ struct MealPlanView: View {
             }
             .sheet(isPresented: $viewModel.isPresentingRecipeListView) {
                 RecipeListView()
+            }
+            .sheet(isPresented: $viewModel.isPresentingShoppingListGenerator) {
+                ShoppingListGeneratorView(meals: meals)
             }
             .onAppear {
                 viewModel.configureContext(modelContext)

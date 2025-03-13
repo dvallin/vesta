@@ -30,7 +30,8 @@ struct AddRecipeView: View {
                 RecipeTitleInputView(title: $title)
 
                 IngredientsSection(
-                    header: "Ingredients",
+                    header: NSLocalizedString(
+                        "Ingredients", comment: "Section header for ingredients"),
                     ingredients: tempIngredients,
                     removeHandler: removeTempIngredient,
                     quantityText: { ingredient in
@@ -39,7 +40,7 @@ struct AddRecipeView: View {
                                 NumberFormatter.localizedString(
                                     from: NSNumber(value: $0), number: .decimal)
                             } ?? ""
-                        let unitPart = ingredient.unit?.rawValue ?? ""
+                        let unitPart = ingredient.unit?.displayName ?? ""
                         return qtyPart + " " + unitPart
                     },
                     nameText: { $0.name },
@@ -54,14 +55,16 @@ struct AddRecipeView: View {
 
                 RecipeDetailsEditorView(details: $details)
             }
-            .navigationTitle("Add Recipe")
+            .navigationTitle(
+                NSLocalizedString("Add Recipe", comment: "Navigation title for add recipe view")
+            )
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
+                        Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
                             if !title.isEmpty || !details.isEmpty || !tempIngredients.isEmpty {
                                 showingDiscardAlert = true
                             } else {
@@ -70,21 +73,34 @@ struct AddRecipeView: View {
                         }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Save") {
+                        Button(NSLocalizedString("Save", comment: "Save button")) {
                             validateAndSave()
                         }
                         .disabled(isSaving)
                     }
                 #endif
             }
-            .alert("Validation Error", isPresented: $showingValidationAlert) {
-                Button("OK", role: .cancel) {}
+            .alert(
+                NSLocalizedString("Validation Error", comment: "Validation error alert title"),
+                isPresented: $showingValidationAlert
+            ) {
+                Button(
+                    NSLocalizedString("OK", comment: "Validation error accept button"),
+                    role: .cancel
+                ) {}
             } message: {
                 Text(validationMessage)
             }
-            .alert("Discard Changes?", isPresented: $showingDiscardAlert) {
-                Button("Discard", role: .destructive) { dismiss() }
-                Button("Continue Editing", role: .cancel) {}
+            .alert(
+                NSLocalizedString("Discard Changes?", comment: "Alert title"),
+                isPresented: $showingDiscardAlert
+            ) {
+                Button(NSLocalizedString("Discard", comment: "Alert button"), role: .destructive) {
+                    dismiss()
+                }
+                Button(
+                    NSLocalizedString("Continue Editing", comment: "Alert button"), role: .cancel
+                ) {}
             }
         }
     }
@@ -93,7 +109,8 @@ struct AddRecipeView: View {
 
     private func addTempIngredient() {
         guard !ingredientName.isEmpty else {
-            validationMessage = "Please enter an ingredient name."
+            validationMessage = NSLocalizedString(
+                "Please enter an ingredient name.", comment: "Validation error message")
             showingValidationAlert = true
             return
         }
@@ -124,12 +141,14 @@ struct AddRecipeView: View {
 
     private func validateAndSave() {
         guard !title.isEmpty else {
-            validationMessage = "Please enter a recipe title."
+            validationMessage = NSLocalizedString(
+                "Please enter a recipe title.", comment: "Validation error message")
             showingValidationAlert = true
             return
         }
         guard !tempIngredients.isEmpty else {
-            validationMessage = "Please add at least one ingredient."
+            validationMessage = NSLocalizedString(
+                "Please add at least one ingredient.", comment: "Validation error message")
             showingValidationAlert = true
             return
         }
@@ -148,7 +167,10 @@ struct AddRecipeView: View {
             try modelContext.save()
             dismiss()
         } catch {
-            validationMessage = "Error saving recipe: \(error.localizedDescription)"
+            validationMessage = String(
+                format: NSLocalizedString(
+                    "Error saving recipe: %@", comment: "Error saving recipe message"),
+                error.localizedDescription)
             showingValidationAlert = true
         }
         isSaving = false

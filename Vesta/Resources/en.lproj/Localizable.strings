@@ -1,0 +1,160 @@
+// Common UI Elements
+"Cancel" = "Cancel";
+"Save" = "Save";
+"Done" = "Done";
+"OK" = "OK";
+"Title" = "Title";
+"Description" = "Description";
+"Search" = "Search";
+"Name" = "Name";
+"None" = "None";
+"Undo" = "Undo";
+"Discard" = "Discard";
+"Continue Editing" = "Continue Editing";
+"Discard Changes?" = "Discard Changes?";
+"Validation Error" = "Validation Error";
+"Environment not configured" = "Environment not configured";
+
+// Recipe Related
+"Recipes" = "Recipes";
+"Add Recipe" = "Add Recipe";
+"Enter recipe title" = "Enter recipe title";
+"Ingredients" = "Ingredients";
+"Unit" = "Unit";
+"Quantity" = "Quantity";
+"Please enter an ingredient name." = "Please enter an ingredient name.";
+"Please enter a recipe title." = "Please enter a recipe title.";
+"Please add at least one ingredient." = "Please add at least one ingredient.";
+"Error saving recipe: %@" = "Error saving recipe: %@";
+"Edit Title" = "Edit Title";
+"Edit Description" = "Edit Description";
+
+// Shopping List
+"Shopping List" = "Shopping List";
+"No Shopping Items" = "No Shopping Items";
+"Add items to your shopping list" = "Add items to your shopping list";
+"Add Item" = "Add Item";
+"Item Details" = "Item Details";
+"Item Name" = "Item Name";
+"Shopping item" = "Shopping item";
+"Filter Shopping List" = "Filter Shopping List";
+"Show Purchased Items" = "Show Purchased Items";
+"Generate Shopping List" = "Generate Shopping List";
+"Generate" = "Generate";
+"Exclude" = "Exclude";
+"Include" = "Include";
+"Purchased" = "Purchased";
+"Buy %@" = "Buy %@";
+"Buy for: %@" = "Buy for: %@";
+"%@ marked as purchased" = "%@ marked as purchased";
+"%@ marked as not purchased" = "%@ marked as not purchased";
+"%@ marked as %@" = "%@ marked as %@";
+"purchased" = "purchased";
+"not purchased" = "not purchased";
+"Qty" = "Qty";
+"today" = "today";
+"%dd" = "%dd";
+"1d" = "1d";
+
+// Shopping Item Details
+"Name: %@" = "Name: %@";
+"Quantity: %.1f %@" = "Quantity: %.1f %@";
+"No quantity specified" = "No quantity specified";
+"Related Meals" = "Related Meals";
+"Recipe: %@" = "Recipe: %@";
+"Meal Type: %@" = "Meal Type: %@";
+"Planned for: %@" = "Planned for: %@";
+
+// Meal Related
+"Add Meal" = "Add Meal";
+"Date" = "Date";
+"Recipe" = "Recipe";
+"Scaling Factor" = "Scaling Factor";
+"Meal Type" = "Meal Type";
+"Please select a recipe" = "Please select a recipe";
+"Error saving meal: %@" = "Error saving meal: %@";
+"Scaling Factor:" = "Scaling Factor:";
+"Meal Type:" = "Meal Type:";
+"Due Date:" = "Due Date:";
+"Meal Details" = "Meal Details";
+"Week %d" = "Week %d";
+"Meal Plan" = "Meal Plan";
+"Next Meal" = "Next Meal";
+
+// Todo Items
+"Todo Item" = "Todo Item";
+"Add Todo Item" = "Add Todo Item";
+"Todo Details" = "Todo Details";
+"Due Date" = "Due Date";
+"Due Date & Recurrence" = "Due Date & Recurrence";
+"Actions" = "Actions";
+"Title: %@" = "Title: %@";
+"Due Date: %@" = "Due Date: %@";
+"Needed by: %@" = "Needed by: %@";
+"Enable Due Date" = "Enable Due Date";
+"Please enter a todo title" = "Please enter a todo title";
+"Error saving todo item: %@" = "Error saving todo item: %@";
+"Todo Events" = "Todo Events";
+"Unknown Item" = "Unknown Item";
+
+// Todo List Views
+"All Tasks" = "All Tasks";
+"Today's Tasks" = "Today's Tasks";
+"No Due Date" = "No Due Date";
+"Overdue Tasks" = "Overdue Tasks";
+"No Todo Items" = "No Todo Items";
+"No items visible right now." = "No items visible right now.";
+"Show All" = "Show All";
+"There are overdue tasks" = "There are overdue tasks";
+"Reschedule all overdue tasks to today" = "Reschedule all overdue tasks to today";
+"No due date" = "No due date";
+
+// Meal Types
+"breakfast" = "Breakfast";
+"lunch" = "Lunch";
+"dinner" = "Dinner";
+
+// Units
+"tsp" = "tsp";
+"tbsp" = "tbsp";
+"cup" = "cup";
+"ml" = "ml";
+"l" = "l";
+"g" = "g";
+"kg" = "kg";
+"oz" = "oz";
+"lb" = "lb";
+"pc" = "pc";
+
+// Recurrence
+"Recurrence" = "Recurrence";
+"Daily" = "Daily";
+"Weekly" = "Weekly";
+"Monthly" = "Monthly";
+"Yearly" = "Yearly";
+"Fixed" = "Fixed";
+"Flexible" = "Flexible";
+"Fixed Recurrence" = "Fixed Recurrence";
+
+// Actions & Status
+"Mark as Done" = "Mark as Done";
+"Edit Title" = "Edit Title";
+"Edit Details" = "Edit Details";
+"Edit Due Date" = "Edit Due Date";
+"Edit Recurrence Frequency" = "Edit Recurrence Frequency";
+"Edit Recurrence Type" = "Edit Recurrence Type";
+"Edit Is Completed" = "Edit Is Completed";
+"Completed" = "Completed";
+
+// Filter Options
+"Filter Mode" = "Filter Mode";
+"Filter Criteria" = "Filter Criteria";
+"Show Completed Items" = "Show Completed Items";
+"Only Today" = "Only Today";
+"No Due Date" = "No Due Date";
+"Overdue" = "Overdue";
+
+// Main Tabs
+"Today" = "Today";
+"Meals" = "Meals";
+"Shopping" = "Shopping";

@@ -33,14 +33,39 @@ class Ingredient {
 }
 
 enum Unit: String, Codable, CaseIterable {
-    case teaspoon = "tsp"
-    case tablespoon = "tbsp"
-    case cup = "cup"
-    case milliliter = "ml"
-    case liter = "l"
-    case gram = "g"
-    case kilogram = "kg"
-    case ounce = "oz"
-    case pound = "lb"
-    case piece = "piece"
+    case teaspoon
+    case tablespoon
+    case cup
+    case milliliter
+    case liter
+    case gram
+    case kilogram
+    case ounce
+    case pound
+    case piece
+
+    var displayName: String {
+        switch self {
+        case .teaspoon:
+            return NSLocalizedString("tsp", comment: "Teaspoon unit abbreviation")
+        case .tablespoon:
+            return NSLocalizedString("tbsp", comment: "Tablespoon unit abbreviation")
+        case .cup:
+            return NSLocalizedString("cup", comment: "Cup unit abbreviation")
+        case .milliliter:
+            return NSLocalizedString("ml", comment: "Milliliter unit abbreviation")
+        case .liter:
+            return NSLocalizedString("l", comment: "Liter unit abbreviation")
+        case .gram:
+            return NSLocalizedString("g", comment: "Gram unit abbreviation")
+        case .kilogram:
+            return NSLocalizedString("kg", comment: "Kilogram unit abbreviation")
+        case .ounce:
+            return NSLocalizedString("oz", comment: "Ounce unit abbreviation")
+        case .pound:
+            return NSLocalizedString("lb", comment: "Pound unit abbreviation")
+        case .piece:
+            return NSLocalizedString("pc", comment: "Piece unit abbreviation")
+        }
+    }
 }

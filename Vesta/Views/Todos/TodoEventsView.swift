@@ -17,14 +17,14 @@ struct TodoEventsView: View {
                 ForEach(groupedEvents(), id: \.id) { groupedEvent in
                     Section(
                         header: Text(
-                            "\(groupedEvent.todoItem?.title ?? "Unknown Item") - \(groupedEvent.events.first?.date ?? Date(), style: .date)"
+                            "\(groupedEvent.todoItem?.title ?? NSLocalizedString("Unknown Item", comment: "Unknown todo item title")) - \(groupedEvent.events.first?.date ?? Date(), style: .date)"
                         )
                     ) {
                         if let todoItem = groupedEvent.todoItem {
                             NavigationLink(destination: TodoItemDetailView(item: todoItem)) {
                                 VStack(alignment: .leading) {
                                     ForEach(groupedEvent.events) { event in
-                                        Text(event.type.rawValue)
+                                        Text(event.type.displayName)
                                             .font(.headline)
                                     }
                                 }
@@ -32,7 +32,7 @@ struct TodoEventsView: View {
                         } else {
                             ForEach(groupedEvent.events) { event in
                                 VStack(alignment: .leading) {
-                                    Text(event.type.rawValue)
+                                    Text(event.type.displayName)
                                         .font(.headline)
                                 }
                             }
@@ -40,7 +40,9 @@ struct TodoEventsView: View {
                     }
                 }
             }
-            .navigationTitle("Todo Events")
+            .navigationTitle(
+                NSLocalizedString("Todo Events", comment: "Navigation title for todo events view")
+            )
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif

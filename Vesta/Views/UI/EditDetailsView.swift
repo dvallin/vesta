@@ -28,13 +28,13 @@ struct EditDetailsView: View {
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
+                        Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
                             presentationMode.wrappedValue.dismiss()
                         }
                     }
 
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Save") {
+                        Button(NSLocalizedString("Save", comment: "Save button")) {
                             onSave()
                         }
                     }

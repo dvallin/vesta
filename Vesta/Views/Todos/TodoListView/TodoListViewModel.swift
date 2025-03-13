@@ -40,7 +40,11 @@ class TodoListViewModel: ObservableObject {
         let id = UUID()
         let toastMessage = ToastMessage(
             id: id,
-            message: "\(item.title) marked as done",
+            message: String(
+                format: NSLocalizedString(
+                    "%@ marked as done", comment: "Toast message for marking todo as done"),
+                item.title
+            ),
             undoAction: {
                 undoAction(item, id)
             }
@@ -77,15 +81,16 @@ class TodoListViewModel: ObservableObject {
     }
 
     func rescheduleOverdueTasks(todoItems: [TodoItem]) {
-        let today = Calendar.current.startOfDay(for: Date())
+        let today = DateUtils.calendar.startOfDay(for: Date())
 
         for item in todoItems {
             if let dueDate = item.dueDate,
                 dueDate < Date(),
-                !Calendar.current.isDateInToday(dueDate),
+                !DateUtils.calendar.isDateInToday(dueDate),
                 !item.isCompleted
             {
-                item.setDueDate(modelContext: modelContext!, dueDate: today)
+                let newDueDate = DateUtils.preserveTime(from: dueDate, applying: today)
+                item.setDueDate(modelContext: modelContext!, dueDate: newDueDate)
             }
         }
         saveContext()
@@ -115,6 +120,20 @@ class TodoListViewModel: ObservableObject {
                 }
                 return false
             }
+        }
+    }
+
+    var displayTitle: String {
+        switch filterMode {
+        case .all:
+            return NSLocalizedString("All Tasks", comment: "Filter mode: all tasks")
+        case .today:
+            return NSLocalizedString("Today's Tasks", comment: "Filter mode: today's tasks")
+        case .noDueDate:
+            return NSLocalizedString(
+                "No Due Date", comment: "Filter mode: tasks without due date")
+        case .overdue:
+            return NSLocalizedString("Overdue Tasks", comment: "Filter mode: overdue tasks")
         }
     }
 }

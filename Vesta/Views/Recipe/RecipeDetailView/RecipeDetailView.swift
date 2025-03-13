@@ -30,7 +30,7 @@ struct RecipeDetailView: View {
                 }
 
             IngredientsSection(
-                header: "Ingredients",
+                header: NSLocalizedString("Ingredients", comment: "Section header for ingredients"),
                 ingredients: viewModel.recipe.ingredients,
                 removeHandler: viewModel.removeIngredient,
                 quantityText: { ingredient in
@@ -39,7 +39,7 @@ struct RecipeDetailView: View {
                             NumberFormatter.localizedString(
                                 from: NSNumber(value: $0), number: .decimal)
                         } ?? ""
-                    let unitPart = ingredient.unit?.rawValue ?? ""
+                    let unitPart = ingredient.unit?.displayName ?? ""
                     return qtyPart + " " + unitPart
                 },
                 nameText: { $0.name },
@@ -52,7 +52,9 @@ struct RecipeDetailView: View {
                 .environment(\.editMode, .constant(.active))
             #endif
 
-            Section(header: Text("Description")) {
+            Section(
+                    header: Text(NSLocalizedString("Description", comment: "Section header"))
+            ) {
                 Text(viewModel.recipe.details)
                     .onTapGesture {
                         isEditingDetails = true
@@ -62,14 +64,14 @@ struct RecipeDetailView: View {
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
-        .alert("Validation Error", isPresented: $showingValidationAlert) {
-            Button("OK", role: .cancel) {}
+        .alert(NSLocalizedString("Validation Error", comment: "Validation error alert title"), isPresented: $showingValidationAlert) {
+            Button(NSLocalizedString("OK", comment: "Validation error accept button"), role: .cancel) {}
         } message: {
             Text(validationMessage)
         }
         .sheet(isPresented: $isEditingTitle) {
             EditTitleView(
-                navigationBarTitle: "Edit Title",
+                navigationBarTitle: NSLocalizedString("Edit Title", comment: "Navigation title"),
                 title: Binding(
                     get: { viewModel.recipe.title },
                     set: { newValue in
@@ -79,7 +81,7 @@ struct RecipeDetailView: View {
         }
         .sheet(isPresented: $isEditingDetails) {
             EditDetailsView(
-                navigationBarTitle: "Edit Description",
+                navigationBarTitle: NSLocalizedString("Edit Description", comment: "Navigation title"),
                 details: Binding(
                     get: { viewModel.recipe.details },
                     set: { newValue in
@@ -105,7 +107,7 @@ struct RecipeDetailView: View {
 
     private func addIngredient() {
         guard !ingredientName.isEmpty else {
-            validationMessage = "Please enter an ingredient name."
+            validationMessage = NSLocalizedString("Please enter an ingredient name.", comment: "Validation error message")
             showingValidationAlert = true
             return
         }

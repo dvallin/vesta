@@ -1,0 +1,156 @@
+// Common UI Elements
+"Cancel" = "Abbrechen";
+"Save" = "Speichern";
+"Done" = "Fertig";
+"OK" = "OK";
+"Title" = "Titel";
+"Description" = "Beschreibung";
+"Search" = "Suchen";
+"Name" = "Name";
+"None" = "Keine";
+"Undo" = "Rückgängig";
+"Discard" = "Verwerfen";
+"Continue Editing" = "Weiter bearbeiten";
+"Discard Changes?" = "Änderungen verwerfen?";
+"Validation Error" = "Validierungsfehler";
+"Environment not configured" = "Umgebung nicht konfiguriert";
+
+// Recipe Related
+"Recipes" = "Rezepte";
+"Add Recipe" = "Rezept hinzufügen";
+"Enter recipe title" = "Rezepttitel eingeben";
+"Ingredients" = "Zutaten";
+"Unit" = "Einheit";
+"Quantity" = "Menge";
+"Please enter an ingredient name." = "Bitte geben Sie einen Zutatennamen ein.";
+"Please enter a recipe title." = "Bitte geben Sie einen Rezepttitel ein.";
+"Please add at least one ingredient." = "Bitte fügen Sie mindestens eine Zutat hinzu.";
+"Error saving recipe: %@" = "Fehler beim Speichern des Rezepts: %@";
+"Edit Title" = "Titel bearbeiten";
+"Edit Description" = "Beschreibung bearbeiten";
+
+// Shopping List
+"Shopping List" = "Einkaufszettel";
+"No Shopping Items" = "Keine Artikel";
+"Add items to your shopping list" = "Artikel zum Einkaufszettel hinzufügen";
+"Add Item" = "Artikel hinzufügen";
+"Item Details" = "Artikeldetails";
+"Item Name" = "Artikelname";
+"Shopping item" = "Artikel";
+"Filter Shopping List" = "Einkaufszettel filtern";
+"Show Purchased Items" = "Gekaufte Artikel anzeigen";
+"Generate Shopping List" = "Einkaufszettel generieren";
+"Generate" = "Generieren";
+"Exclude" = "Ausschließen";
+"Include" = "Einschließen";
+"Purchased" = "Gekauft";
+"Buy %@" = "%@ kaufen";
+"Buy for: %@" = "Kaufen für: %@";
+"%@ marked as purchased" = "%@ als gekauft markiert";
+"%@ marked as not purchased" = "%@ als nicht gekauft markiert";
+"%@ marked as %@" = "%@ als %@ markiert";
+"purchased" = "gekauft";
+"not purchased" = "nicht gekauft";
+
+// Shopping Item Details
+"Name: %@" = "Name: %@";
+"Quantity: %.1f %@" = "Menge: %.1f %@";
+"No quantity specified" = "Keine Menge angegeben";
+"Related Meals" = "Zugehörige Mahlzeiten";
+"Recipe: %@" = "Rezept: %@";
+"Meal Type: %@" = "Mahlzeitenart: %@";
+"Planned for: %@" = "Geplant für: %@";
+
+// Meal Related
+"Add Meal" = "Mahlzeit hinzufügen";
+"Date" = "Datum";
+"Recipe" = "Rezept";
+"Scaling Factor" = "Skalierungsfaktor";
+"Meal Type" = "Mahlzeitenart";
+"Please select a recipe" = "Bitte wählen Sie ein Rezept";
+"Error saving meal: %@" = "Fehler beim Speichern der Mahlzeit: %@";
+"Scaling Factor:" = "Skalierungsfaktor:";
+"Meal Type:" = "Mahlzeitenart:";
+"Due Date:" = "Fälligkeitsdatum:";
+"Meal Details" = "Mahlzeitendetails";
+"Week %d" = "Woche %d";
+"Meal Plan" = "Mahlzeitenplan";
+"Next Meal" = "Nächste Mahlzeit";
+
+// Todo Items
+"Todo Item" = "Aufgabe";
+"Add Todo Item" = "Aufgabe hinzufügen";
+"Todo Details" = "Aufgabendetails";
+"Due Date" = "Fälligkeit";
+"Due Date & Recurrence" = "Fälligkeit & Wiederholung";
+"Actions" = "Aktionen";
+"Title: %@" = "Titel: %@";
+"Due Date: %@" = "Fälligkeit: %@";
+"Needed by: %@" = "Benötigt bis: %@";
+"Enable Due Date" = "Fälligkeit aktivieren";
+"Please enter a todo title" = "Bitte geben Sie einen Aufgabentitel ein";
+"Error saving todo item: %@" = "Fehler beim Speichern der Aufgabe: %@";
+"Todo Events" = "Aufgaben-Events";
+"Unknown Item" = "Unbekannter Artikel";
+
+// Todo List Views
+"All Tasks" = "Alle Aufgaben";
+"Today's Tasks" = "Heutige Aufgaben";
+"No Due Date" = "Keine Fälligkeit";
+"Overdue Tasks" = "Überfällige Aufgaben";
+"No Todo Items" = "Keine Aufgaben";
+"No items visible right now." = "Derzeit keine Einträge sichtbar.";
+"Show All" = "Alle anzeigen";
+"There are overdue tasks" = "Es gibt überfällige Aufgaben";
+"Reschedule all overdue tasks to today" = "Alle überfälligen Aufgaben auf heute verschieben";
+"No due date" = "Kein Fälligkeitsdatum";
+
+// Meal Types
+"breakfast" = "Frühstück";
+"lunch" = "Mittagessen";
+"dinner" = "Abendessen";
+
+// Units
+"tsp" = "TL";
+"tbsp" = "EL";
+"cup" = "Tasse";
+"ml" = "ml";
+"l" = "l";
+"g" = "g";
+"kg" = "kg";
+"oz" = "oz";
+"lb" = "lb";
+"pc" = "Stk";
+
+// Recurrence
+"Recurrence" = "Wiederholung";
+"Daily" = "Täglich";
+"Weekly" = "Wöchentlich";
+"Monthly" = "Monatlich";
+"Yearly" = "Jährlich";
+"Fixed" = "Fest";
+"Flexible" = "Flexibel";
+"Fixed Recurrence" = "Feste Wiederholung";
+
+// Actions & Status
+"Mark as Done" = "Als erledigt markieren";
+"Edit Title" = "Titel bearbeiten";
+"Edit Details" = "Details bearbeiten";
+"Edit Due Date" = "Fälligkeitsdatum bearbeiten";
+"Edit Recurrence Frequency" = "Wiederholungsfrequenz bearbeiten";
+"Edit Recurrence Type" = "Wiederholungstyp bearbeiten";
+"Edit Is Completed" = "Abgeschlossen-Status bearbeiten";
+"Completed" = "Abgeschlossen";
+
+// Filter Options
+"Filter Mode" = "Filtermodus";
+"Filter Criteria" = "Filterkriterien";
+"Show Completed Items" = "Abgeschlossene Einträge anzeigen";
+"Only Today" = "Nur heute";
+"No Due Date" = "Kein Fälligkeitsdatum";
+"Overdue" = "Überfällig";
+
+// Main Tabs
+"Today" = "Heute";
+"Meals" = "Mahlzeiten";
+"Shopping" = "Einkauf";

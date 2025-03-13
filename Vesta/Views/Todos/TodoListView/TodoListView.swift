@@ -29,6 +29,7 @@ struct TodoListView: View {
                     }
                 }
             }
+            .navigationTitle(viewModel.displayTitle)
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
@@ -47,9 +48,12 @@ struct TodoListView: View {
                     }
                 #endif
                 ToolbarItem(placement: .principal) {
-                    TextField("Search", text: $viewModel.searchText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .frame(maxWidth: 200)
+                    TextField(
+                        NSLocalizedString("Search", comment: "Search text field placeholder"),
+                        text: $viewModel.searchText
+                    )
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .frame(maxWidth: 200)
                 }
             }
         }

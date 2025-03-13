@@ -2,12 +2,34 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-enum RecurrenceFrequency: String, Codable {
+enum RecurrenceFrequency: String, Codable, CaseIterable {
     case daily, weekly, monthly, yearly
+
+    var displayName: String {
+        switch self {
+        case .daily:
+            return NSLocalizedString("Daily", comment: "Recurrence frequency: daily")
+        case .weekly:
+            return NSLocalizedString("Weekly", comment: "Recurrence frequency: weekly")
+        case .monthly:
+            return NSLocalizedString("Monthly", comment: "Recurrence frequency: monthly")
+        case .yearly:
+            return NSLocalizedString("Yearly", comment: "Recurrence frequency: yearly")
+        }
+    }
 }
 
-enum RecurrenceType: String, Codable {
+enum RecurrenceType: String, Codable, CaseIterable {
     case fixed, flexible
+
+    var displayName: String {
+        switch self {
+        case .fixed:
+            return NSLocalizedString("Fixed", comment: "Recurrence type: fixed")
+        case .flexible:
+            return NSLocalizedString("Flexible", comment: "Recurrence type: flexible")
+        }
+    }
 }
 
 @Model

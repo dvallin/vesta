@@ -7,11 +7,11 @@ struct ReadOnlyRecipeDetailView: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Title")) {
+            Section(header: Text(NSLocalizedString("Title", comment: "Section header"))) {
                 Text(recipe.title)
             }
 
-            Section(header: Text("Ingredients")) {
+            Section(header: Text(NSLocalizedString("Ingredients", comment: "Section header"))) {
                 ForEach(recipe.ingredients, id: \.self) { ingredient in
                     HStack {
                         Text(ingredient.name)
@@ -21,7 +21,7 @@ struct ReadOnlyRecipeDetailView: View {
                 }
             }
 
-            Section(header: Text("Details")) {
+            Section(header: Text(NSLocalizedString("Description", comment: "Section header"))) {
                 Text(recipe.details)
             }
         }
@@ -29,8 +29,9 @@ struct ReadOnlyRecipeDetailView: View {
 
     private func formattedQuantity(for ingredient: Ingredient) -> String {
         let scaledQuantity = (ingredient.quantity ?? 0) * scalingFactor
-        let qtyPart = NumberFormatter.localizedString(from: NSNumber(value: scaledQuantity), number: .decimal)
-        let unitPart = ingredient.unit?.rawValue ?? ""
+        let qtyPart = NumberFormatter.localizedString(
+            from: NSNumber(value: scaledQuantity), number: .decimal)
+        let unitPart = ingredient.unit?.displayName ?? ""
         return qtyPart + " " + unitPart
     }
 }

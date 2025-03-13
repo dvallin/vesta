@@ -15,13 +15,13 @@ struct NextMealView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
-                    Text("Scaling Factor: \(meal.scalingFactor, specifier: "%.2f")")
+                    Text(meal.mealType.displayName)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
             }
         } header: {
-            Text("Next Meal")
+            Text(NSLocalizedString("Next Meal", comment: "Next meal section header"))
                 .font(.title)
                 .foregroundColor(.primary)
         }

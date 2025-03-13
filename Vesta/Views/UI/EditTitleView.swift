@@ -16,12 +16,14 @@ struct EditTitleView: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Title", text: $value)
-                    .font(.title)
-                    .submitLabel(.done)
-                    .onSubmit {
-                        onSave()
-                    }
+                TextField(
+                    NSLocalizedString("Title", comment: "Title input placeholder"), text: $value
+                )
+                .font(.title)
+                .submitLabel(.done)
+                .onSubmit {
+                    onSave()
+                }
             }
             .navigationTitle(navigationBarTitle)
             #if os(iOS)
@@ -30,13 +32,13 @@ struct EditTitleView: View {
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
+                        Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
                             presentationMode.wrappedValue.dismiss()
                         }
                     }
 
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Save") {
+                        Button(NSLocalizedString("Save", comment: "Save button")) {
                             onSave()
                         }
                     }

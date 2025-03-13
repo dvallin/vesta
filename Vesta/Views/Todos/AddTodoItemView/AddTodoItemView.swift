@@ -24,7 +24,7 @@ struct AddTodoItemView: View {
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
+                        Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
                             Task {
                                 viewModel.cancel()
                             }
@@ -32,7 +32,7 @@ struct AddTodoItemView: View {
                     }
 
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Save") {
+                        Button(NSLocalizedString("Save", comment: "Save button")) {
                             viewModel.save()
                         }
                         .disabled(viewModel.isSaving)
@@ -40,26 +40,36 @@ struct AddTodoItemView: View {
                 #endif
 
                 ToolbarItem(placement: .keyboard) {
-                    Button("Done") {
+                    Button(NSLocalizedString("Done", comment: "Done button")) {
                         focusedField = nil
                     }
                 }
             }
-            .alert("Validation Error", isPresented: $viewModel.showingValidationAlert) {
-                Button("OK", role: .cancel) {}
+            .alert(
+                NSLocalizedString("Validation Error", comment: "Validation error alert title"),
+                isPresented: $viewModel.showingValidationAlert
+            ) {
+                Button(NSLocalizedString("OK", comment: "OK button"), role: .cancel) {}
             } message: {
                 Text(viewModel.validationMessage)
             }
-            .alert("Discard Changes?", isPresented: $viewModel.showingDiscardAlert) {
-                Button("Discard", role: .destructive) {
+            .alert(
+                NSLocalizedString("Discard Changes?", comment: "Discard changes alert title"),
+                isPresented: $viewModel.showingDiscardAlert
+            ) {
+                Button(NSLocalizedString("Discard", comment: "Discard button"), role: .destructive)
+                {
                     Task {
                         viewModel.discard()
                     }
                 }
-                Button("Continue Editing", role: .cancel) {}
+                Button(
+                    NSLocalizedString("Continue Editing", comment: "Continue editing button"),
+                    role: .cancel
+                ) {}
             }
         }
-        .navigationTitle("Add Todo Item")
+        .navigationTitle(NSLocalizedString("Add Todo Item", comment: "Add todo item view title"))
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
