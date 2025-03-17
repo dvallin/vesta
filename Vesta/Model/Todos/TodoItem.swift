@@ -136,6 +136,10 @@ class TodoItem {
         let _ = createEvent(
             type: .editIgnoreTimeComponent, previousIgnoreTimeComponent: self.ignoreTimeComponent)
         self.ignoreTimeComponent = ignoreTimeComponent
+
+        if ignoreTimeComponent, let dueDate = self.dueDate {
+            self.dueDate = DateUtils.calendar.startOfDay(for: dueDate)
+        }
     }
 
     func undoLastEvent(modelContext: ModelContext) {
@@ -179,8 +183,8 @@ class TodoItem {
             dueDate = calendar.date(byAdding: .year, value: 1, to: baseDate)
         }
 
-        if ignoreTimeComponent {
-            dueDate = DateUtils.calendar.startOfDay(for: dueDate ?? Date())
+        if ignoreTimeComponent, let dueDate = dueDate {
+            self.dueDate = DateUtils.calendar.startOfDay(for: dueDate)
         }
     }
 
