@@ -47,6 +47,10 @@ class AddTodoItemViewModel: ObservableObject {
                 recurrenceInterval: recurrenceInterval, ignoreTimeComponent: ignoreTimeComponent)
             modelContext!.insert(newItem)
 
+            if let dueDate = dueDate {
+                NotificationManager.shared.scheduleNotification(for: newItem)
+            }
+
             try modelContext!.save()
 
             dismiss!()

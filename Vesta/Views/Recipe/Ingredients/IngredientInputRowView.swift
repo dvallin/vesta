@@ -2,7 +2,7 @@ import SwiftUI
 
 struct IngredientInputRowView: View {
     @Binding var ingredientQuantity: String
-    @Binding var ingredientUnit: Unit
+    @Binding var ingredientUnit: Unit?
     @Binding var ingredientName: String
 
     let onAdd: () -> Void
@@ -33,6 +33,7 @@ struct IngredientInputRowView: View {
                 .layoutPriority(1)
 
                 Picker("", selection: $ingredientUnit) {
+                    Text("None").tag(nil as Unit?)
                     ForEach(Unit.allCases, id: \.self) { unit in
                         Text(unit.displayName).tag(unit as Unit?)
                     }
@@ -65,7 +66,7 @@ struct IngredientInputRowView: View {
 
 #Preview {
     @Previewable @State var quantity = ""
-    @Previewable @State var unit: Unit = .piece
+    @Previewable @State var unit: Unit? = nil
     @Previewable @State var name = ""
 
     Form {

@@ -17,7 +17,7 @@ struct AddRecipeView: View {
 
     @State private var ingredientName: String = ""
     @State private var ingredientQuantity: String = ""
-    @State private var ingredientUnit: Unit = .piece
+    @State private var ingredientUnit: Unit? = nil
 
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
@@ -130,7 +130,7 @@ struct AddRecipeView: View {
         // Reset the input fields.
         ingredientName = ""
         ingredientQuantity = ""
-        ingredientUnit = .piece
+        ingredientUnit = nil
     }
 
     private func removeTempIngredient(_ ingredient: TempIngredient) {

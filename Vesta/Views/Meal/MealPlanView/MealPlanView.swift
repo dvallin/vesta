@@ -27,7 +27,9 @@ struct MealPlanView: View {
                                 viewModel.deleteMeal(meals: meals, at: indexSet, for: group.date)
                             },
                             onMarkAsDone: { todoItem in
-                                viewModel.markAsDone(todoItem)
+                                if let todoItem = todoItem {
+                                    viewModel.markAsDone(todoItem)
+                                }
                             }
                         )
                     }

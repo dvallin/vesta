@@ -3,10 +3,11 @@ import SwiftUI
 
 struct TodoListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: [
-        SortDescriptor(\TodoItem.dueDate, order: .forward),
-        SortDescriptor(\TodoItem.title, order: .forward),
-    ]) var todoItems: [TodoItem]
+    @Query(
+        sort: [
+            SortDescriptor(\TodoItem.dueDate, order: .forward),
+            SortDescriptor(\TodoItem.title, order: .forward),
+        ]) var todoItems: [TodoItem]
 
     @StateObject var viewModel: TodoListViewModel
 

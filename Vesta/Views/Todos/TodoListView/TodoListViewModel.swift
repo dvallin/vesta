@@ -34,7 +34,8 @@ class TodoListViewModel: ObservableObject {
     }
 
     func markAsDone(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
-        item.markAsDone(modelContext: modelContext!)
+        item.markAsDone()
+        NotificationManager.shared.cancelNotification(for: item)
         saveContext()
 
         let id = UUID()
@@ -52,14 +53,20 @@ class TodoListViewModel: ObservableObject {
         toastMessages.append(toastMessage)
     }
 
-    func markAsDone(_ item: TodoItem, id: UUID) {
-        item.undoLastEvent(modelContext: modelContext!)
+    func undoMarkAsDone(_ item: TodoItem, id: UUID) {
+        if let lastEvent = item.undoLastEvent() {
+            modelContext!.delete(lastEvent)
+        }
+        if let dueDate = item.dueDate {
+            NotificationManager.shared.scheduleNotification(for: item)
+        }
         saveContext()
 
         toastMessages.removeAll { $0.id == id }
     }
 
     func deleteItem(_ item: TodoItem) {
+        NotificationManager.shared.cancelNotification(for: item)
         modelContext!.delete(item)
         saveContext()
     }
@@ -80,7 +87,7 @@ class TodoListViewModel: ObservableObject {
             if item.isOverdue && !item.isCompleted {
                 if let dueDate = item.dueDate {
                     let newDueDate = DateUtils.preserveTime(from: dueDate, applying: today)
-                    item.setDueDate(modelContext: modelContext!, dueDate: newDueDate)
+                    item.setDueDate(dueDate: newDueDate)
                 }
             }
         }

@@ -18,10 +18,9 @@ struct DateUtils {
             hour: timeComponents.hour ?? 0, minute: timeComponents.minute ?? 0, for: newDate)
     }
 
-    static func tomorrowAtMidnight() -> Date {
+    static func todayStartOfday() -> Date {
         let calendar = Calendar.current
-        let startOfToday = calendar.startOfDay(for: Date())
-        return calendar.date(byAdding: .day, value: 1, to: startOfToday)!
+        return calendar.startOfDay(for: Date())
     }
 
     static func mealTime(for mealType: MealType) -> (hour: Int, minute: Int) {

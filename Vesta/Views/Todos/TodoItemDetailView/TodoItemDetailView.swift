@@ -2,128 +2,94 @@ import SwiftUI
 
 struct TodoItemDetailView: View {
     @Environment(\.modelContext) private var modelContext
-    @Bindable var item: TodoItem
+    @StateObject private var viewModel: TodoItemDetailViewModel
 
-    @State private var isEditingTitle = false
-    @State private var isEditingDetails = false
+    init(item: TodoItem) {
+        _viewModel = StateObject(wrappedValue: TodoItemDetailViewModel(item: item))
+    }
 
     var body: some View {
         Form {
-            Text(item.title)
+            Text(viewModel.item.title)
                 .font(.title)
                 .bold()
                 .onTapGesture {
-                    isEditingTitle = true
+                    viewModel.isEditingTitle = true
                 }
 
             Section(
                 header: Text(
                     NSLocalizedString("Description", comment: "Description section header"))
             ) {
-                Text(item.details)
+                Text(viewModel.item.details)
                     .onTapGesture {
-                        isEditingDetails = true
+                        viewModel.isEditingDetails = true
                     }
             }
 
             DueDateRecurrenceSection(
                 dueDate: Binding(
-                    get: { item.dueDate },
-                    set: { newValue in
-                        item.setDueDate(modelContext: modelContext, dueDate: newValue)
-                    }
+                    get: { viewModel.item.dueDate },
+                    set: { viewModel.setDueDate(dueDate: $0) }
                 ),
                 recurrenceFrequency: Binding(
-                    get: { item.recurrenceFrequency },
-                    set: { newValue in
-                        item.setRecurrenceFrequency(
-                            modelContext: modelContext,
-                            recurrenceFrequency: newValue
-                        )
-                    }
+                    get: { viewModel.item.recurrenceFrequency },
+                    set: { viewModel.setRecurrenceFrequency(recurrenceFrequency: $0) }
                 ),
-                recurrenceInterval:  Binding(
-                    get: { item.recurrenceInterval },
-                    set: { newValue in
-                        item.setRecurrenceInterval(
-                            modelContext: modelContext,
-                            recurrenceInterval: newValue
-                        )
-                    }
+                recurrenceInterval: Binding(
+                    get: { viewModel.item.recurrenceInterval },
+                    set: { viewModel.setRecurrenceInterval(recurrenceInterval: $0) }
                 ),
                 recurrenceType: Binding(
-                    get: { item.recurrenceType },
-                    set: { newValue in
-                        item.setRecurrenceType(
-                            modelContext: modelContext,
-                            recurrenceType: newValue
-                        )
-                    }
+                    get: { viewModel.item.recurrenceType },
+                    set: { viewModel.setRecurrenceType(recurrenceType: $0) }
                 ),
                 ignoreTimeComponent: Binding(
-                    get: { item.ignoreTimeComponent },
-                    set: { newValue in
-                        item.setIgnoreTimeComponent(
-                            modelContext: modelContext,
-                            ignoreTimeComponent: newValue
-                        )
-                    }
+                    get: { viewModel.item.ignoreTimeComponent },
+                    set: { viewModel.setIgnoreTimeComponent(ignoreTimeComponent: $0) }
                 )
             )
 
             Section(NSLocalizedString("Actions", comment: "Actions section header")) {
-                Button(action: markAsDone) {
+                Button(action: { viewModel.markAsDone() }) {
                     Label(
                         NSLocalizedString("Mark as Done", comment: "Mark as done button"),
                         systemImage: "checkmark.circle")
                 }
-                .disabled(item.isCompleted)
+                .disabled(viewModel.item.isCompleted)
 
                 Toggle(
                     NSLocalizedString("Completed", comment: "Completed toggle label"),
                     isOn: Binding(
-                        get: { item.isCompleted },
-                        set: { newValue in
-                            item.setIsCompleted(
-                                modelContext: modelContext,
-                                isCompleted: newValue
-                            )
-                        }
+                        get: { viewModel.item.isCompleted },
+                        set: { viewModel.setIsCompleted(isCompleted: $0) }
                     )
                 )
             }
         }
+        .onAppear {
+            viewModel.configureContext(modelContext)
+        }
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
-        .sheet(isPresented: $isEditingTitle) {
+        .sheet(isPresented: $viewModel.isEditingTitle) {
             EditTitleView(
                 navigationBarTitle: NSLocalizedString(
                     "Edit Title", comment: "Edit title view header"),
                 title: Binding(
-                    get: { item.title },
-                    set: { newValue in
-                        item.setTitle(modelContext: modelContext, title: newValue)
-                    }
+                    get: { viewModel.item.title },
+                    set: { viewModel.setTitle(title: $0) }
                 ))
         }
-        .sheet(isPresented: $isEditingDetails) {
+        .sheet(isPresented: $viewModel.isEditingDetails) {
             EditDetailsView(
                 navigationBarTitle: NSLocalizedString(
                     "Edit Description", comment: "Edit description view header"),
                 details: Binding(
-                    get: { item.details },
-                    set: { newValue in
-                        item.setDetails(
-                            modelContext: modelContext, details: newValue)
-                    }
+                    get: { viewModel.item.details },
+                    set: { viewModel.setDetails(details: $0) }
                 ))
-        }
-    }
-
-    private func markAsDone() {
-        withAnimation {
-            item.markAsDone(modelContext: modelContext)
         }
     }
 }

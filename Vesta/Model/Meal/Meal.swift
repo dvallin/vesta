@@ -21,11 +21,14 @@ enum MealType: String, Codable, CaseIterable {
 @Model
 class Meal {
     var scalingFactor: Double
+    var mealType: MealType
+
     @Relationship(deleteRule: .cascade)
     var todoItem: TodoItem
+
     @Relationship(deleteRule: .nullify)
     var recipe: Recipe
-    var mealType: MealType
+
     @Relationship(deleteRule: .nullify, inverse: \ShoppingListItem.meals)
     var shoppingListItems: [ShoppingListItem]
 

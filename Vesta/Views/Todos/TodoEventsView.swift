@@ -94,13 +94,13 @@ struct TodoEventsView: View {
         context.insert(todoItem2)
 
         // Create sample events for todoItem1
-        todoItem1.markAsDone(modelContext: context)
-        todoItem1.setTitle(modelContext: context, title: "Buy groceries and supplies")
-        todoItem1.setDetails(modelContext: context, details: "Milk, Bread, Eggs, and Paper towels")
+        todoItem1.markAsDone()
+        todoItem1.setTitle(title: "Buy groceries and supplies")
+        todoItem1.setDetails(details: "Milk, Bread, Eggs, and Paper towels")
 
         // Create sample events for todoItem2
-        todoItem2.setDueDate(modelContext: context, dueDate: Date().addingTimeInterval(14400))
-        todoItem2.markAsDone(modelContext: context)
+        todoItem2.setDueDate(dueDate: Date().addingTimeInterval(14400))
+        todoItem2.markAsDone()
 
         return TodoEventsView()
             .modelContainer(container)

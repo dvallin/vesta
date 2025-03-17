@@ -46,6 +46,12 @@ class TodoItem {
     @Relationship(deleteRule: .cascade)
     var events: [TodoItemEvent]
 
+    @Relationship(deleteRule: .cascade, inverse: \Meal.todoItem)
+    var meal: Meal?
+
+    @Relationship(deleteRule: .cascade, inverse: \ShoppingListItem.todoItem)
+    var shoppingListItem: ShoppingListItem?
+
     init(
         title: String,
         details: String,
@@ -55,7 +61,9 @@ class TodoItem {
         recurrenceType: RecurrenceType? = nil,
         recurrenceInterval: Int? = nil,
         events: [TodoItemEvent] = [],
-        ignoreTimeComponent: Bool = true
+        ignoreTimeComponent: Bool = true,
+        meal: Meal? = nil,
+        shoppingListItem: ShoppingListItem? = nil
     ) {
         self.title = title
         self.details = details
@@ -66,6 +74,8 @@ class TodoItem {
         self.recurrenceInterval = recurrenceInterval
         self.events = events
         self.ignoreTimeComponent = ignoreTimeComponent
+        self.meal = meal
+        self.shoppingListItem = shoppingListItem
     }
 
     var isToday: Bool {
@@ -88,7 +98,7 @@ class TodoItem {
         return self.isOverdue && !self.isToday
     }
 
-    func markAsDone(modelContext: ModelContext) {
+    func markAsDone() {
         let event = createEvent(
             type: .markAsDone, previousDueDate: dueDate, previousIsCompleted: isCompleted)
 
@@ -102,46 +112,58 @@ class TodoItem {
         }
     }
 
-    func setDetails(modelContext: ModelContext, details: String) {
+    func setDetails(details: String) {
         let _ = createEvent(type: .editDetails, previousDetails: self.details)
         self.details = details
     }
 
-    func setTitle(modelContext: ModelContext, title: String) {
+    func setTitle(title: String) {
         let _ = createEvent(type: .editTitle, previousTitle: self.title)
         self.title = title
     }
 
-    func setDueDate(modelContext: ModelContext, dueDate: Date?) {
+    func setDueDate(dueDate: Date?) {
         let _ = createEvent(type: .editDueDate, previousDueDate: self.dueDate)
         self.dueDate = dueDate
+
+        if dueDate != nil {
+            NotificationManager.shared.scheduleNotification(for: self)
+        } else {
+            NotificationManager.shared.cancelNotification(for: self)
+        }
     }
 
-    func setIsCompleted(modelContext: ModelContext, isCompleted: Bool) {
+    func setIsCompleted(isCompleted: Bool) {
         let _ = createEvent(type: .editIsCompleted, previousIsCompleted: self.isCompleted)
         self.isCompleted = isCompleted
+
+        if isCompleted {
+            NotificationManager.shared.cancelNotification(for: self)
+        } else {
+            NotificationManager.shared.scheduleNotification(for: self)
+        }
     }
 
     func setRecurrenceFrequency(
-        modelContext: ModelContext, recurrenceFrequency: RecurrenceFrequency?
+        recurrenceFrequency: RecurrenceFrequency?
     ) {
         let _ = createEvent(
             type: .editRecurrenceFrequency, previousRecurrenceFrequency: self.recurrenceFrequency)
         self.recurrenceFrequency = recurrenceFrequency
     }
 
-    func setRecurrenceInterval(modelContext: ModelContext, recurrenceInterval: Int?) {
+    func setRecurrenceInterval(recurrenceInterval: Int?) {
         let _ = createEvent(
             type: .editRecurrenceInterval, previousRecurrenceInterval: self.recurrenceInterval)
         self.recurrenceInterval = recurrenceInterval
     }
 
-    func setRecurrenceType(modelContext: ModelContext, recurrenceType: RecurrenceType?) {
+    func setRecurrenceType(recurrenceType: RecurrenceType?) {
         let _ = createEvent(type: .editRecurrenceType, previousRecurrenceType: self.recurrenceType)
         self.recurrenceType = recurrenceType
     }
 
-    func setIgnoreTimeComponent(modelContext: ModelContext, ignoreTimeComponent: Bool) {
+    func setIgnoreTimeComponent(ignoreTimeComponent: Bool) {
         let _ = createEvent(
             type: .editIgnoreTimeComponent, previousIgnoreTimeComponent: self.ignoreTimeComponent)
         self.ignoreTimeComponent = ignoreTimeComponent
@@ -149,10 +171,13 @@ class TodoItem {
         if ignoreTimeComponent, let dueDate = self.dueDate {
             self.dueDate = DateUtils.calendar.startOfDay(for: dueDate)
         }
+
+        // Reschedule notification with new time component setting
+        NotificationManager.shared.scheduleNotification(for: self)
     }
 
-    func undoLastEvent(modelContext: ModelContext) {
-        guard let lastEvent = events.popLast() else { return }
+    func undoLastEvent() -> TodoItemEvent? {
+        guard let lastEvent = events.popLast() else { return nil }
 
         switch lastEvent.type {
         case .markAsDone:
@@ -177,7 +202,7 @@ class TodoItem {
                 lastEvent.previousIgnoreTimeComponent ?? self.ignoreTimeComponent
         }
 
-        modelContext.delete(lastEvent)
+        return lastEvent
     }
 
     private func updateDueDate(for frequency: RecurrenceFrequency, basedOn baseDate: Date) {

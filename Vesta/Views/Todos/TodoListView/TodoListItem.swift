@@ -68,7 +68,7 @@ struct TodoListItem: View {
 
     private func undoMarkAsDone(item: TodoItem, id: UUID) {
         withAnimation {
-            viewModel.markAsDone(item, id: id)
+            viewModel.undoMarkAsDone(item, id: id)
         }
     }
 }

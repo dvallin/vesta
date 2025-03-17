@@ -6,22 +6,36 @@ struct AddShoppingItemView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var name: String = ""
+    @State private var showQuantityField: Bool = false
     @State private var quantity: String = ""
-    @State private var selectedUnit: Unit = .piece
-
-    enum FocusableField: Hashable {
-        case quantity
-        case name
-    }
+    @State private var selectedUnit: Unit? = nil
 
     @FocusState private var focusedField: FocusableField?
+
+    enum FocusableField: Hashable {
+        case name
+        case quantity
+    }
 
     var body: some View {
         NavigationView {
             Form {
                 Section {
-                    HStack {
-                        HStack(spacing: 4) {
+                    TextField(
+                        NSLocalizedString("Name", comment: "Item name field placeholder"),
+                        text: $name
+                    )
+                    .focused($focusedField, equals: .name)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .submitLabel(.done)
+                    .onSubmit {
+                        if !name.isEmpty {
+                            addItem()
+                        }
+                    }
+
+                    if showQuantityField {
+                        HStack {
                             TextField(
                                 NSLocalizedString(
                                     "Quantity", comment: "Quantity field placeholder"),
@@ -32,11 +46,7 @@ struct AddShoppingItemView: View {
                             #if os(iOS)
                                 .keyboardType(.decimalPad)
                             #endif
-                            .submitLabel(.next)
-                            .onSubmit {
-                                focusedField = .name
-                            }
-                            .layoutPriority(1)
+                            .frame(width: 100)
 
                             Picker("", selection: $selectedUnit) {
                                 ForEach(Unit.allCases, id: \.self) { unit in
@@ -44,22 +54,15 @@ struct AddShoppingItemView: View {
                                 }
                             }
                             .pickerStyle(MenuPickerStyle())
-                            .fixedSize()
                         }
-                        .frame(width: 150)
+                    }
+                }
 
-                        TextField(
-                            NSLocalizedString("Name", comment: "Item name field placeholder"),
-                            text: $name
-                        )
-                        .focused($focusedField, equals: .name)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .submitLabel(.done)
-                        .onSubmit {
-                            if !name.isEmpty {
-                                addItem()
-                            }
-                        }
+                if !showQuantityField {
+                    Button("Add Quantity") {
+                        showQuantityField = true
+                        selectedUnit = .piece
+                        focusedField = .quantity
                     }
                 }
             }
@@ -73,9 +76,7 @@ struct AddShoppingItemView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(
                         NSLocalizedString(
-                            "Cancel",
-                            comment: "Button to cancel adding a shopping item"
-                        )
+                            "Cancel", comment: "Button to cancel adding a shopping item")
                     ) {
                         dismiss()
                     }
@@ -83,9 +84,7 @@ struct AddShoppingItemView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(
                         NSLocalizedString(
-                            "Add Item",
-                            comment: "Button to confirm adding a shopping item"
-                        )
+                            "Add Item", comment: "Button to confirm adding a shopping item")
                     ) {
                         addItem()
                     }
@@ -94,6 +93,9 @@ struct AddShoppingItemView: View {
             }
         }
         .presentationDetents([.medium, .large])
+        .onAppear {
+            focusedField = .name
+        }
     }
 
     private func addItem() {
@@ -122,6 +124,9 @@ struct AddShoppingItemView: View {
 
         modelContext.insert(todoItem)
         modelContext.insert(newItem)
+
+        selectedUnit = nil
+        showQuantityField = false
 
         dismiss()
     }

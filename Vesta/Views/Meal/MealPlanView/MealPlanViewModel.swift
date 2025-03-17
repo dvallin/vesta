@@ -89,7 +89,9 @@ class MealPlanViewModel: ObservableObject {
     func deleteMeal(meals: [Meal], at offsets: IndexSet, for date: Date) {
         withAnimation {
             let mealsForDate = mealsForDate(meals: meals, in: date)
+
             offsets.map { mealsForDate[$0] }.forEach { meal in
+                NotificationManager.shared.cancelNotification(for: meal.todoItem)
                 modelContext?.delete(meal)
             }
             saveContext()
@@ -97,7 +99,7 @@ class MealPlanViewModel: ObservableObject {
     }
 
     func markAsDone(_ todoItem: TodoItem) {
-        todoItem.markAsDone(modelContext: modelContext!)
+        todoItem.markAsDone()
         saveContext()
     }
 

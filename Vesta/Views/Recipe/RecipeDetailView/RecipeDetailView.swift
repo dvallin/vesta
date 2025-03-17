@@ -8,7 +8,7 @@ struct RecipeDetailView: View {
     // For entering new ingredient values.
     @State private var ingredientName: String = ""
     @State private var ingredientQuantity: String = ""
-    @State private var ingredientUnit: Unit = .piece
+    @State private var ingredientUnit: Unit? = nil
 
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
@@ -125,7 +125,7 @@ struct RecipeDetailView: View {
         // Reset the input fields.
         ingredientName = ""
         ingredientQuantity = ""
-        ingredientUnit = .piece
+        ingredientUnit = nil
     }
 }
 

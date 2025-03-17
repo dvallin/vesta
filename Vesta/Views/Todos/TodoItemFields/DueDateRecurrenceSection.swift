@@ -19,7 +19,7 @@ struct DueDateRecurrenceSection: View {
                 isOn: Binding(
                     get: { dueDate != nil },
                     set: { newValue in
-                        dueDate = newValue ? DateUtils.tomorrowAtMidnight() : nil
+                        dueDate = newValue ? DateUtils.todayStartOfday() : nil
                     }
                 )
             )

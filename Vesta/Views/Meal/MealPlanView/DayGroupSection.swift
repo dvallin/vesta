@@ -4,7 +4,7 @@ struct DayGroupSectionView: View {
     let group: DayGroup
     let onMealSelect: (Meal) -> Void
     let onDelete: (IndexSet) -> Void
-    let onMarkAsDone: (TodoItem) -> Void
+    let onMarkAsDone: (TodoItem?) -> Void
 
     var body: some View {
         Section {
