@@ -8,10 +8,14 @@ class Recipe {
     @Relationship(deleteRule: .cascade)
     var ingredients: [Ingredient]
 
+    @Relationship(deleteRule: .cascade, inverse: \Meal.recipe)
+    var meals: [Meal]
+
     init(title: String, details: String, ingredients: [Ingredient] = []) {
         self.title = title
         self.details = details
         self.ingredients = ingredients
+        self.meals = []
     }
 }
 
