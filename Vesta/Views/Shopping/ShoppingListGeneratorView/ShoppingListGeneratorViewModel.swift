@@ -58,7 +58,8 @@ class ShoppingListGeneratorViewModel: ObservableObject {
             let todoItem = TodoItem(
                 title: todoTitle,
                 details: todoDetails,
-                dueDate: selection.earliestDueDate
+                dueDate: selection.earliestDueDate,
+                ignoreTimeComponent: false
             )
             modelContext.insert(todoItem)
 
