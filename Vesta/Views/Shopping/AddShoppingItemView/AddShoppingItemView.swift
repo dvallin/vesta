@@ -6,73 +6,86 @@ struct AddShoppingItemView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var name: String = ""
-    @State private var quantity: Double?
-    @State private var selectedUnit: Unit?
+    @State private var quantity: String = ""
+    @State private var selectedUnit: Unit = .piece
+
+    enum FocusableField: Hashable {
+        case quantity
+        case name
+    }
+
+    @FocusState private var focusedField: FocusableField?
 
     var body: some View {
         NavigationView {
             Form {
-                // Section header for item details
-                Section(
-                    header: Text(
-                        NSLocalizedString(
-                            "Item Details",
-                            comment: "Header for the section containing shopping item details"))
-                ) {
-                    // Text field for entering item name
-                    TextField(
-                        NSLocalizedString(
-                            "Item Name", comment: "Placeholder text for item name input field"),
-                        text: $name)
-
+                Section {
                     HStack {
-                        // Text field for entering quantity
-                        TextField(
-                            NSLocalizedString(
-                                "Quantity", comment: "Placeholder text for quantity input field"),
-                            value: $quantity,
-                            format: .number
-                        )
-                        #if os(iOS)
-                            .keyboardType(.decimalPad)
-                        #endif
+                        HStack(spacing: 4) {
+                            TextField(
+                                NSLocalizedString(
+                                    "Quantity", comment: "Quantity field placeholder"),
+                                text: $quantity
+                            )
+                            .focused($focusedField, equals: .quantity)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            #if os(iOS)
+                                .keyboardType(.decimalPad)
+                            #endif
+                            .submitLabel(.next)
+                            .onSubmit {
+                                focusedField = .name
+                            }
+                            .layoutPriority(1)
 
-                        // Picker for selecting unit of measurement
-                        Picker(
-                            NSLocalizedString("Unit", comment: "Label for unit selection picker"),
-                            selection: $selectedUnit
-                        ) {
-                            // Option for no unit selected
-                            Text(NSLocalizedString("None", comment: "Option for no unit selection"))
-                                .tag(nil as Unit?)
-                            ForEach(Unit.allCases, id: \.self) { unit in
-                                Text(unit.displayName).tag(unit as Unit?)
+                            Picker("", selection: $selectedUnit) {
+                                ForEach(Unit.allCases, id: \.self) { unit in
+                                    Text(unit.displayName).tag(unit)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                            .fixedSize()
+                        }
+                        .frame(width: 150)
+
+                        TextField(
+                            NSLocalizedString("Name", comment: "Item name field placeholder"),
+                            text: $name
+                        )
+                        .focused($focusedField, equals: .name)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .submitLabel(.done)
+                        .onSubmit {
+                            if !name.isEmpty {
+                                addItem()
                             }
                         }
-                        .pickerStyle(MenuPickerStyle())
                     }
                 }
             }
-            // Navigation title for the view
             .navigationTitle(
                 NSLocalizedString(
-                    "Add Shopping Item", comment: "Title for the add shopping item screen")
+                    "Add Shopping Item",
+                    comment: "Title for the add shopping item screen"
+                )
             )
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    // Cancel button
                     Button(
                         NSLocalizedString(
-                            "Cancel", comment: "Button to cancel adding a shopping item")
+                            "Cancel",
+                            comment: "Button to cancel adding a shopping item"
+                        )
                     ) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    // Add item button
                     Button(
                         NSLocalizedString(
-                            "Add Item", comment: "Button to confirm adding a shopping item")
+                            "Add Item",
+                            comment: "Button to confirm adding a shopping item"
+                        )
                     ) {
                         addItem()
                     }
@@ -80,23 +93,29 @@ struct AddShoppingItemView: View {
                 }
             }
         }
+        .presentationDetents([.medium, .large])
     }
 
     private func addItem() {
         let todoItem = TodoItem(
-            // Format string for creating todo item title
             title: String(
                 format: NSLocalizedString(
-                    "Buy %@", comment: "Format for todo item title, where %@ is the item name"),
-                name),
-            // Generic details for shopping item
+                    "Buy %@",
+                    comment: "Format for todo item title, where %@ is the item name"
+                ),
+                name
+            ),
             details: NSLocalizedString(
-                "Shopping item", comment: "Default details text for shopping items")
+                "Shopping item",
+                comment: "Default details text for shopping items"
+            )
         )
+
+        let quantityDouble = Double(quantity) ?? nil
 
         let newItem = ShoppingListItem(
             name: name,
-            quantity: quantity,
+            quantity: quantityDouble,
             unit: selectedUnit,
             todoItem: todoItem
         )
