@@ -3,6 +3,7 @@ import SwiftUI
 
 struct RecipeDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: RecipeDetailViewModel
 
     // For entering new ingredient values.
@@ -53,7 +54,7 @@ struct RecipeDetailView: View {
             #endif
 
             Section(
-                    header: Text(NSLocalizedString("Description", comment: "Section header"))
+                header: Text(NSLocalizedString("Description", comment: "Section header"))
             ) {
                 Text(viewModel.recipe.details)
                     .onTapGesture {
@@ -64,8 +65,13 @@ struct RecipeDetailView: View {
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
-        .alert(NSLocalizedString("Validation Error", comment: "Validation error alert title"), isPresented: $showingValidationAlert) {
-            Button(NSLocalizedString("OK", comment: "Validation error accept button"), role: .cancel) {}
+        .alert(
+            NSLocalizedString("Validation Error", comment: "Validation error alert title"),
+            isPresented: $showingValidationAlert
+        ) {
+            Button(
+                NSLocalizedString("OK", comment: "Validation error accept button"), role: .cancel
+            ) {}
         } message: {
             Text(validationMessage)
         }
@@ -81,7 +87,8 @@ struct RecipeDetailView: View {
         }
         .sheet(isPresented: $isEditingDetails) {
             EditDetailsView(
-                navigationBarTitle: NSLocalizedString("Edit Description", comment: "Navigation title"),
+                navigationBarTitle: NSLocalizedString(
+                    "Edit Description", comment: "Navigation title"),
                 details: Binding(
                     get: { viewModel.recipe.details },
                     set: { newValue in
@@ -94,6 +101,7 @@ struct RecipeDetailView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
                         viewModel.save()
+                        dismiss()
                     }
                 }
             #endif
@@ -107,7 +115,8 @@ struct RecipeDetailView: View {
 
     private func addIngredient() {
         guard !ingredientName.isEmpty else {
-            validationMessage = NSLocalizedString("Please enter an ingredient name.", comment: "Validation error message")
+            validationMessage = NSLocalizedString(
+                "Please enter an ingredient name.", comment: "Validation error message")
             showingValidationAlert = true
             return
         }

@@ -46,11 +46,14 @@ class AddMealViewModel: ObservableObject {
                 mealType: selectedMealType
             )
             meal.updateTodoItemDueDate(for: selectedMealType, on: selectedDate)
+
             modelContext!.insert(todoItem)
             modelContext!.insert(meal)
             try modelContext!.save()
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
             dismiss!()
         } catch {
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
             validationMessage = String(
                 format: NSLocalizedString(
                     "Error saving meal: %@", comment: "Error saving meal message"),

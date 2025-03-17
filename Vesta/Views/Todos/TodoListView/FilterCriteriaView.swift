@@ -21,13 +21,20 @@ struct FilterCriteriaView: View {
                         }
                     }
                     .pickerStyle(SegmentedPickerStyle())
+                    .onChange(of: viewModel.filterMode) { _, _ in
+                        HapticFeedbackManager.shared.generateSelectionFeedback()
+                    }
                 }
 
                 Section {
                     Toggle(
                         NSLocalizedString(
                             "Show Completed Items", comment: "Toggle for showing completed items"),
-                        isOn: $viewModel.showCompletedItems)
+                        isOn: $viewModel.showCompletedItems
+                    )
+                    .onChange(of: viewModel.showCompletedItems) { _, _ in
+                        HapticFeedbackManager.shared.generateSelectionFeedback()
+                    }
                 }
             }
             .navigationTitle(

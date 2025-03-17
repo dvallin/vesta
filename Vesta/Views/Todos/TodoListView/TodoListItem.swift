@@ -17,7 +17,6 @@ struct TodoListItem: View {
                 .scaleEffect(item.isCompleted ? 1 : 1.5)
                 .animation(.easeInOut, value: item.isCompleted)
             }
-            .disabled(item.isCompleted)
             .buttonStyle(BorderlessButtonStyle())
 
             Button(action: selectItem) {
@@ -26,7 +25,7 @@ struct TodoListItem: View {
                         .font(.headline)
                     if let dueDate = item.dueDate {
                         HStack(alignment: .bottom) {
-                            if item.recurrenceType != nil {
+                            if item.recurrenceFrequency != nil {
                                 Image(
                                     systemName: item.recurrenceType == .fixed
                                         ? "repeat"
@@ -58,6 +57,7 @@ struct TodoListItem: View {
 
     private func selectItem() {
         viewModel.selectedTodoItem = item
+        HapticFeedbackManager.shared.generateSelectionFeedback()
     }
 
     private func markAsDone() {
@@ -68,7 +68,7 @@ struct TodoListItem: View {
 
     private func undoMarkAsDone(item: TodoItem, id: UUID) {
         withAnimation {
-            viewModel.markAsDone(item, id: id)
+            viewModel.undoMarkAsDone(item, id: id)
         }
     }
 }

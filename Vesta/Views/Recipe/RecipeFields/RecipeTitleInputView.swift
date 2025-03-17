@@ -11,7 +11,8 @@ struct RecipeTitleInputView: View {
             )
             .font(.largeTitle)
             .bold()
-            .disableAutocorrection(true)
+            .autocorrectionDisabled(true)
+            .textInputAutocapitalization(.words)
         }
     }
 }

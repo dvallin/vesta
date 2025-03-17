@@ -16,29 +16,32 @@ struct IngredientInputRowView: View {
 
     var body: some View {
         HStack {
-            TextField(
-                NSLocalizedString("Quantity", comment: "Ingredient quantity field placeholder"),
-                text: $ingredientQuantity
-            )
-            .focused($focusedField, equals: .quantity)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            #if os(iOS)
-                .keyboardType(.decimalPad)
-            #endif
-            .submitLabel(.next)
-            .onSubmit {
-                focusedField = .name
-            }
-            .frame(width: 80)
-
-            Picker("", selection: $ingredientUnit) {
-                Text(NSLocalizedString("Unit", comment: "Unit picker default option")).tag(
-                    Unit?.none)
-                ForEach(Unit.allCases, id: \.self) { unit in
-                    Text(unit.displayName).tag(unit as Unit?)
+            HStack(spacing: 4) {
+                TextField(
+                    NSLocalizedString("Quantity", comment: "Ingredient quantity field placeholder"),
+                    text: $ingredientQuantity
+                )
+                .focused($focusedField, equals: .quantity)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                #if os(iOS)
+                    .keyboardType(.decimalPad)
+                #endif
+                .submitLabel(.next)
+                .onSubmit {
+                    focusedField = .name
                 }
+                .layoutPriority(1)
+
+                Picker("", selection: $ingredientUnit) {
+                    Text("None").tag(nil as Unit?)
+                    ForEach(Unit.allCases, id: \.self) { unit in
+                        Text(unit.displayName).tag(unit as Unit?)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .fixedSize()
             }
-            .pickerStyle(MenuPickerStyle())
+            .frame(width: 150)
 
             TextField(
                 NSLocalizedString("Name", comment: "Ingredient name field placeholder"),
@@ -47,6 +50,8 @@ struct IngredientInputRowView: View {
             .focused($focusedField, equals: .name)
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .submitLabel(.done)
+            .autocorrectionDisabled(true)
+            .textInputAutocapitalization(.words)
             .onSubmit { onAdd() }
 
             Button(action: {
@@ -58,5 +63,33 @@ struct IngredientInputRowView: View {
                     .foregroundColor(.green)
             }
         }
+    }
+}
+
+#Preview {
+    @Previewable @State var quantity = ""
+    @Previewable @State var unit: Unit? = nil
+    @Previewable @State var name = ""
+
+    Form {
+        IngredientInputRowView(
+            ingredientQuantity: $quantity,
+            ingredientUnit: $unit,
+            ingredientName: $name,
+            onAdd: {}
+        )
+        .padding()
+    }
+}
+
+#Preview("With Values") {
+    Form {
+        IngredientInputRowView(
+            ingredientQuantity: .constant("100"),
+            ingredientUnit: .constant(.gram),
+            ingredientName: .constant("Flour"),
+            onAdd: {}
+        )
+        .padding()
     }
 }

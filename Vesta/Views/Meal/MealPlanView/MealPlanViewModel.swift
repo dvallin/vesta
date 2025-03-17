@@ -89,16 +89,22 @@ class MealPlanViewModel: ObservableObject {
     func deleteMeal(meals: [Meal], at offsets: IndexSet, for date: Date) {
         withAnimation {
             let mealsForDate = mealsForDate(meals: meals, in: date)
+
             offsets.map { mealsForDate[$0] }.forEach { meal in
+                NotificationManager.shared.cancelNotification(for: meal.todoItem)
                 modelContext?.delete(meal)
             }
-            saveContext()
+            if saveContext() {
+                HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+            }
         }
     }
 
     func markAsDone(_ todoItem: TodoItem) {
-        todoItem.markAsDone(modelContext: modelContext!)
-        saveContext()
+        todoItem.markAsDone()
+        if saveContext() {
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+        }
     }
 
     func isDateInPast(_ date: Date) -> Bool {
@@ -106,11 +112,12 @@ class MealPlanViewModel: ObservableObject {
         return calendar.compare(date, to: Date(), toGranularity: .day) == .orderedAscending
     }
 
-    private func saveContext() {
+    private func saveContext() -> Bool {
         do {
             try modelContext!.save()
+            return true
         } catch {
-            // Error handling as needed.
+            return false
         }
     }
 }

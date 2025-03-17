@@ -17,8 +17,9 @@ class MealDetailViewModel: ObservableObject {
     func save() {
         do {
             try modelContext?.save()
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
         } catch {
-            // Handle save error
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
         }
     }
 

@@ -22,50 +22,59 @@ class ShoppingListViewModel: ObservableObject {
         self.modelContext = context
     }
 
-    func saveContext() {
+    func saveContext() -> Bool {
         do {
             try modelContext!.save()
+            return true
         } catch {
-            // handle error
+            return false
         }
     }
 
     func togglePurchased(
         _ item: ShoppingListItem, undoAction: @escaping (ShoppingListItem, UUID) -> Void
     ) {
-        item.todoItem.isCompleted.toggle()
-        saveContext()
+        item.todoItem.markAsDone()
 
-        let id = UUID()
-        let toastMessage = ToastMessage(
-            id: id,
-            message: String(
-                format: NSLocalizedString(
-                    "%@ marked as %@",
-                    comment: "Toast message for marking item as purchased/not purchased"
+        if saveContext() {
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+
+            let id = UUID()
+            let toastMessage = ToastMessage(
+                id: id,
+                message: String(
+                    format: NSLocalizedString(
+                        "%@ marked as %@",
+                        comment: "Toast message for marking item as purchased/not purchased"
+                    ),
+                    item.name,
+                    item.todoItem.isCompleted
+                        ? NSLocalizedString("purchased", comment: "Purchased status")
+                        : NSLocalizedString("not purchased", comment: "Not purchased status")
                 ),
-                item.name,
-                item.todoItem.isCompleted
-                    ? NSLocalizedString("purchased", comment: "Purchased status")
-                    : NSLocalizedString("not purchased", comment: "Not purchased status")
-            ),
-            undoAction: {
-                undoAction(item, id)
-            }
-        )
-        toastMessages.append(toastMessage)
+                undoAction: {
+                    undoAction(item, id)
+                }
+            )
+            toastMessages.append(toastMessage)
+        }
     }
 
-    func togglePurchased(_ item: ShoppingListItem, id: UUID) {
-        item.todoItem.isCompleted.toggle()
-        saveContext()
-
-        toastMessages.removeAll { $0.id == id }
+    func undoTogglePurchased(_ item: ShoppingListItem, id: UUID) {
+        if let lastEvent = item.todoItem.undoLastEvent() {
+            modelContext!.delete(lastEvent)
+        }
+        if saveContext() {
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+            toastMessages.removeAll { $0.id == id }
+        }
     }
 
     func deleteItem(_ item: ShoppingListItem) {
         modelContext!.delete(item)
-        saveContext()
+        if saveContext() {
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+        }
     }
 
     func filterItems(shoppingItems: [ShoppingListItem]) -> [ShoppingListItem] {

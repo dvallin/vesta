@@ -4,13 +4,14 @@ struct DayGroupSectionView: View {
     let group: DayGroup
     let onMealSelect: (Meal) -> Void
     let onDelete: (IndexSet) -> Void
-    let onMarkAsDone: (TodoItem) -> Void
+    let onMarkAsDone: (TodoItem?) -> Void
 
     var body: some View {
         Section {
             ForEach(group.meals) { meal in
                 HStack {
                     Button(action: {
+                        HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
                         onMarkAsDone(meal.todoItem)
                     }) {
                         Image(
@@ -28,6 +29,7 @@ struct DayGroupSectionView: View {
                     .buttonStyle(BorderlessButtonStyle())
 
                     Button(action: {
+                        HapticFeedbackManager.shared.generateSelectionFeedback()
                         onMealSelect(meal)
                     }) {
                         VStack(alignment: .leading) {

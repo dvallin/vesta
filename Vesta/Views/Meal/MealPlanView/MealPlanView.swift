@@ -27,7 +27,9 @@ struct MealPlanView: View {
                                 viewModel.deleteMeal(meals: meals, at: indexSet, for: group.date)
                             },
                             onMarkAsDone: { todoItem in
-                                viewModel.markAsDone(todoItem)
+                                if let todoItem = todoItem {
+                                    viewModel.markAsDone(todoItem)
+                                }
                             }
                         )
                     }
@@ -41,6 +43,7 @@ struct MealPlanView: View {
                     #if os(iOS)
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button(action: {
+                                HapticFeedbackManager.shared.generateSelectionFeedback()
                                 viewModel.isPresentingRecipeListView = true
                             }) {
                                 Label(
@@ -50,6 +53,7 @@ struct MealPlanView: View {
                         }
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button(action: {
+                                HapticFeedbackManager.shared.generateSelectionFeedback()
                                 viewModel.isPresentingShoppingListGenerator = true
                             }) {
                                 Label(
@@ -63,6 +67,7 @@ struct MealPlanView: View {
                 }
 
                 FloatingAddButton {
+                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
                     viewModel.isPresentingAddMealView = true
                 }
             }

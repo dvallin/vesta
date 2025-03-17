@@ -20,7 +20,6 @@
 "Add Recipe" = "Ajouter une recette";
 "Enter recipe title" = "Saisir le titre de la recette";
 "Ingredients" = "Ingrédients";
-"Unit" = "Unité";
 "Quantity" = "Quantité";
 "Please enter an ingredient name." = "Veuillez saisir un nom d'ingrédient.";
 "Please enter a recipe title." = "Veuillez saisir un titre de recette.";
@@ -128,14 +127,16 @@
 "pc" = "pce";
 
 // Recurrence
-"Recurrence" = "Récurrence";
-"Daily" = "Quotidien";
-"Weekly" = "Hebdomadaire";
-"Monthly" = "Mensuel";
-"Yearly" = "Annuel";
+"No Recurrence" = "Aucune récurrence";
+"Daily" = "jours";
+"Weekly" = "semaines";
+"Monthly" = "mois";
+"Yearly" = "ans";
 "Fixed" = "Fixe";
 "Flexible" = "Flexible";
 "Fixed Recurrence" = "Récurrence fixe";
+"Every" = "Tous les";
+"Interval" = "Intervalle";
 
 // Actions & Status
 "Mark as Done" = "Marquer comme terminé";

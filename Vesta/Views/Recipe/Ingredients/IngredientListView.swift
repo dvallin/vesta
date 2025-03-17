@@ -13,7 +13,6 @@ struct IngredientListView<IngredientType: Identifiable>: View {
                     .frame(width: 100, alignment: .leading)
                 Text(nameText(ingredient))
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
             }
         }
         .onDelete { indexSet in

@@ -36,6 +36,7 @@ struct IngredientSelectionRow: View {
                     ? NSLocalizedString("Exclude", comment: "Button to exclude ingredient")
                     : NSLocalizedString("Include", comment: "Button to include ingredient")
             ) {
+                HapticFeedbackManager.shared.generateSelectionFeedback()
                 selection.isSelected.toggle()
             }
             .tint(selection.isSelected ? .red : .green)
@@ -43,7 +44,6 @@ struct IngredientSelectionRow: View {
         .listRowBackground(rowBackground)
     }
 
-    
     private var rowBackground: Color {
         if selection.isSelected {
             return colorScheme == .dark

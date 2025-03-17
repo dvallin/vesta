@@ -20,7 +20,6 @@
 "Add Recipe" = "Add Recipe";
 "Enter recipe title" = "Enter recipe title";
 "Ingredients" = "Ingredients";
-"Unit" = "Unit";
 "Quantity" = "Quantity";
 "Please enter an ingredient name." = "Please enter an ingredient name.";
 "Please enter a recipe title." = "Please enter a recipe title.";
@@ -128,14 +127,16 @@
 "pc" = "pc";
 
 // Recurrence
-"Recurrence" = "Recurrence";
-"Daily" = "Daily";
-"Weekly" = "Weekly";
-"Monthly" = "Monthly";
-"Yearly" = "Yearly";
+"No Recurrence" = "No Recurrence";
+"Daily" = "days";
+"Weekly" = "weeks";
+"Monthly" = "months";
+"Yearly" = "years";
 "Fixed" = "Fixed";
 "Flexible" = "Flexible";
 "Fixed Recurrence" = "Fixed Recurrence";
+"Every" = "Every";
+"Interval" = "Interval";
 
 // Actions & Status
 "Mark as Done" = "Mark as Done";
