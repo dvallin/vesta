@@ -92,6 +92,7 @@
 "Due Date: %@" = "Date d'échéance : %@";
 "Needed by: %@" = "Nécessaire pour : %@";
 "Enable Due Date" = "Activer la date d'échéance";
+"Ignore Time Component" = "Ignorer le composant de temps";
 "Please enter a todo title" = "Veuillez saisir un titre pour la tâche";
 "Error saving todo item: %@" = "Erreur lors de l'enregistrement de la tâche : %@";
 "Todo Events" = "Événements à faire";
@@ -144,6 +145,7 @@
 "Edit Recurrence Frequency" = "Modifier la fréquence de récurrence";
 "Edit Recurrence Type" = "Modifier le type de récurrence";
 "Edit Is Completed" = "Modifier l'état d'achèvement";
+"Edit Ignore Time Component" = "Modifier l'ignorance du composant de temps";
 "Completed" = "Terminé";
 
 // Filter Options

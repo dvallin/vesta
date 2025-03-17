@@ -40,6 +40,7 @@ class TodoItem {
     var isCompleted: Bool
     var recurrenceFrequency: RecurrenceFrequency?
     var recurrenceType: RecurrenceType?
+    var ignoreTimeComponent: Bool
 
     @Relationship(deleteRule: .cascade)
     var events: [TodoItemEvent]
@@ -51,7 +52,8 @@ class TodoItem {
         isCompleted: Bool = false,
         recurrenceFrequency: RecurrenceFrequency? = nil,
         recurrenceType: RecurrenceType? = nil,
-        events: [TodoItemEvent] = []
+        events: [TodoItemEvent] = [],
+        ignoreTimeComponent: Bool = true
     ) {
         self.title = title
         self.details = details
@@ -60,6 +62,27 @@ class TodoItem {
         self.recurrenceFrequency = recurrenceFrequency
         self.recurrenceType = recurrenceType
         self.events = events
+        self.ignoreTimeComponent = ignoreTimeComponent
+    }
+
+    var isToday: Bool {
+        guard let dueDate = dueDate else { return false }
+        return DateUtils.calendar.isDateInToday(dueDate)
+    }
+
+    var isOverdue: Bool {
+        guard let dueDate = dueDate else { return false }
+        let gracePeriod = TimeInterval(2 * 60 * 60)
+        let isInThePast = dueDate.addingTimeInterval(gracePeriod) < Date()
+        if ignoreTimeComponent {
+            return !self.isCompleted && isInThePast && !self.isToday
+        } else {
+            return !self.isCompleted && isInThePast
+        }
+    }
+
+    var needsReschedule: Bool {
+        return self.isOverdue && !self.isToday
     }
 
     func markAsDone(modelContext: ModelContext) {
@@ -109,6 +132,12 @@ class TodoItem {
         self.recurrenceType = recurrenceType
     }
 
+    func setIgnoreTimeComponent(modelContext: ModelContext, ignoreTimeComponent: Bool) {
+        let _ = createEvent(
+            type: .editIgnoreTimeComponent, previousIgnoreTimeComponent: self.ignoreTimeComponent)
+        self.ignoreTimeComponent = ignoreTimeComponent
+    }
+
     func undoLastEvent(modelContext: ModelContext) {
         guard let lastEvent = events.popLast() else { return }
 
@@ -128,6 +157,9 @@ class TodoItem {
             self.recurrenceFrequency = lastEvent.previousRecurrenceFrequency
         case .editRecurrenceType:
             self.recurrenceType = lastEvent.previousRecurrenceType
+        case .editIgnoreTimeComponent:
+            self.ignoreTimeComponent =
+                lastEvent.previousIgnoreTimeComponent ?? self.ignoreTimeComponent
         }
 
         modelContext.delete(lastEvent)
@@ -146,6 +178,10 @@ class TodoItem {
         case .yearly:
             dueDate = calendar.date(byAdding: .year, value: 1, to: baseDate)
         }
+
+        if ignoreTimeComponent {
+            dueDate = DateUtils.calendar.startOfDay(for: dueDate ?? Date())
+        }
     }
 
     private func createEvent(
@@ -155,7 +191,8 @@ class TodoItem {
         previousDueDate: Date? = nil,
         previousIsCompleted: Bool? = nil,
         previousRecurrenceFrequency: RecurrenceFrequency? = nil,
-        previousRecurrenceType: RecurrenceType? = nil
+        previousRecurrenceType: RecurrenceType? = nil,
+        previousIgnoreTimeComponent: Bool? = nil
     ) -> TodoItemEvent {
         let event = TodoItemEvent(
             type: type,
@@ -166,7 +203,8 @@ class TodoItem {
             previousDueDate: previousDueDate,
             previousIsCompleted: previousIsCompleted,
             previousRecurrenceFrequency: previousRecurrenceFrequency,
-            previousRecurrenceType: previousRecurrenceType
+            previousRecurrenceType: previousRecurrenceType,
+            previousIgnoreTimeComponent: previousIgnoreTimeComponent
         )
         events.append(event)
         return event

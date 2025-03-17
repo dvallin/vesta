@@ -36,11 +36,12 @@ struct TodoListItem: View {
                             }
                             Text(
                                 dueDate,
-                                format: Date.FormatStyle(
-                                    date: .numeric, time: .shortened)
+                                format: item.ignoreTimeComponent
+                                    ? Date.FormatStyle(date: .numeric, time: .omitted)
+                                    : Date.FormatStyle(date: .numeric, time: .shortened)
                             )
                             .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(item.isOverdue ? .red : .secondary)
                         }
                     } else {
                         Text(
@@ -128,6 +129,39 @@ struct TodoListItem: View {
                 title: "Read a book",
                 details: "Any book will do",
                 dueDate: nil
+            )
+        )
+
+        // Todo item with ignoreTimeComponent set to true
+        TodoListItem(
+            viewModel: viewModel,
+            item: TodoItem(
+                title: "Morning run",
+                details: "Run 5km",
+                dueDate: Date().addingTimeInterval(3600),
+                ignoreTimeComponent: true
+            )
+        )
+
+        // Overdue todo item
+        TodoListItem(
+            viewModel: viewModel,
+            item: TodoItem(
+                title: "Submit report",
+                details: "Submit the quarterly report",
+                dueDate: Date().addingTimeInterval(-3600),
+                ignoreTimeComponent: false
+            )
+        )
+
+        // Overdue todo item with ignoreTimeComponent set to true
+        TodoListItem(
+            viewModel: viewModel,
+            item: TodoItem(
+                title: "Pay bills",
+                details: "Pay electricity and water bills",
+                dueDate: Date().addingTimeInterval(-3600 * 24),
+                ignoreTimeComponent: true
             )
         )
     }

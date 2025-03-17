@@ -3,7 +3,10 @@ import SwiftUI
 
 struct TodoListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query var todoItems: [TodoItem]
+    @Query(sort: [
+        SortDescriptor(\TodoItem.dueDate, order: .forward),
+        SortDescriptor(\TodoItem.title, order: .forward),
+    ]) var todoItems: [TodoItem]
 
     @StateObject var viewModel: TodoListViewModel
 
@@ -16,7 +19,7 @@ struct TodoListView: View {
     var body: some View {
         NavigationView {
             VStack {
-                OverdueTasksBanner(viewModel: viewModel, todoItems: todoItems)
+                RescheduleOverdueTaskBanner(viewModel: viewModel, todoItems: todoItems)
 
                 ZStack {
                     TodoList(
@@ -80,28 +83,14 @@ struct TodoListView: View {
 #Preview {
     do {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
-
         let context = container.mainContext
+
+        // Sample items with different dates and titles
         let todoItems = [
-            TodoItem(
-                title: "Buy groceries",
-                details: "Milk, Bread, Eggs",
-                dueDate: Date().addingTimeInterval(3600),
-                recurrenceFrequency: .daily,
-                recurrenceType: .fixed
-            ),
-            TodoItem(
-                title: "Call John",
-                details: "Discuss the project details",
-                dueDate: Date().addingTimeInterval(7200),
-                recurrenceFrequency: .weekly,
-                recurrenceType: .flexible
-            ),
-            TodoItem(
-                title: "Workout",
-                details: "Go for a run",
-                dueDate: nil
-            ),
+            TodoItem(title: "Z Task", details: "Details", dueDate: nil),
+            TodoItem(title: "A Task", details: "Details", dueDate: Date().addingTimeInterval(3600)),
+            TodoItem(title: "B Task", details: "Details", dueDate: Date().addingTimeInterval(3600)),
+            TodoItem(title: "C Task", details: "Details", dueDate: nil),
         ]
 
         for item in todoItems {

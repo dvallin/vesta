@@ -4,12 +4,13 @@ struct DueDateRecurrenceSection: View {
     @Binding var dueDate: Date?
     @Binding var recurrenceFrequency: RecurrenceFrequency?
     @Binding var recurrenceType: RecurrenceType?
+    @Binding var ignoreTimeComponent: Bool
 
     var body: some View {
         Section(
             header: Text(
                 NSLocalizedString(
-                    "DueDateRecurrenceHeader", comment: "Section header for due date and recurrence"
+                    "Due Date & Recurrence", comment: "Section header for due date and recurrence"
                 ))
         ) {
             Toggle(
@@ -17,7 +18,7 @@ struct DueDateRecurrenceSection: View {
                 isOn: Binding(
                     get: { dueDate != nil },
                     set: { newValue in
-                        dueDate = newValue ? Date() : nil
+                        dueDate = newValue ? DateUtils.tomorrowAtMidnight() : nil
                     }
                 )
             )
@@ -31,7 +32,13 @@ struct DueDateRecurrenceSection: View {
                             dueDate = newValue
                         }
                     ),
-                    displayedComponents: [.date, .hourAndMinute]
+                    displayedComponents: ignoreTimeComponent ? [.date] : [.date, .hourAndMinute]
+                )
+
+                Toggle(
+                    NSLocalizedString(
+                        "Ignore Time Component", comment: "Toggle for ignoring time component"),
+                    isOn: $ignoreTimeComponent
                 )
 
                 Picker(
@@ -65,7 +72,8 @@ struct DueDateRecurrenceSection: View {
         DueDateRecurrenceSection(
             dueDate: .constant(Date()),
             recurrenceFrequency: .constant(.weekly),
-            recurrenceType: .constant(.fixed)
+            recurrenceType: .constant(.fixed),
+            ignoreTimeComponent: .constant(true)
         )
     }
 }
@@ -75,7 +83,8 @@ struct DueDateRecurrenceSection: View {
         DueDateRecurrenceSection(
             dueDate: .constant(nil),
             recurrenceFrequency: .constant(nil),
-            recurrenceType: .constant(nil)
+            recurrenceType: .constant(nil),
+            ignoreTimeComponent: .constant(true)
         )
     }
 }
@@ -85,7 +94,8 @@ struct DueDateRecurrenceSection: View {
         DueDateRecurrenceSection(
             dueDate: .constant(Date()),
             recurrenceFrequency: .constant(.monthly),
-            recurrenceType: .constant(.flexible)
+            recurrenceType: .constant(.flexible),
+            ignoreTimeComponent: .constant(false)
         )
     }
 }
@@ -95,7 +105,8 @@ struct DueDateRecurrenceSection: View {
         DueDateRecurrenceSection(
             dueDate: .constant(Date()),
             recurrenceFrequency: .constant(nil),
-            recurrenceType: .constant(nil)
+            recurrenceType: .constant(nil),
+            ignoreTimeComponent: .constant(true)
         )
     }
 }

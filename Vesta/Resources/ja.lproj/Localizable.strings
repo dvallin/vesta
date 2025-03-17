@@ -92,6 +92,7 @@
 "Due Date: %@" = "期限: %@";
 "Needed by: %@" = "必要日: %@";
 "Enable Due Date" = "期限を設定";
+"Ignore Time Component" = "時間コンポーネントを無視";
 "Please enter a todo title" = "ToDoのタイトルを入力してください";
 "Error saving todo item: %@" = "ToDoの保存エラー: %@";
 "Todo Events" = "ToDoイベント";
@@ -144,6 +145,7 @@
 "Edit Recurrence Frequency" = "繰り返し頻度を編集";
 "Edit Recurrence Type" = "繰り返しタイプを編集";
 "Edit Is Completed" = "完了状態を編集";
+"Edit Ignore Time Component" = "時間コンポーネントを無視する";
 "Completed" = "完了";
 
 // Filter Options

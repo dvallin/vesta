@@ -3,6 +3,7 @@ import SwiftUI
 
 struct IngredientSelectionRow: View {
     @Binding var selection: ShoppingListGeneratorViewModel.IngredientSelection
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack {
@@ -39,9 +40,20 @@ struct IngredientSelectionRow: View {
             }
             .tint(selection.isSelected ? .red : .green)
         }
-        .listRowBackground(
-            selection.isSelected ? Color(.systemBackground) : Color(.systemGray6)
-        )
+        .listRowBackground(rowBackground)
+    }
+
+    
+    private var rowBackground: Color {
+        if selection.isSelected {
+            return colorScheme == .dark
+                ? Color(.secondarySystemBackground)
+                : Color(.systemBackground)
+        } else {
+            return colorScheme == .dark
+                ? Color(.systemBackground)
+                : Color(.secondarySystemBackground)
+        }
     }
 
     private func formatDaysBadge(_ date: Date) -> String {
@@ -50,11 +62,14 @@ struct IngredientSelectionRow: View {
 
         let days = calendar.dateComponents([.day], from: startOfToday, to: date).day ?? 0
         switch days {
-        case 0: return NSLocalizedString("today", comment: "Badge text for today")
-        case 1: return NSLocalizedString("1d", comment: "Badge text for tomorrow")
+        case 0:
+            return NSLocalizedString("today", comment: "Badge text for today")
+        case 1:
+            return NSLocalizedString("1d", comment: "Badge text for tomorrow")
         default:
             return String(
-                format: NSLocalizedString("%dd", comment: "Badge text for future days"), days)
+                format: NSLocalizedString("%dd", comment: "Badge text for future days"),
+                days)
         }
     }
 }

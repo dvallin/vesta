@@ -50,6 +50,15 @@ struct TodoItemDetailView: View {
                             recurrenceType: newValue
                         )
                     }
+                ),
+                ignoreTimeComponent: Binding(
+                    get: { item.ignoreTimeComponent },
+                    set: { newValue in
+                        item.setIgnoreTimeComponent(
+                            modelContext: modelContext,
+                            ignoreTimeComponent: newValue
+                        )
+                    }
                 )
             )
 

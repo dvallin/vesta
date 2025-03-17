@@ -3,9 +3,10 @@ import PackageDescription
 
 let package = Package(
     name: "Vesta",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v18),
-        .macOS(.v14)
+        .macOS(.v14),
     ],
     products: [
         .library(

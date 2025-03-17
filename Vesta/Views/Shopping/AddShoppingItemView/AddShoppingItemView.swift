@@ -91,8 +91,7 @@ struct AddShoppingItemView: View {
                 name),
             // Generic details for shopping item
             details: NSLocalizedString(
-                "Shopping item", comment: "Default details text for shopping items"),
-            dueDate: Date()
+                "Shopping item", comment: "Default details text for shopping items")
         )
 
         let newItem = ShoppingListItem(

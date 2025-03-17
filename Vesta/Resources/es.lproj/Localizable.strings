@@ -92,6 +92,7 @@
 "Due Date: %@" = "Fecha límite: %@";
 "Needed by: %@" = "Necesario para: %@";
 "Enable Due Date" = "Activar fecha límite";
+"Ignore Time Component" = "Ignorar componente de tiempo";
 "Please enter a todo title" = "Por favor, introduce un título para la tarea";
 "Error saving todo item: %@" = "Error al guardar la tarea: %@";
 "Todo Events" = "Eventos pendientes";
@@ -144,6 +145,7 @@
 "Edit Recurrence Frequency" = "Editar frecuencia de repetición";
 "Edit Recurrence Type" = "Editar tipo de repetición";
 "Edit Is Completed" = "Editar estado de completado";
+"Edit Ignore Time Component" = "Editar ignorar componente de tiempo";
 "Completed" = "Completado";
 
 // Filter Options

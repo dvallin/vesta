@@ -40,7 +40,7 @@ class AddMealViewModel: ObservableObject {
         do {
             let todoItem = TodoItem(
                 title: recipe.title, details: recipe.details,
-                dueDate: selectedDate)
+                dueDate: selectedDate, ignoreTimeComponent: false)
             let meal = Meal(
                 scalingFactor: scalingFactor, todoItem: todoItem, recipe: recipe,
                 mealType: selectedMealType

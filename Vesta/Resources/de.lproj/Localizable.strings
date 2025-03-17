@@ -88,6 +88,7 @@
 "Due Date: %@" = "Fälligkeit: %@";
 "Needed by: %@" = "Benötigt bis: %@";
 "Enable Due Date" = "Fälligkeit aktivieren";
+"Ignore Time Component" = "Zeitkomponente ignorieren";
 "Please enter a todo title" = "Bitte geben Sie einen Aufgabentitel ein";
 "Error saving todo item: %@" = "Fehler beim Speichern der Aufgabe: %@";
 "Todo Events" = "Aufgaben-Events";
@@ -140,6 +141,7 @@
 "Edit Recurrence Frequency" = "Wiederholungsfrequenz bearbeiten";
 "Edit Recurrence Type" = "Wiederholungstyp bearbeiten";
 "Edit Is Completed" = "Abgeschlossen-Status bearbeiten";
+"Edit Ignore Time Component" = "Zeitkomponente ignorieren";
 "Completed" = "Abgeschlossen";
 
 // Filter Options
