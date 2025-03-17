@@ -30,6 +30,7 @@ struct TodoListView: View {
 
                     FloatingAddButton {
                         viewModel.isPresentingAddTodoItemView = true
+                        HapticFeedbackManager.shared.generateImpactFeedback(style: .light)
                     }
                 }
             }
@@ -39,6 +40,7 @@ struct TodoListView: View {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button(action: {
                             viewModel.isPresentingFilterCriteriaView = true
+                            HapticFeedbackManager.shared.generateSelectionFeedback()
                         }) {
                             Image(systemName: "line.horizontal.3.decrease.circle")
                         }
@@ -46,6 +48,7 @@ struct TodoListView: View {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button(action: {
                             viewModel.isPresentingTodoEventsView = true
+                            HapticFeedbackManager.shared.generateSelectionFeedback()
                         }) {
                             Image(systemName: "clock.arrow.circlepath")
                         }

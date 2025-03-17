@@ -13,6 +13,8 @@ struct TodoItemDetailView: View {
             Text(viewModel.item.title)
                 .font(.title)
                 .bold()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
                 .onTapGesture {
                     viewModel.isEditingTitle = true
                 }
@@ -22,9 +24,11 @@ struct TodoItemDetailView: View {
                     NSLocalizedString("Description", comment: "Description section header"))
             ) {
                 Text(viewModel.item.details)
-                    .onTapGesture {
-                        viewModel.isEditingDetails = true
-                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .onTapGesture {
+                viewModel.isEditingDetails = true
             }
 
             DueDateRecurrenceSection(
@@ -56,7 +60,6 @@ struct TodoItemDetailView: View {
                         NSLocalizedString("Mark as Done", comment: "Mark as done button"),
                         systemImage: "checkmark.circle")
                 }
-                .disabled(viewModel.item.isCompleted)
 
                 Toggle(
                     NSLocalizedString("Completed", comment: "Completed toggle label"),

@@ -17,7 +17,6 @@ struct TodoListItem: View {
                 .scaleEffect(item.isCompleted ? 1 : 1.5)
                 .animation(.easeInOut, value: item.isCompleted)
             }
-            .disabled(item.isCompleted)
             .buttonStyle(BorderlessButtonStyle())
 
             Button(action: selectItem) {
@@ -58,6 +57,7 @@ struct TodoListItem: View {
 
     private func selectItem() {
         viewModel.selectedTodoItem = item
+        HapticFeedbackManager.shared.generateSelectionFeedback()
     }
 
     private func markAsDone() {

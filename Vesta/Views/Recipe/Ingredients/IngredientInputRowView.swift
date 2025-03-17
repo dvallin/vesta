@@ -50,6 +50,8 @@ struct IngredientInputRowView: View {
             .focused($focusedField, equals: .name)
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .submitLabel(.done)
+            .autocorrectionDisabled(true)
+            .textInputAutocapitalization(.words)
             .onSubmit { onAdd() }
 
             Button(action: {

@@ -109,6 +109,7 @@ struct AddRecipeView: View {
 
     private func addTempIngredient() {
         guard !ingredientName.isEmpty else {
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
             validationMessage = NSLocalizedString(
                 "Please enter an ingredient name.", comment: "Validation error message")
             showingValidationAlert = true
@@ -125,6 +126,7 @@ struct AddRecipeView: View {
 
         withAnimation {
             tempIngredients.append(newIngredient)
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
 
         // Reset the input fields.
@@ -165,8 +167,10 @@ struct AddRecipeView: View {
             }
             modelContext.insert(newRecipe)
             try modelContext.save()
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
             dismiss()
         } catch {
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
             validationMessage = String(
                 format: NSLocalizedString(
                     "Error saving recipe: %@", comment: "Error saving recipe message"),

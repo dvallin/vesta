@@ -22,10 +22,6 @@ class ShoppingListItem {
         self.meals = meals
     }
 
-    func markAsPurchased() {
-        self.todoItem.isCompleted = true
-    }
-
     func updateQuantity(newQuantity: Double) {
         self.quantity = newQuantity
     }

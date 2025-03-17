@@ -94,13 +94,17 @@ class MealPlanViewModel: ObservableObject {
                 NotificationManager.shared.cancelNotification(for: meal.todoItem)
                 modelContext?.delete(meal)
             }
-            saveContext()
+            if saveContext() {
+                HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+            }
         }
     }
 
     func markAsDone(_ todoItem: TodoItem) {
         todoItem.markAsDone()
-        saveContext()
+        if saveContext() {
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+        }
     }
 
     func isDateInPast(_ date: Date) -> Bool {
@@ -108,11 +112,12 @@ class MealPlanViewModel: ObservableObject {
         return calendar.compare(date, to: Date(), toGranularity: .day) == .orderedAscending
     }
 
-    private func saveContext() {
+    private func saveContext() -> Bool {
         do {
             try modelContext!.save()
+            return true
         } catch {
-            // Error handling as needed.
+            return false
         }
     }
 }

@@ -17,8 +17,9 @@ class RecipeDetailViewModel: ObservableObject {
     func save() {
         do {
             try modelContext?.save()
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
         } catch {
-            // Handle save error
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
         }
     }
 
@@ -26,6 +27,7 @@ class RecipeDetailViewModel: ObservableObject {
         let newIngredient = Ingredient(name: name, quantity: quantity, unit: unit)
         withAnimation {
             recipe.ingredients.append(newIngredient)
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 
@@ -33,6 +35,7 @@ class RecipeDetailViewModel: ObservableObject {
         withAnimation {
             if let index = recipe.ingredients.firstIndex(where: { $0 === ingredient }) {
                 recipe.ingredients.remove(at: index)
+                HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
             }
         }
     }

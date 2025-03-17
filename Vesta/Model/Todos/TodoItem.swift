@@ -108,7 +108,7 @@ class TodoItem {
                 basedOn: recurrenceType == .fixed ? (dueDate ?? event.date) : event.date
             )
         } else {
-            isCompleted = true
+            isCompleted.toggle()
         }
     }
 

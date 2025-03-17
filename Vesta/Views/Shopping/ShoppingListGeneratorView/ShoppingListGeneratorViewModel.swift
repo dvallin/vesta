@@ -72,5 +72,11 @@ class ShoppingListGeneratorViewModel: ObservableObject {
             )
             modelContext.insert(shoppingListItem)
         }
+        do {
+            try modelContext.save()
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+        } catch {
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
+        }
     }
 }

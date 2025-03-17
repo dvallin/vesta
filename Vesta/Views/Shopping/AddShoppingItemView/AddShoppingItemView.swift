@@ -5,11 +5,7 @@ struct AddShoppingItemView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @State private var name: String = ""
-    @State private var showQuantityField: Bool = false
-    @State private var quantity: String = ""
-    @State private var selectedUnit: Unit? = nil
-
+    @StateObject private var viewModel = AddShoppingItemViewModel()
     @FocusState private var focusedField: FocusableField?
 
     enum FocusableField: Hashable {
@@ -23,23 +19,25 @@ struct AddShoppingItemView: View {
                 Section {
                     TextField(
                         NSLocalizedString("Name", comment: "Item name field placeholder"),
-                        text: $name
+                        text: $viewModel.name
                     )
                     .focused($focusedField, equals: .name)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .autocorrectionDisabled(true)
+                    .textInputAutocapitalization(.words)
                     .submitLabel(.done)
                     .onSubmit {
-                        if !name.isEmpty {
-                            addItem()
+                        if !viewModel.name.isEmpty {
+                            viewModel.addItem()
                         }
                     }
 
-                    if showQuantityField {
+                    if viewModel.showQuantityField {
                         HStack {
                             TextField(
                                 NSLocalizedString(
                                     "Quantity", comment: "Quantity field placeholder"),
-                                text: $quantity
+                                text: $viewModel.quantity
                             )
                             .focused($focusedField, equals: .quantity)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -48,9 +46,9 @@ struct AddShoppingItemView: View {
                             #endif
                             .frame(width: 100)
 
-                            Picker("", selection: $selectedUnit) {
+                            Picker("", selection: $viewModel.selectedUnit) {
                                 ForEach(Unit.allCases, id: \.self) { unit in
-                                    Text(unit.displayName).tag(unit)
+                                    Text(unit.displayName).tag(unit as Unit?)
                                 }
                             }
                             .pickerStyle(MenuPickerStyle())
@@ -58,10 +56,9 @@ struct AddShoppingItemView: View {
                     }
                 }
 
-                if !showQuantityField {
+                if !viewModel.showQuantityField {
                     Button("Add Quantity") {
-                        showQuantityField = true
-                        selectedUnit = .piece
+                        viewModel.toggleQuantityField()
                         focusedField = .quantity
                     }
                 }
@@ -78,7 +75,7 @@ struct AddShoppingItemView: View {
                         NSLocalizedString(
                             "Cancel", comment: "Button to cancel adding a shopping item")
                     ) {
-                        dismiss()
+                        viewModel.cancel()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -86,49 +83,17 @@ struct AddShoppingItemView: View {
                         NSLocalizedString(
                             "Add Item", comment: "Button to confirm adding a shopping item")
                     ) {
-                        addItem()
+                        viewModel.addItem()
                     }
-                    .disabled(name.isEmpty)
+                    .disabled(viewModel.isAddButtonDisabled)
                 }
             }
         }
         .presentationDetents([.medium, .large])
         .onAppear {
             focusedField = .name
+            viewModel.configureEnvironment(modelContext, dismiss)
         }
-    }
-
-    private func addItem() {
-        let todoItem = TodoItem(
-            title: String(
-                format: NSLocalizedString(
-                    "Buy %@",
-                    comment: "Format for todo item title, where %@ is the item name"
-                ),
-                name
-            ),
-            details: NSLocalizedString(
-                "Shopping item",
-                comment: "Default details text for shopping items"
-            )
-        )
-
-        let quantityDouble = Double(quantity) ?? nil
-
-        let newItem = ShoppingListItem(
-            name: name,
-            quantity: quantityDouble,
-            unit: selectedUnit,
-            todoItem: todoItem
-        )
-
-        modelContext.insert(todoItem)
-        modelContext.insert(newItem)
-
-        selectedUnit = nil
-        showQuantityField = false
-
-        dismiss()
     }
 }
 

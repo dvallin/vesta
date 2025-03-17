@@ -3,6 +3,7 @@ import SwiftUI
 
 struct RecipeDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: RecipeDetailViewModel
 
     // For entering new ingredient values.
@@ -100,6 +101,7 @@ struct RecipeDetailView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
                         viewModel.save()
+                        dismiss()
                     }
                 }
             #endif

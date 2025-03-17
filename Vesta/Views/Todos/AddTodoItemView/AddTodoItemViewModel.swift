@@ -47,14 +47,16 @@ class AddTodoItemViewModel: ObservableObject {
                 recurrenceInterval: recurrenceInterval, ignoreTimeComponent: ignoreTimeComponent)
             modelContext!.insert(newItem)
 
-            if let dueDate = dueDate {
+            if dueDate != nil {
                 NotificationManager.shared.scheduleNotification(for: newItem)
             }
 
             try modelContext!.save()
 
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
             dismiss!()
         } catch {
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
             validationMessage = String(
                 format: NSLocalizedString(
                     "Error saving todo item: %@",

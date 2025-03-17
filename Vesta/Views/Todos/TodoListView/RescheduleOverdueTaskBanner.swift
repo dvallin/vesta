@@ -24,6 +24,7 @@ struct RescheduleOverdueTaskBanner: View {
             } else {
                 Button(action: {
                     viewModel.rescheduleOverdueTasks(todoItems: todoItems)
+                    HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
                 }) {
                     HStack {
                         Image(systemName: "calendar.badge.plus")

@@ -70,7 +70,7 @@ struct ShoppingListItemRow: View {
 
     private func undoTogglePurchased(item: ShoppingListItem, id: UUID) {
         withAnimation {
-            viewModel.togglePurchased(item, id: id)
+            viewModel.undoTogglePurchased(item, id: id)
         }
     }
 }

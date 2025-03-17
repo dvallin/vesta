@@ -25,50 +25,62 @@ class TodoListViewModel: ObservableObject {
         self.modelContext = context
     }
 
-    func saveContext() {
+    func saveContext() -> Bool {
         do {
             try modelContext!.save()
+            return true
         } catch {
-            // handle error
+            return false
         }
     }
 
     func markAsDone(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
         item.markAsDone()
-        NotificationManager.shared.cancelNotification(for: item)
-        saveContext()
 
-        let id = UUID()
-        let toastMessage = ToastMessage(
-            id: id,
-            message: String(
-                format: NSLocalizedString(
-                    "%@ marked as done", comment: "Toast message for marking todo as done"),
-                item.title
-            ),
-            undoAction: {
-                undoAction(item, id)
-            }
-        )
-        toastMessages.append(toastMessage)
+        if saveContext() {
+            NotificationManager.shared.cancelNotification(for: item)
+
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+
+            let id = UUID()
+            let toastMessage = ToastMessage(
+                id: id,
+                message: String(
+                    format: NSLocalizedString(
+                        "%@ marked as done", comment: "Toast message for marking todo as done"),
+                    item.title
+                ),
+                undoAction: {
+                    undoAction(item, id)
+                }
+            )
+            toastMessages.append(toastMessage)
+        }
+
     }
 
     func undoMarkAsDone(_ item: TodoItem, id: UUID) {
         if let lastEvent = item.undoLastEvent() {
             modelContext!.delete(lastEvent)
         }
-        if let dueDate = item.dueDate {
-            NotificationManager.shared.scheduleNotification(for: item)
-        }
-        saveContext()
+        if saveContext() {
+            if item.dueDate != nil {
+                NotificationManager.shared.scheduleNotification(for: item)
+            }
 
-        toastMessages.removeAll { $0.id == id }
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+
+            toastMessages.removeAll { $0.id == id }
+        }
+
     }
 
     func deleteItem(_ item: TodoItem) {
         NotificationManager.shared.cancelNotification(for: item)
-        modelContext!.delete(item)
-        saveContext()
+        if saveContext() {
+            modelContext!.delete(item)
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+        }
     }
 
     func hasRescheduleOverdueTasks(todoItems: [TodoItem]) -> Bool {
@@ -91,9 +103,12 @@ class TodoListViewModel: ObservableObject {
                 }
             }
         }
-        saveContext()
 
-        filterMode = .today
+        if saveContext() {
+            filterMode = .today
+
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+        }
     }
 
     func filterItems(todoItems: [TodoItem]) -> [TodoItem] {

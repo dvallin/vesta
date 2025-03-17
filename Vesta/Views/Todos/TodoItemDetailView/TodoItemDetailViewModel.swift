@@ -20,6 +20,7 @@ class TodoItemDetailViewModel: ObservableObject {
         withAnimation {
             item.markAsDone()
             saveContext()
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
         }
     }
 

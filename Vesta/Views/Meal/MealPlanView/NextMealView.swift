@@ -6,7 +6,10 @@ struct NextMealView: View {
 
     var body: some View {
         Section {
-            Button(action: onSelect) {
+            Button(action: {
+                HapticFeedbackManager.shared.generateSelectionFeedback()
+                onSelect()
+            }) {
                 VStack(alignment: .leading) {
                     Text(meal.recipe.title)
                         .font(.headline)

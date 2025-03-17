@@ -14,6 +14,8 @@ struct TitleDetailsSection: View {
                 .focused($focusedField, equals: "title")
                 .font(.title)
                 .submitLabel(.next)
+                .autocorrectionDisabled(true)
+                .textInputAutocapitalization(.words)
                 .onSubmit {
                     // Move focus to details on return.
                     focusedField = "details"
