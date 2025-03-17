@@ -26,7 +26,7 @@ struct TodoListItem: View {
                         .font(.headline)
                     if let dueDate = item.dueDate {
                         HStack(alignment: .bottom) {
-                            if item.recurrenceType != nil {
+                            if item.recurrenceFrequency != nil {
                                 Image(
                                     systemName: item.recurrenceType == .fixed
                                         ? "repeat"
