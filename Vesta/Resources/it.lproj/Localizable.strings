@@ -92,6 +92,7 @@
 "Due Date: %@" = "Scadenza: %@";
 "Needed by: %@" = "Necessario entro: %@";
 "Enable Due Date" = "Abilita scadenza";
+"Ignore Time Component" = "Ignorer le composantes de temps";
 "Please enter a todo title" = "Inserisci un titolo per l'attività";
 "Error saving todo item: %@" = "Errore nel salvare l'attività: %@";
 "Todo Events" = "Eventi da fare";
@@ -144,6 +145,7 @@
 "Edit Recurrence Frequency" = "Modifica frequenza ricorrenza";
 "Edit Recurrence Type" = "Modifica tipo ricorrenza";
 "Edit Is Completed" = "Modifica completamento";
+"Edit Ignore Time Component" = "Modifica ignoranza del componente di tempo";
 "Completed" = "Completato";
 
 // Filter Options

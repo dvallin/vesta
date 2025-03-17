@@ -5,7 +5,9 @@ import SwiftUI
 struct VestaApp: App {
     var sharedModelContainer: ModelContainer = {
         do {
-            return try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: false)
+            let container = try ModelContainerHelper.createModelContainer(
+                isStoredInMemoryOnly: false)
+            return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }

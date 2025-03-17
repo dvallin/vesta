@@ -92,6 +92,7 @@
 "Due Date: %@" = "截止日期：%@";
 "Needed by: %@" = "需要日期：%@";
 "Enable Due Date" = "启用截止日期";
+"Ignore Time Component" = "忽略时间组件";
 "Please enter a todo title" = "请输入待办标题";
 "Error saving todo item: %@" = "保存待办事项时出错：%@";
 "Todo Events" = "待办事件";
@@ -144,6 +145,7 @@
 "Edit Recurrence Frequency" = "编辑重复频率";
 "Edit Recurrence Type" = "编辑重复类型";
 "Edit Is Completed" = "编辑完成状态";
+"Edit Ignore Time Component" = "时间组件忽略";
 "Completed" = "已完成";
 
 // Filter Options

@@ -51,7 +51,7 @@ struct EditDetailsView: View {
 
 #Preview {
     // Create a sample binding for details
-    @State var details =
+    @Previewable @State var details =
         "Sample recipe details: \n\n1. Preheat oven to 350°F\n2. Mix ingredients\n3. Bake for 30 minutes"
 
     return NavigationStack {
@@ -63,7 +63,7 @@ struct EditDetailsView: View {
 }
 
 #Preview("Empty Details") {
-    @State var emptyDetails = ""
+    @Previewable @State var emptyDetails = ""
 
     return NavigationStack {
         EditDetailsView(
@@ -74,7 +74,7 @@ struct EditDetailsView: View {
 }
 
 #Preview("Long Details") {
-    @State var longDetails = """
+    @Previewable @State var longDetails = """
         Detailed Instructions:
 
         1. Gather all ingredients
