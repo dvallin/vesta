@@ -128,14 +128,16 @@
 "pc" = "個";
 
 // Recurrence
-"Recurrence" = "繰り返し";
-"Daily" = "毎日";
-"Weekly" = "毎週";
-"Monthly" = "毎月";
-"Yearly" = "毎年";
+"No Recurrence" = "繰り返しなし";
+"Daily" = "日";
+"Weekly" = "週";
+"Monthly" = "月";
+"Yearly" = "年";
 "Fixed" = "固定";
 "Flexible" = "柔軟";
-"Fixed Recurrence" = "固定繰り返し";
+"Fixed Recurrence" = "固定の繰り返し";
+"Every" = "毎";
+"Interval" = "間隔";
 
 // Actions & Status
 "Mark as Done" = "完了としてマーク";

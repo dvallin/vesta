@@ -10,6 +10,7 @@ enum TodoItemEventType: String, Codable {
     case editRecurrenceType
     case editIsCompleted
     case editIgnoreTimeComponent
+    case editRecurrenceInterval
 
     var displayName: String {
         switch self {
@@ -31,6 +32,9 @@ enum TodoItemEventType: String, Codable {
         case .editIgnoreTimeComponent:
             return NSLocalizedString(
                 "Edit Ignore Time Component", comment: "Edit Ignore Time Component event")
+        case .editRecurrenceInterval:
+            return NSLocalizedString(
+                "Edit Recurrence Interval", comment: "Edit Recurrence Interval event")
         }
     }
 }
@@ -46,6 +50,7 @@ class TodoItemEvent {
     var previousIsCompleted: Bool?
     var previousRecurrenceFrequency: RecurrenceFrequency?
     var previousRecurrenceType: RecurrenceType?
+    var previousRecurrenceInterval: Int?
     var previousIgnoreTimeComponent: Bool?
 
     @Relationship(inverse: \TodoItem.events)
@@ -55,7 +60,8 @@ class TodoItemEvent {
         type: TodoItemEventType, date: Date, todoItem: TodoItem, previousTitle: String? = nil,
         previousDetails: String? = nil, previousDueDate: Date? = nil,
         previousIsCompleted: Bool? = nil, previousRecurrenceFrequency: RecurrenceFrequency? = nil,
-        previousRecurrenceType: RecurrenceType? = nil, previousIgnoreTimeComponent: Bool? = nil
+        previousRecurrenceType: RecurrenceType? = nil, previousRecurrenceInterval: Int? = nil,
+        previousIgnoreTimeComponent: Bool? = nil
     ) {
         self.type = type
         self.date = date
@@ -67,6 +73,7 @@ class TodoItemEvent {
         self.previousIsCompleted = previousIsCompleted
         self.previousRecurrenceFrequency = previousRecurrenceFrequency
         self.previousRecurrenceType = previousRecurrenceType
+        self.previousRecurrenceInterval = previousRecurrenceInterval
         self.previousIgnoreTimeComponent = previousIgnoreTimeComponent
     }
 }

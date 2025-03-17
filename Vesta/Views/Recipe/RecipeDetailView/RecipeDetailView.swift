@@ -8,7 +8,7 @@ struct RecipeDetailView: View {
     // For entering new ingredient values.
     @State private var ingredientName: String = ""
     @State private var ingredientQuantity: String = ""
-    @State private var ingredientUnit: Unit? = nil
+    @State private var ingredientUnit: Unit = .piece
 
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
@@ -53,7 +53,7 @@ struct RecipeDetailView: View {
             #endif
 
             Section(
-                    header: Text(NSLocalizedString("Description", comment: "Section header"))
+                header: Text(NSLocalizedString("Description", comment: "Section header"))
             ) {
                 Text(viewModel.recipe.details)
                     .onTapGesture {
@@ -64,8 +64,13 @@ struct RecipeDetailView: View {
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
-        .alert(NSLocalizedString("Validation Error", comment: "Validation error alert title"), isPresented: $showingValidationAlert) {
-            Button(NSLocalizedString("OK", comment: "Validation error accept button"), role: .cancel) {}
+        .alert(
+            NSLocalizedString("Validation Error", comment: "Validation error alert title"),
+            isPresented: $showingValidationAlert
+        ) {
+            Button(
+                NSLocalizedString("OK", comment: "Validation error accept button"), role: .cancel
+            ) {}
         } message: {
             Text(validationMessage)
         }
@@ -81,7 +86,8 @@ struct RecipeDetailView: View {
         }
         .sheet(isPresented: $isEditingDetails) {
             EditDetailsView(
-                navigationBarTitle: NSLocalizedString("Edit Description", comment: "Navigation title"),
+                navigationBarTitle: NSLocalizedString(
+                    "Edit Description", comment: "Navigation title"),
                 details: Binding(
                     get: { viewModel.recipe.details },
                     set: { newValue in
@@ -107,7 +113,8 @@ struct RecipeDetailView: View {
 
     private func addIngredient() {
         guard !ingredientName.isEmpty else {
-            validationMessage = NSLocalizedString("Please enter an ingredient name.", comment: "Validation error message")
+            validationMessage = NSLocalizedString(
+                "Please enter an ingredient name.", comment: "Validation error message")
             showingValidationAlert = true
             return
         }
@@ -118,7 +125,7 @@ struct RecipeDetailView: View {
         // Reset the input fields.
         ingredientName = ""
         ingredientQuantity = ""
-        ingredientUnit = nil
+        ingredientUnit = .piece
     }
 }
 

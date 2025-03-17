@@ -124,14 +124,16 @@
 "pc" = "Stk";
 
 // Recurrence
-"Recurrence" = "Wiederholung";
-"Daily" = "Täglich";
-"Weekly" = "Wöchentlich";
-"Monthly" = "Monatlich";
-"Yearly" = "Jährlich";
+"No Recurrence" = "Keine Wiederholung";
+"Daily" = "Tage";
+"Weekly" = "Wochen";
+"Monthly" = "Monate";
+"Yearly" = "Jahre";
 "Fixed" = "Fest";
 "Flexible" = "Flexibel";
 "Fixed Recurrence" = "Feste Wiederholung";
+"Every" = "Alle";
+"Interval" = "Intervall";
 
 // Actions & Status
 "Mark as Done" = "Als erledigt markieren";

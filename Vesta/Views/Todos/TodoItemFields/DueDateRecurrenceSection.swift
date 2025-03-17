@@ -3,6 +3,7 @@ import SwiftUI
 struct DueDateRecurrenceSection: View {
     @Binding var dueDate: Date?
     @Binding var recurrenceFrequency: RecurrenceFrequency?
+    @Binding var recurrenceInterval: Int?
     @Binding var recurrenceType: RecurrenceType?
     @Binding var ignoreTimeComponent: Bool
 
@@ -41,17 +42,26 @@ struct DueDateRecurrenceSection: View {
                     isOn: $ignoreTimeComponent
                 )
 
-                Picker(
-                    NSLocalizedString("Recurrence", comment: "Label for recurrence picker"),
-                    selection: $recurrenceFrequency
-                ) {
-                    Text(NSLocalizedString("None", comment: "No recurrence option"))
-                        .tag(Optional<RecurrenceFrequency>.none)
-                    ForEach(RecurrenceFrequency.allCases, id: \.self) { frequency in
-                        Text(frequency.displayName).tag(Optional(frequency))
+                HStack {
+                    Text(NSLocalizedString("Every", comment: "Label for custom interval"))
+                    TextField(
+                        NSLocalizedString("Interval", comment: "Placeholder for custom interval"),
+                        value: $recurrenceInterval,
+                        formatter: NumberFormatter()
+                    )
+                    .keyboardType(.numberPad)
+                    .frame(width: 70)
+                    Picker(
+                        "",
+                        selection: $recurrenceFrequency
+                    ) {
+                        Text(NSLocalizedString("No Recurrence", comment: "No recurrence option"))
+                            .tag(Optional<RecurrenceFrequency>.none)
+                        ForEach(RecurrenceFrequency.allCases, id: \.self) { frequency in
+                            Text(frequency.displayName).tag(Optional(frequency))
+                        }
                     }
                 }
-                .pickerStyle(.segmented)
 
                 Toggle(
                     NSLocalizedString("Fixed Recurrence", comment: "Toggle for fixed recurrence"),
@@ -72,6 +82,7 @@ struct DueDateRecurrenceSection: View {
         DueDateRecurrenceSection(
             dueDate: .constant(Date()),
             recurrenceFrequency: .constant(.weekly),
+            recurrenceInterval: .constant(1),
             recurrenceType: .constant(.fixed),
             ignoreTimeComponent: .constant(true)
         )
@@ -83,6 +94,7 @@ struct DueDateRecurrenceSection: View {
         DueDateRecurrenceSection(
             dueDate: .constant(nil),
             recurrenceFrequency: .constant(nil),
+            recurrenceInterval: .constant(nil),
             recurrenceType: .constant(nil),
             ignoreTimeComponent: .constant(true)
         )
@@ -94,6 +106,7 @@ struct DueDateRecurrenceSection: View {
         DueDateRecurrenceSection(
             dueDate: .constant(Date()),
             recurrenceFrequency: .constant(.monthly),
+            recurrenceInterval: .constant(3),
             recurrenceType: .constant(.flexible),
             ignoreTimeComponent: .constant(false)
         )
@@ -105,6 +118,7 @@ struct DueDateRecurrenceSection: View {
         DueDateRecurrenceSection(
             dueDate: .constant(Date()),
             recurrenceFrequency: .constant(nil),
+            recurrenceInterval: .constant(nil),
             recurrenceType: .constant(nil),
             ignoreTimeComponent: .constant(true)
         )

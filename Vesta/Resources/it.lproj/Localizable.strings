@@ -128,7 +128,7 @@
 "pc" = "pz";
 
 // Recurrence
-"Recurrence" = "Ricorrenza";
+"No Recurrence" = "Nessuna ricorrenza";
 "Daily" = "Giornaliero";
 "Weekly" = "Settimanale";
 "Monthly" = "Mensile";
@@ -136,6 +136,8 @@
 "Fixed" = "Fisso";
 "Flexible" = "Flessibile";
 "Fixed Recurrence" = "Ricorrenza fissa";
+"Every" = "Ogni";
+"Interval" = "Intervallo";
 
 // Actions & Status
 "Mark as Done" = "Segna come fatto";

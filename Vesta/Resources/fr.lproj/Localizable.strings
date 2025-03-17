@@ -128,14 +128,16 @@
 "pc" = "pce";
 
 // Recurrence
-"Recurrence" = "Récurrence";
-"Daily" = "Quotidien";
-"Weekly" = "Hebdomadaire";
-"Monthly" = "Mensuel";
-"Yearly" = "Annuel";
+"No Recurrence" = "Aucune récurrence";
+"Daily" = "jours";
+"Weekly" = "semaines";
+"Monthly" = "mois";
+"Yearly" = "ans";
 "Fixed" = "Fixe";
 "Flexible" = "Flexible";
 "Fixed Recurrence" = "Récurrence fixe";
+"Every" = "Tous les";
+"Interval" = "Intervalle";
 
 // Actions & Status
 "Mark as Done" = "Marquer comme terminé";

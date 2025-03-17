@@ -9,7 +9,7 @@ struct IngredientsSection<IngredientType: Identifiable>: View {
 
     @Binding var ingredientName: String
     @Binding var ingredientQuantity: String
-    @Binding var ingredientUnit: Unit?
+    @Binding var ingredientUnit: Unit
 
     let onAdd: () -> Void
 

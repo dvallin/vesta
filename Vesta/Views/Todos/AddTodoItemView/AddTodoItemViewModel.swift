@@ -9,6 +9,7 @@ class AddTodoItemViewModel: ObservableObject {
     @Published var details: String = ""
     @Published var dueDate: Date? = nil
     @Published var recurrenceFrequency: RecurrenceFrequency? = nil
+    @Published var recurrenceInterval: Int? = nil
     @Published var recurrenceType: RecurrenceType? = nil
     @Published var ignoreTimeComponent: Bool = true
 
@@ -43,7 +44,7 @@ class AddTodoItemViewModel: ObservableObject {
             let newItem = TodoItem(
                 title: title, details: details, dueDate: dueDate,
                 recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType,
-                ignoreTimeComponent: ignoreTimeComponent)
+                recurrenceInterval: recurrenceInterval, ignoreTimeComponent: ignoreTimeComponent)
             modelContext!.insert(newItem)
 
             try modelContext!.save()

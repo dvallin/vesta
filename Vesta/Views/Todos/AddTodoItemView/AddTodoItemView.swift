@@ -18,6 +18,7 @@ struct AddTodoItemView: View {
                 DueDateRecurrenceSection(
                     dueDate: $viewModel.dueDate,
                     recurrenceFrequency: $viewModel.recurrenceFrequency,
+                    recurrenceInterval: $viewModel.recurrenceInterval,
                     recurrenceType: $viewModel.recurrenceType,
                     ignoreTimeComponent: $viewModel.ignoreTimeComponent
                 )

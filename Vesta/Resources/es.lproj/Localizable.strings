@@ -128,14 +128,16 @@
 "pc" = "ud";
 
 // Recurrence
-"Recurrence" = "Repetición";
-"Daily" = "Diario";
-"Weekly" = "Semanal";
-"Monthly" = "Mensual";
-"Yearly" = "Anual";
-"Fixed" = "Fijo";
-"Flexible" = "Flexible";
-"Fixed Recurrence" = "Repetición fija";
+"No Recurrence" = "Nessuna ricorrenza";
+"Daily" = "giorni";
+"Weekly" = "settimane";
+"Monthly" = "mesi";
+"Yearly" = "anni";
+"Fixed" = "Fisso";
+"Flexible" = "Flessibile";
+"Fixed Recurrence" = "Ricorrenza fissa";
+"Every" = "Ogni";
+"Interval" = "Intervallo";
 
 // Actions & Status
 "Mark as Done" = "Marcar como completado";

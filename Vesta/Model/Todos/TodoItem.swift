@@ -40,6 +40,7 @@ class TodoItem {
     var isCompleted: Bool
     var recurrenceFrequency: RecurrenceFrequency?
     var recurrenceType: RecurrenceType?
+    var recurrenceInterval: Int?
     var ignoreTimeComponent: Bool
 
     @Relationship(deleteRule: .cascade)
@@ -52,6 +53,7 @@ class TodoItem {
         isCompleted: Bool = false,
         recurrenceFrequency: RecurrenceFrequency? = nil,
         recurrenceType: RecurrenceType? = nil,
+        recurrenceInterval: Int? = nil,
         events: [TodoItemEvent] = [],
         ignoreTimeComponent: Bool = true
     ) {
@@ -61,6 +63,7 @@ class TodoItem {
         self.isCompleted = isCompleted
         self.recurrenceFrequency = recurrenceFrequency
         self.recurrenceType = recurrenceType
+        self.recurrenceInterval = recurrenceInterval
         self.events = events
         self.ignoreTimeComponent = ignoreTimeComponent
     }
@@ -127,6 +130,12 @@ class TodoItem {
         self.recurrenceFrequency = recurrenceFrequency
     }
 
+    func setRecurrenceInterval(modelContext: ModelContext, recurrenceInterval: Int?) {
+        let _ = createEvent(
+            type: .editRecurrenceInterval, previousRecurrenceInterval: self.recurrenceInterval)
+        self.recurrenceInterval = recurrenceInterval
+    }
+
     func setRecurrenceType(modelContext: ModelContext, recurrenceType: RecurrenceType?) {
         let _ = createEvent(type: .editRecurrenceType, previousRecurrenceType: self.recurrenceType)
         self.recurrenceType = recurrenceType
@@ -161,6 +170,8 @@ class TodoItem {
             self.recurrenceFrequency = lastEvent.previousRecurrenceFrequency
         case .editRecurrenceType:
             self.recurrenceType = lastEvent.previousRecurrenceType
+        case .editRecurrenceInterval:
+            self.recurrenceInterval = lastEvent.previousRecurrenceInterval
         case .editIgnoreTimeComponent:
             self.ignoreTimeComponent =
                 lastEvent.previousIgnoreTimeComponent ?? self.ignoreTimeComponent
@@ -171,16 +182,17 @@ class TodoItem {
 
     private func updateDueDate(for frequency: RecurrenceFrequency, basedOn baseDate: Date) {
         let calendar = Calendar.current
+        let interval = recurrenceInterval ?? 1
 
         switch frequency {
         case .daily:
-            dueDate = calendar.date(byAdding: .day, value: 1, to: baseDate)
+            dueDate = calendar.date(byAdding: .day, value: interval, to: baseDate)
         case .weekly:
-            dueDate = calendar.date(byAdding: .weekOfYear, value: 1, to: baseDate)
+            dueDate = calendar.date(byAdding: .weekOfYear, value: interval, to: baseDate)
         case .monthly:
-            dueDate = calendar.date(byAdding: .month, value: 1, to: baseDate)
+            dueDate = calendar.date(byAdding: .month, value: interval, to: baseDate)
         case .yearly:
-            dueDate = calendar.date(byAdding: .year, value: 1, to: baseDate)
+            dueDate = calendar.date(byAdding: .year, value: interval, to: baseDate)
         }
 
         if ignoreTimeComponent, let dueDate = dueDate {
@@ -196,6 +208,7 @@ class TodoItem {
         previousIsCompleted: Bool? = nil,
         previousRecurrenceFrequency: RecurrenceFrequency? = nil,
         previousRecurrenceType: RecurrenceType? = nil,
+        previousRecurrenceInterval: Int? = nil,
         previousIgnoreTimeComponent: Bool? = nil
     ) -> TodoItemEvent {
         let event = TodoItemEvent(
@@ -208,6 +221,7 @@ class TodoItem {
             previousIsCompleted: previousIsCompleted,
             previousRecurrenceFrequency: previousRecurrenceFrequency,
             previousRecurrenceType: previousRecurrenceType,
+            previousRecurrenceInterval: previousRecurrenceInterval,
             previousIgnoreTimeComponent: previousIgnoreTimeComponent
         )
         events.append(event)

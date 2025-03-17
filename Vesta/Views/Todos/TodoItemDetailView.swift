@@ -42,6 +42,15 @@ struct TodoItemDetailView: View {
                         )
                     }
                 ),
+                recurrenceInterval:  Binding(
+                    get: { item.recurrenceInterval },
+                    set: { newValue in
+                        item.setRecurrenceInterval(
+                            modelContext: modelContext,
+                            recurrenceInterval: newValue
+                        )
+                    }
+                ),
                 recurrenceType: Binding(
                     get: { item.recurrenceType },
                     set: { newValue in
