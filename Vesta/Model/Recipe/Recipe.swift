@@ -5,10 +5,11 @@ import SwiftData
 class Recipe {
     var title: String
     var details: String
+
     @Relationship(deleteRule: .cascade)
     var ingredients: [Ingredient]
 
-    @Relationship(deleteRule: .cascade, inverse: \Meal.recipe)
+    @Relationship(deleteRule: .cascade)
     var meals: [Meal]
 
     init(title: String, details: String, ingredients: [Ingredient] = []) {

@@ -3,7 +3,7 @@ import SwiftUI
 
 struct ShoppingListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \ShoppingListItem.todoItem.dueDate) var shoppingItems: [ShoppingListItem]
+    @Query(sort: \ShoppingListItem.todoItem?.dueDate) var shoppingItems: [ShoppingListItem]
 
     @StateObject var viewModel: ShoppingListViewModel
 

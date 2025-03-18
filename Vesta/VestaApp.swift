@@ -3,6 +3,8 @@ import SwiftUI
 
 @main
 struct VestaApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+
     var sharedModelContainer: ModelContainer = {
         do {
             let container = try ModelContainerHelper.createModelContainer(

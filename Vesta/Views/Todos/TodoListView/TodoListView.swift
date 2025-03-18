@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct TodoListView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @Query(
         sort: [
@@ -80,6 +81,11 @@ struct TodoListView: View {
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
             viewModel.configureContext(modelContext)
+        }
+        .onChange(of: scenePhase) { newPhase, _ in
+            if newPhase == .active {
+                viewModel.refresh()
+            }
         }
     }
 }

@@ -16,12 +16,15 @@ struct ToastView: View {
             }
         }
         .padding()
+        .frame(width: UIScreen.main.bounds.width * 0.75, alignment: .leading)
         .background(Color.black.opacity(0.8))
         .foregroundColor(.white)
         .cornerRadius(8)
         .shadow(radius: 10)
         .transition(.opacity)
         .animation(.easeInOut, value: message)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal)
     }
 }
 

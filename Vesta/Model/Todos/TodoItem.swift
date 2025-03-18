@@ -46,10 +46,10 @@ class TodoItem {
     @Relationship(deleteRule: .cascade)
     var events: [TodoItemEvent]
 
-    @Relationship(deleteRule: .cascade, inverse: \Meal.todoItem)
+    @Relationship(inverse: \Meal.todoItem)
     var meal: Meal?
 
-    @Relationship(deleteRule: .cascade, inverse: \ShoppingListItem.todoItem)
+    @Relationship(inverse: \ShoppingListItem.todoItem)
     var shoppingListItem: ShoppingListItem?
 
     init(

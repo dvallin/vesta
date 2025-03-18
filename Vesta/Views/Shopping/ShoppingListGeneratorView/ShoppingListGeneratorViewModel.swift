@@ -16,13 +16,13 @@ class ShoppingListGeneratorViewModel: ObservableObject {
 
     func prepareMealsForShoppingList(_ meals: [Meal]) {
         let eligibleMeals = meals.filter { meal in
-            guard let dueDate = meal.todoItem.dueDate else { return false }
-            return dueDate > Date() && !meal.todoItem.isCompleted && meal.shoppingListItems.isEmpty
+            guard let dueDate = meal.todoItem?.dueDate else { return false }
+            return dueDate > Date() && !meal.isDone && meal.shoppingListItems.isEmpty
         }
 
         let groupedIngredients = Dictionary(
             grouping: eligibleMeals.flatMap { meal in
-                meal.recipe.ingredients.map { ($0, meal) }
+                meal.recipe?.ingredients.map { ($0, meal) } ?? []
             }
         ) { $0.0.name }
 
@@ -32,7 +32,7 @@ class ShoppingListGeneratorViewModel: ObservableObject {
                 sum + (pair.0.quantity ?? 0) * pair.1.scalingFactor
             }
             let earliestDueDate =
-                ingredientMealPairs.compactMap { $0.1.todoItem.dueDate }.min() ?? Date()
+                ingredientMealPairs.compactMap { $0.1.todoItem?.dueDate }.min() ?? Date()
 
             return IngredientSelection(
                 ingredient: firstIngredient,
@@ -53,7 +53,7 @@ class ShoppingListGeneratorViewModel: ObservableObject {
 
             let todoDetails = String(
                 format: NSLocalizedString("Buy for: %@", comment: "Shopping list item details"),
-                selection.meals.map { $0.recipe.title }.joined(separator: ", "))
+                selection.meals.map { $0.recipe?.title ?? "" }.joined(separator: ", "))
 
             let todoItem = TodoItem(
                 title: todoTitle,

@@ -11,9 +11,11 @@ struct MealDetailView: View {
 
     var body: some View {
         VStack {
-            ReadOnlyRecipeDetailView(
-                recipe: viewModel.meal.recipe, scalingFactor: viewModel.meal.scalingFactor
-            )
+            if let recipe = viewModel.meal.recipe {
+                ReadOnlyRecipeDetailView(
+                    recipe: recipe, scalingFactor: viewModel.meal.scalingFactor
+                )
+            }
             HStack {
                 Text(NSLocalizedString("Scaling Factor:", comment: "Scaling factor label"))
                 TextField(
@@ -50,7 +52,7 @@ struct MealDetailView: View {
                 DatePicker(
                     "",
                     selection: Binding(
-                        get: { viewModel.meal.todoItem.dueDate ?? Date() },
+                        get: { viewModel.meal.todoItem?.dueDate ?? Date() },
                         set: { newValue in
                             viewModel.meal.updateDueDate(newValue)
                         }

@@ -30,7 +30,7 @@ struct ShoppingItemDetailView: View {
 
                     Toggle(
                         NSLocalizedString("Purchased", comment: "Purchase status toggle"),
-                        isOn: .constant(item.todoItem.isCompleted)
+                        isOn: .constant(item.isPurchased)
                     )
                     .disabled(true)
                 }
@@ -47,13 +47,13 @@ struct ShoppingItemDetailView: View {
                                     String(
                                         format: NSLocalizedString(
                                             "Recipe: %@", comment: "Recipe name format"),
-                                        meal.recipe.title))
+                                        meal.recipe?.title ?? "Unknown"))
                                 Text(
                                     String(
                                         format: NSLocalizedString(
                                             "Meal Type: %@", comment: "Meal type format"),
                                         meal.mealType.displayName))
-                                if let dueDate = meal.todoItem.dueDate {
+                                if let dueDate = meal.todoItem?.dueDate {
                                     Text(
                                         String(
                                             format: NSLocalizedString(
@@ -73,8 +73,8 @@ struct ShoppingItemDetailView: View {
                     Text(
                         String(
                             format: NSLocalizedString("Title: %@", comment: "Todo title format"),
-                            item.todoItem.title))
-                    if let dueDate = item.todoItem.dueDate {
+                            item.todoItem?.title ?? "Unknown"))
+                    if let dueDate = item.todoItem?.dueDate {
                         Text(
                             String(
                                 format: NSLocalizedString(

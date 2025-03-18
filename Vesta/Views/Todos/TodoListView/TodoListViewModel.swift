@@ -4,6 +4,7 @@ import SwiftUI
 class TodoListViewModel: ObservableObject {
     private var modelContext: ModelContext?
 
+    @Published var currentDay: Date = Date()
     @Published var toastMessages: [ToastMessage] = []
 
     @Published var searchText: String = ""
@@ -32,6 +33,10 @@ class TodoListViewModel: ObservableObject {
         } catch {
             return false
         }
+    }
+
+    func refresh() {
+        currentDay = Date()
     }
 
     func markAsDone(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
@@ -78,7 +83,13 @@ class TodoListViewModel: ObservableObject {
     func deleteItem(_ item: TodoItem) {
         NotificationManager.shared.cancelNotification(for: item)
         if saveContext() {
-            modelContext!.delete(item)
+            if item.meal != nil {
+                modelContext!.delete(item.meal!)
+            } else if item.shoppingListItem != nil {
+                modelContext!.delete(item.shoppingListItem!)
+            } else {
+                modelContext!.delete(item)
+            }
             HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
         }
     }
@@ -124,7 +135,8 @@ class TodoListViewModel: ObservableObject {
             case .all:
                 return true
             case .today:
-                return Calendar.current.isDateInToday(item.dueDate ?? Date.distantPast)
+                return Calendar.current.isDate(
+                    item.dueDate ?? Date.distantPast, inSameDayAs: currentDay)
             case .noDueDate:
                 return item.dueDate == nil
             case .overdue:
