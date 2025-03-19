@@ -47,7 +47,7 @@ class MealPlanViewModel: ObservableObject {
             calendar.date(byAdding: .day, value: $0, to: startOfWeek)
         }
         let mealsByDate = Dictionary(grouping: meals) { meal in
-            calendar.startOfDay(for: meal.todoItem.dueDate ?? Date())
+            calendar.startOfDay(for: meal.todoItem?.dueDate ?? Date())
         }
         let weeks = stride(from: 0, to: dates.count, by: 7).map {
             Array(dates[$0..<min($0 + 7, dates.count)])
@@ -68,7 +68,7 @@ class MealPlanViewModel: ObservableObject {
     func mealsForDate(meals: [Meal], in date: Date) -> [Meal] {
         let calendar = Calendar.current
         return meals.filter { meal in
-            guard let dueDate = meal.todoItem.dueDate else { return false }
+            guard let dueDate = meal.todoItem?.dueDate else { return false }
             return calendar.isDate(dueDate, inSameDayAs: date)
         }
     }
@@ -76,10 +76,10 @@ class MealPlanViewModel: ObservableObject {
     func nextUpcomingMeal(meals: [Meal]) -> Meal? {
         let now = Date()
         return meals.filter { meal in
-            guard let dueDate = meal.todoItem.dueDate else { return false }
+            guard let dueDate = meal.todoItem?.dueDate else { return false }
             return dueDate > now
         }.min { a, b in
-            guard let dateA = a.todoItem.dueDate, let dateB = b.todoItem.dueDate else {
+            guard let dateA = a.todoItem?.dueDate, let dateB = b.todoItem?.dueDate else {
                 return false
             }
             return dateA < dateB
@@ -91,7 +91,9 @@ class MealPlanViewModel: ObservableObject {
             let mealsForDate = mealsForDate(meals: meals, in: date)
 
             offsets.map { mealsForDate[$0] }.forEach { meal in
-                NotificationManager.shared.cancelNotification(for: meal.todoItem)
+                if let todoItem = meal.todoItem {
+                    NotificationManager.shared.cancelNotification(for: todoItem)
+                }
                 modelContext?.delete(meal)
             }
             if saveContext() {

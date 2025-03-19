@@ -11,9 +11,9 @@ struct NextMealView: View {
                 onSelect()
             }) {
                 VStack(alignment: .leading) {
-                    Text(meal.recipe.title)
+                    Text(meal.recipe?.title ?? "No Recipe")
                         .font(.headline)
-                    if let dueDate = meal.todoItem.dueDate {
+                    if let dueDate = meal.todoItem?.dueDate {
                         Text(dueDate, style: .date)
                             .font(.subheadline)
                             .foregroundColor(.secondary)

@@ -7,10 +7,10 @@ struct ShoppingListItemRow: View {
     var body: some View {
         HStack {
             Button(action: togglePurchased) {
-                Image(systemName: item.todoItem.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(item.todoItem.isCompleted ? .secondary : .accentColor)
-                    .scaleEffect(item.todoItem.isCompleted ? 1 : 1.5)
-                    .animation(.easeInOut, value: item.todoItem.isCompleted)
+                Image(systemName: item.isPurchased ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(item.isPurchased ? .secondary : .accentColor)
+                    .scaleEffect(item.isPurchased ? 1 : 1.5)
+                    .animation(.easeInOut, value: item.isPurchased)
             }
             .buttonStyle(BorderlessButtonStyle())
 
@@ -18,8 +18,8 @@ struct ShoppingListItemRow: View {
                 VStack(alignment: .leading) {
                     Text(item.name)
                         .font(.headline)
-                        .strikethrough(item.todoItem.isCompleted)
-                        .foregroundColor(item.todoItem.isCompleted ? .secondary : .primary)
+                        .strikethrough(item.isPurchased)
+                        .foregroundColor(item.isPurchased ? .secondary : .primary)
 
                     if let quantity = item.quantity, let unit = item.unit {
                         Text("\(quantity, specifier: "%.1f") \(unit.displayName)")
@@ -27,7 +27,7 @@ struct ShoppingListItemRow: View {
                             .foregroundColor(.secondary)
                     }
 
-                    if let dueDate = item.todoItem.dueDate {
+                    if let dueDate = item.todoItem?.dueDate {
                         Text(
                             String(
                                 format: NSLocalizedString(
@@ -46,7 +46,7 @@ struct ShoppingListItemRow: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 4) {
                         ForEach(item.meals) { meal in
-                            Text(meal.recipe.title)
+                            Text(meal.recipe?.title ?? "Unknown")
                                 .font(.caption)
                                 .padding(4)
                                 .background(Color.accentColor.opacity(0.2))

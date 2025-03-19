@@ -15,17 +15,17 @@ struct DayGroupSectionView: View {
                         onMarkAsDone(meal.todoItem)
                     }) {
                         Image(
-                            systemName: meal.todoItem.isCompleted
+                            systemName: meal.isDone
                                 ? "checkmark.circle.fill"
                                 : "circle"
                         )
                         .foregroundColor(
-                            meal.todoItem.isCompleted ? .secondary : .accentColor
+                            meal.isDone ? .secondary : .accentColor
                         )
-                        .scaleEffect(meal.todoItem.isCompleted ? 1 : 1.5)
-                        .animation(.easeInOut, value: meal.todoItem.isCompleted)
+                        .scaleEffect(meal.isDone ? 1 : 1.5)
+                        .animation(.easeInOut, value: meal.isDone)
                     }
-                    .disabled(meal.todoItem.isCompleted)
+                    .disabled(meal.isDone)
                     .buttonStyle(BorderlessButtonStyle())
 
                     Button(action: {
@@ -33,7 +33,7 @@ struct DayGroupSectionView: View {
                         onMealSelect(meal)
                     }) {
                         VStack(alignment: .leading) {
-                            Text(meal.recipe.title)
+                            Text(meal.recipe?.title ?? "No Recipe")
                                 .font(.headline)
                             Text(meal.mealType.displayName)
                                 .font(.subheadline)

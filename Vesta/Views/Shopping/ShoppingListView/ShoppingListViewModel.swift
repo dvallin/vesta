@@ -34,7 +34,7 @@ class ShoppingListViewModel: ObservableObject {
     func togglePurchased(
         _ item: ShoppingListItem, undoAction: @escaping (ShoppingListItem, UUID) -> Void
     ) {
-        item.todoItem.markAsDone()
+        item.todoItem?.markAsDone()
 
         if saveContext() {
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
@@ -48,7 +48,7 @@ class ShoppingListViewModel: ObservableObject {
                         comment: "Toast message for marking item as purchased/not purchased"
                     ),
                     item.name,
-                    item.todoItem.isCompleted
+                    item.isPurchased
                         ? NSLocalizedString("purchased", comment: "Purchased status")
                         : NSLocalizedString("not purchased", comment: "Not purchased status")
                 ),
@@ -61,7 +61,7 @@ class ShoppingListViewModel: ObservableObject {
     }
 
     func undoTogglePurchased(_ item: ShoppingListItem, id: UUID) {
-        if let lastEvent = item.todoItem.undoLastEvent() {
+        if let lastEvent = item.todoItem?.undoLastEvent() {
             modelContext!.delete(lastEvent)
         }
         if saveContext() {
@@ -83,24 +83,24 @@ class ShoppingListViewModel: ObservableObject {
                 searchText.isEmpty
                 || item.name.localizedCaseInsensitiveContains(searchText)
 
-            let matchesPurchased = showPurchased || !item.todoItem.isCompleted
+            let matchesPurchased = showPurchased || !item.isPurchased
 
             return matchesSearchText && matchesPurchased
         }
         .sorted { first, second in
             // First sort by purchased status (non-purchased first)
-            if first.todoItem.isCompleted != second.todoItem.isCompleted {
-                return !first.todoItem.isCompleted
+            if first.isPurchased != second.isPurchased {
+                return !first.isPurchased
             }
 
             // Then sort by due date if available
-            if let firstDate = first.todoItem.dueDate,
-                let secondDate = second.todoItem.dueDate
+            if let firstDate = first.todoItem?.dueDate,
+                let secondDate = second.todoItem?.dueDate
             {
                 return firstDate < secondDate
-            } else if first.todoItem.dueDate != nil {
+            } else if first.todoItem?.dueDate != nil {
                 return true
-            } else if second.todoItem.dueDate != nil {
+            } else if second.todoItem?.dueDate != nil {
                 return false
             }
 

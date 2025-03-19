@@ -6,10 +6,17 @@ class ShoppingListItem {
     var name: String
     var quantity: Double?
     var unit: Unit?
+
     @Relationship(deleteRule: .cascade)
-    var todoItem: TodoItem
+    var todoItem: TodoItem?
+
     @Relationship(deleteRule: .nullify)
     var meals: [Meal]
+
+    var isPurchased: Bool {
+        guard let todoItem = todoItem else { return true }
+        return todoItem.isCompleted
+    }
 
     init(
         name: String, quantity: Double? = nil, unit: Unit? = nil,

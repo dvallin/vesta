@@ -24,13 +24,18 @@ class Meal {
     var mealType: MealType
 
     @Relationship(deleteRule: .cascade)
-    var todoItem: TodoItem
+    var todoItem: TodoItem?
 
-    @Relationship(deleteRule: .nullify)
-    var recipe: Recipe
+    @Relationship(inverse: \Recipe.meals)
+    var recipe: Recipe?
 
-    @Relationship(deleteRule: .nullify, inverse: \ShoppingListItem.meals)
+    @Relationship(inverse: \ShoppingListItem.meals)
     var shoppingListItems: [ShoppingListItem]
+
+    var isDone: Bool {
+        guard let todoItem = todoItem else { return true }
+        return todoItem.isCompleted
+    }
 
     init(scalingFactor: Double, todoItem: TodoItem, recipe: Recipe, mealType: MealType = .dinner) {
         self.scalingFactor = scalingFactor
@@ -41,14 +46,14 @@ class Meal {
     }
 
     func updateTodoItemDueDate(for mealType: MealType, on date: Date? = nil) {
-        let baseDate = date ?? todoItem.dueDate ?? Date()
+        let baseDate = date ?? todoItem?.dueDate ?? Date()
         let (hour, minute) = DateUtils.mealTime(for: mealType)
         if let newDueDate = DateUtils.setTime(hour: hour, minute: minute, for: baseDate) {
-            todoItem.dueDate = newDueDate
+            todoItem?.dueDate = newDueDate
         }
     }
 
     func updateDueDate(_ newDate: Date) {
-        todoItem.dueDate = DateUtils.preserveTime(from: todoItem.dueDate, applying: newDate)
+        todoItem?.dueDate = DateUtils.preserveTime(from: todoItem?.dueDate, applying: newDate)
     }
 }
