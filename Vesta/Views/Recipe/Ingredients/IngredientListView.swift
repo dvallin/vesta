@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct IngredientListView<IngredientType: Identifiable>: View {
-    let ingredients: [IngredientType]
+    var ingredients: [IngredientType]
     let onRemove: (IngredientType) -> Void
+    let onMove: (IndexSet, Int) -> Void
     let quantityText: (IngredientType) -> String
     let nameText: (IngredientType) -> String
 
@@ -21,5 +22,6 @@ struct IngredientListView<IngredientType: Identifiable>: View {
                 onRemove(ingredient)
             }
         }
+        .onMove(perform: onMove)
     }
 }

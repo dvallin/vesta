@@ -24,7 +24,8 @@ class RecipeDetailViewModel: ObservableObject {
     }
 
     func addIngredient(name: String, quantity: Double?, unit: Unit?) {
-        let newIngredient = Ingredient(name: name, quantity: quantity, unit: unit)
+        let newIngredient = Ingredient(
+            name: name, order: recipe.ingredients.count + 1, quantity: quantity, unit: unit)
         withAnimation {
             recipe.ingredients.append(newIngredient)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
@@ -38,5 +39,15 @@ class RecipeDetailViewModel: ObservableObject {
                 HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
             }
         }
+    }
+
+    func moveIngredient(from source: IndexSet, to destination: Int) {
+        var sortedIngredients = recipe.sortedIngredients
+        
+        sortedIngredients.move(fromOffsets: source, toOffset: destination)
+        for (index, ingredient) in sortedIngredients.enumerated() {
+            ingredient.order = index + 1
+        }
+        recipe.ingredients = sortedIngredients
     }
 }

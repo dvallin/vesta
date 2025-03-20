@@ -45,9 +45,9 @@ struct NextMealView: View {
                     title: "Spaghetti Carbonara",
                     details: "Classic Italian pasta dish",
                     ingredients: [
-                        Ingredient(name: "Spaghetti", quantity: 500, unit: .gram),
-                        Ingredient(name: "Eggs", quantity: 4, unit: .piece),
-                        Ingredient(name: "Pecorino Romano", quantity: 100, unit: .gram),
+                        Ingredient(name: "Spaghetti", order: 1, quantity: 500, unit: .gram),
+                        Ingredient(name: "Eggs", order: 2, quantity: 4, unit: .piece),
+                        Ingredient(name: "Pecorino Romano", order: 3, quantity: 100, unit: .gram),
                     ]
                 ),
                 mealType: .dinner

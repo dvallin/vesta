@@ -100,18 +100,18 @@ struct MealPlanView: View {
                 title: "Spaghetti Bolognese",
                 details: "Classic Italian pasta dish",
                 ingredients: [
-                    Ingredient(name: "Ground beef", quantity: 500, unit: .gram),
-                    Ingredient(name: "Spaghetti", quantity: 400, unit: .gram),
-                    Ingredient(name: "Tomato sauce", quantity: 2, unit: .cup),
+                    Ingredient(name: "Ground beef", order: 1, quantity: 500, unit: .gram),
+                    Ingredient(name: "Spaghetti", order: 2, quantity: 400, unit: .gram),
+                    Ingredient(name: "Tomato sauce", order: 3, quantity: 2, unit: .cup),
                 ]
             ),
             Recipe(
                 title: "Chicken Curry",
                 details: "Spicy Indian curry",
                 ingredients: [
-                    Ingredient(name: "Chicken", quantity: 1, unit: .kilogram),
-                    Ingredient(name: "Curry powder", quantity: 2, unit: .tablespoon),
-                    Ingredient(name: "Coconut milk", quantity: 400, unit: .milliliter),
+                    Ingredient(name: "Chicken", order: 1, quantity: 1, unit: .kilogram),
+                    Ingredient(name: "Curry powder", order: 2, quantity: 2, unit: .tablespoon),
+                    Ingredient(name: "Coconut milk", order: 3, quantity: 400, unit: .milliliter),
                 ]
             ),
         ]

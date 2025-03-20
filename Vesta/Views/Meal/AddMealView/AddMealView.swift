@@ -91,9 +91,9 @@ struct AddMealView: View {
             title: "Spaghetti Bolognese",
             details: "Classic Italian pasta dish",
             ingredients: [
-                Ingredient(name: "Spaghetti", quantity: 500, unit: .gram),
-                Ingredient(name: "Ground Beef", quantity: 400, unit: .gram),
-                Ingredient(name: "Tomato Sauce", quantity: 2, unit: .cup),
+                Ingredient(name: "Spaghetti", order: 1, quantity: 500, unit: .gram),
+                Ingredient(name: "Ground Beef", order: 2, quantity: 400, unit: .gram),
+                Ingredient(name: "Tomato Sauce", order: 3, quantity: 2, unit: .cup),
             ]
         )
 
@@ -101,9 +101,9 @@ struct AddMealView: View {
             title: "Chicken Curry",
             details: "Spicy Indian curry",
             ingredients: [
-                Ingredient(name: "Chicken", quantity: 1, unit: .kilogram),
-                Ingredient(name: "Curry Powder", quantity: 2, unit: .tablespoon),
-                Ingredient(name: "Coconut Milk", quantity: 400, unit: .milliliter),
+                Ingredient(name: "Chicken", order: 1, quantity: 1, unit: .kilogram),
+                Ingredient(name: "Curry Powder", order: 2,  quantity: 2, unit: .tablespoon),
+                Ingredient(name: "Coconut Milk", order: 3,  quantity: 400, unit: .milliliter),
             ]
         )
 

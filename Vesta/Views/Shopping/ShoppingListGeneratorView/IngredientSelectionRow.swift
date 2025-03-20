@@ -80,7 +80,7 @@ struct IngredientSelectionRow: View {
         IngredientSelectionRow(
             selection: .constant(
                 ShoppingListGeneratorViewModel.IngredientSelection(
-                    ingredient: Ingredient(name: "Tomatoes", quantity: 4, unit: .piece),
+                    ingredient: Ingredient(name: "Tomatoes", order: 1, quantity: 4, unit: .piece),
                     meals: [],
                     isSelected: true,
                     quantity: 4,
@@ -94,7 +94,7 @@ struct IngredientSelectionRow: View {
         IngredientSelectionRow(
             selection: .constant(
                 ShoppingListGeneratorViewModel.IngredientSelection(
-                    ingredient: Ingredient(name: "Salt", quantity: 1, unit: nil),
+                    ingredient: Ingredient(name: "Salt", order: 1, quantity: 1, unit: nil),
                     meals: [],
                     isSelected: true,
                     quantity: 1,
@@ -108,7 +108,7 @@ struct IngredientSelectionRow: View {
         IngredientSelectionRow(
             selection: .constant(
                 ShoppingListGeneratorViewModel.IngredientSelection(
-                    ingredient: Ingredient(name: "Flour", quantity: 500, unit: .gram),
+                    ingredient: Ingredient(name: "Flour", order: 1, quantity: 500, unit: .gram),
                     meals: [],
                     isSelected: false,
                     quantity: 500,

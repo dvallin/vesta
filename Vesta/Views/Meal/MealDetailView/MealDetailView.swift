@@ -89,10 +89,10 @@ struct MealDetailView: View {
             details: "Classic Italian pasta dish with meat sauce"
         )
         let ingredients = [
-            Ingredient(name: "Spaghetti", quantity: 500, unit: .gram, recipe: recipe),
-            Ingredient(name: "Ground Beef", quantity: 400, unit: .gram, recipe: recipe),
-            Ingredient(name: "Tomato Sauce", quantity: 2, unit: .cup, recipe: recipe),
-            Ingredient(name: "Onion", quantity: 1, unit: .piece, recipe: recipe),
+            Ingredient(name: "Spaghetti", order: 1, quantity: 500, unit: .gram, recipe: recipe),
+            Ingredient(name: "Ground Beef", order: 2, quantity: 400, unit: .gram, recipe: recipe),
+            Ingredient(name: "Tomato Sauce", order: 3, quantity: 2, unit: .cup, recipe: recipe),
+            Ingredient(name: "Onion", order: 4, quantity: 1, unit: .piece, recipe: recipe),
         ]
         recipe.ingredients = ingredients
 

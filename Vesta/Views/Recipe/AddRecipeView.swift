@@ -24,15 +24,19 @@ struct AddRecipeView: View {
     @State private var showingDiscardAlert = false
     @State private var isSaving = false
 
+    @FocusState private var focusedField: String?
+
     var body: some View {
         NavigationView {
             Form {
                 RecipeTitleInputView(title: $title)
+                    .focused($focusedField, equals: "title")
 
                 IngredientsSection(
                     header: NSLocalizedString(
                         "Ingredients", comment: "Section header for ingredients"),
                     ingredients: tempIngredients,
+                    moveHandler: moveTempIngredient,
                     removeHandler: removeTempIngredient,
                     quantityText: { ingredient in
                         let qtyPart =
@@ -49,11 +53,13 @@ struct AddRecipeView: View {
                     ingredientUnit: $ingredientUnit,
                     onAdd: addTempIngredient
                 )
+                .focused($focusedField, equals: "ingredients")
                 #if os(iOS)
                     .environment(\.editMode, .constant(.active))
                 #endif
 
                 RecipeDetailsEditorView(details: $details)
+                    .focused($focusedField, equals: "details")
             }
             .navigationTitle(
                 NSLocalizedString("Add Recipe", comment: "Navigation title for add recipe view")
@@ -79,6 +85,12 @@ struct AddRecipeView: View {
                         .disabled(isSaving)
                     }
                 #endif
+
+                ToolbarItem(placement: .keyboard) {
+                    Button(NSLocalizedString("Done", comment: "Done button")) {
+                        focusedField = nil
+                    }
+                }
             }
             .alert(
                 NSLocalizedString("Validation Error", comment: "Validation error alert title"),
@@ -141,6 +153,10 @@ struct AddRecipeView: View {
         }
     }
 
+    private func moveTempIngredient(from source: IndexSet, to destination: Int) {
+        tempIngredients.move(fromOffsets: source, toOffset: destination)
+    }
+
     private func validateAndSave() {
         guard !title.isEmpty else {
             validationMessage = NSLocalizedString(
@@ -161,9 +177,14 @@ struct AddRecipeView: View {
         isSaving = true
         do {
             let newRecipe = Recipe(title: title, details: details)
-            for temp in tempIngredients {
-                newRecipe.ingredients.append(
-                    Ingredient(name: temp.name, quantity: temp.quantity, unit: temp.unit))
+            for (index, temp) in tempIngredients.enumerated() {
+                let ingredient = Ingredient(
+                    name: temp.name,
+                    order: index + 1,
+                    quantity: temp.quantity,
+                    unit: temp.unit
+                )
+                newRecipe.ingredients.append(ingredient)
             }
             modelContext.insert(newRecipe)
             try modelContext.save()

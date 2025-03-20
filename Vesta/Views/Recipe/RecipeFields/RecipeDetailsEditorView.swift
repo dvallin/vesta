@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RecipeDetailsEditorView: View {
     @Binding var details: String
+    @FocusState var focusedField: String?
 
     var body: some View {
         Section(header: Text(NSLocalizedString("Description", comment: "Section header"))) {

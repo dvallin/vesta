@@ -14,8 +14,7 @@ struct RecipeDetailView: View {
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
 
-    @State private var isEditingTitle = false
-    @State private var isEditingDetails = false
+    @FocusState private var focusedField: String?
 
     init(recipe: Recipe) {
         _viewModel = StateObject(wrappedValue: RecipeDetailViewModel(recipe: recipe))
@@ -23,16 +22,13 @@ struct RecipeDetailView: View {
 
     var body: some View {
         Form {
-            Text(viewModel.recipe.title)
-                .font(.title)
-                .bold()
-                .onTapGesture {
-                    isEditingTitle = true
-                }
+            RecipeTitleInputView(title: $viewModel.recipe.title)
+                .focused($focusedField, equals: "title")
 
             IngredientsSection(
                 header: NSLocalizedString("Ingredients", comment: "Section header for ingredients"),
-                ingredients: viewModel.recipe.ingredients,
+                ingredients: viewModel.recipe.sortedIngredients,
+                moveHandler: viewModel.moveIngredient,
                 removeHandler: viewModel.removeIngredient,
                 quantityText: { ingredient in
                     let qtyPart =
@@ -49,18 +45,13 @@ struct RecipeDetailView: View {
                 ingredientUnit: $ingredientUnit,
                 onAdd: addIngredient
             )
+            .focused($focusedField, equals: "ingredients")
             #if os(iOS)
                 .environment(\.editMode, .constant(.active))
             #endif
 
-            Section(
-                header: Text(NSLocalizedString("Description", comment: "Section header"))
-            ) {
-                Text(viewModel.recipe.details)
-                    .onTapGesture {
-                        isEditingDetails = true
-                    }
-            }
+            RecipeDetailsEditorView(details: $viewModel.recipe.details)
+                .focused($focusedField, equals: "details")
         }
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -75,27 +66,6 @@ struct RecipeDetailView: View {
         } message: {
             Text(validationMessage)
         }
-        .sheet(isPresented: $isEditingTitle) {
-            EditTitleView(
-                navigationBarTitle: NSLocalizedString("Edit Title", comment: "Navigation title"),
-                title: Binding(
-                    get: { viewModel.recipe.title },
-                    set: { newValue in
-                        viewModel.recipe.title = newValue
-                    }
-                ))
-        }
-        .sheet(isPresented: $isEditingDetails) {
-            EditDetailsView(
-                navigationBarTitle: NSLocalizedString(
-                    "Edit Description", comment: "Navigation title"),
-                details: Binding(
-                    get: { viewModel.recipe.details },
-                    set: { newValue in
-                        viewModel.recipe.details = newValue
-                    }
-                ))
-        }
         .toolbar {
             #if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -105,6 +75,12 @@ struct RecipeDetailView: View {
                     }
                 }
             #endif
+
+            ToolbarItem(placement: .keyboard) {
+                Button(NSLocalizedString("Done", comment: "Done button")) {
+                    focusedField = nil
+                }
+            }
         }
         .onAppear {
             viewModel.configureEnvironment(modelContext)
@@ -140,11 +116,13 @@ struct RecipeDetailView: View {
             title: "Spaghetti Bolognese",
             details: "A classic Italian pasta dish."
         )
-        recipe.ingredients.append(Ingredient(name: "Spaghetti", quantity: 200, unit: .gram))
-        recipe.ingredients.append(Ingredient(name: "Ground Beef", quantity: 300, unit: .gram))
         recipe.ingredients.append(
-            Ingredient(name: "Tomato Sauce", quantity: 400, unit: .milliliter))
-        recipe.ingredients.append(Ingredient(name: "Salt", quantity: nil, unit: nil))
+            Ingredient(name: "Spaghetti", order: 1, quantity: 200, unit: .gram))
+        recipe.ingredients.append(
+            Ingredient(name: "Ground Beef", order: 2, quantity: 300, unit: .gram))
+        recipe.ingredients.append(
+            Ingredient(name: "Tomato Sauce", order: 3, quantity: 400, unit: .milliliter))
+        recipe.ingredients.append(Ingredient(name: "Salt", order: 4, quantity: nil, unit: nil))
 
         context.insert(recipe)
         return RecipeDetailView(recipe: recipe)
