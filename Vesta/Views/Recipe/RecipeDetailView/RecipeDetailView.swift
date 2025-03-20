@@ -14,8 +14,7 @@ struct RecipeDetailView: View {
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
 
-    @State private var isEditingTitle = false
-    @State private var isEditingDetails = false
+    @FocusState private var focusedField: String?
 
     init(recipe: Recipe) {
         _viewModel = StateObject(wrappedValue: RecipeDetailViewModel(recipe: recipe))
@@ -23,12 +22,8 @@ struct RecipeDetailView: View {
 
     var body: some View {
         Form {
-            Text(viewModel.recipe.title)
-                .font(.title)
-                .bold()
-                .onTapGesture {
-                    isEditingTitle = true
-                }
+            RecipeTitleInputView(title: $viewModel.recipe.title)
+                .focused($focusedField, equals: "title")
 
             IngredientsSection(
                 header: NSLocalizedString("Ingredients", comment: "Section header for ingredients"),
@@ -49,18 +44,13 @@ struct RecipeDetailView: View {
                 ingredientUnit: $ingredientUnit,
                 onAdd: addIngredient
             )
+            .focused($focusedField, equals: "ingredients")
             #if os(iOS)
                 .environment(\.editMode, .constant(.active))
             #endif
 
-            Section(
-                header: Text(NSLocalizedString("Description", comment: "Section header"))
-            ) {
-                Text(viewModel.recipe.details)
-                    .onTapGesture {
-                        isEditingDetails = true
-                    }
-            }
+            RecipeDetailsEditorView(details: $viewModel.recipe.details)
+                .focused($focusedField, equals: "details")
         }
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -75,27 +65,6 @@ struct RecipeDetailView: View {
         } message: {
             Text(validationMessage)
         }
-        .sheet(isPresented: $isEditingTitle) {
-            EditTitleView(
-                navigationBarTitle: NSLocalizedString("Edit Title", comment: "Navigation title"),
-                title: Binding(
-                    get: { viewModel.recipe.title },
-                    set: { newValue in
-                        viewModel.recipe.title = newValue
-                    }
-                ))
-        }
-        .sheet(isPresented: $isEditingDetails) {
-            EditDetailsView(
-                navigationBarTitle: NSLocalizedString(
-                    "Edit Description", comment: "Navigation title"),
-                details: Binding(
-                    get: { viewModel.recipe.details },
-                    set: { newValue in
-                        viewModel.recipe.details = newValue
-                    }
-                ))
-        }
         .toolbar {
             #if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -105,6 +74,12 @@ struct RecipeDetailView: View {
                     }
                 }
             #endif
+
+            ToolbarItem(placement: .keyboard) {
+                Button(NSLocalizedString("Done", comment: "Done button")) {
+                    focusedField = nil
+                }
+            }
         }
         .onAppear {
             viewModel.configureEnvironment(modelContext)

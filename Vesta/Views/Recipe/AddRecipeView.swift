@@ -24,10 +24,13 @@ struct AddRecipeView: View {
     @State private var showingDiscardAlert = false
     @State private var isSaving = false
 
+    @FocusState private var focusedField: String?
+
     var body: some View {
         NavigationView {
             Form {
                 RecipeTitleInputView(title: $title)
+                    .focused($focusedField, equals: "title")
 
                 IngredientsSection(
                     header: NSLocalizedString(
@@ -49,11 +52,13 @@ struct AddRecipeView: View {
                     ingredientUnit: $ingredientUnit,
                     onAdd: addTempIngredient
                 )
+                .focused($focusedField, equals: "ingredients")
                 #if os(iOS)
                     .environment(\.editMode, .constant(.active))
                 #endif
 
                 RecipeDetailsEditorView(details: $details)
+                    .focused($focusedField, equals: "details")
             }
             .navigationTitle(
                 NSLocalizedString("Add Recipe", comment: "Navigation title for add recipe view")
@@ -79,6 +84,12 @@ struct AddRecipeView: View {
                         .disabled(isSaving)
                     }
                 #endif
+
+                ToolbarItem(placement: .keyboard) {
+                    Button(NSLocalizedString("Done", comment: "Done button")) {
+                        focusedField = nil
+                    }
+                }
             }
             .alert(
                 NSLocalizedString("Validation Error", comment: "Validation error alert title"),
