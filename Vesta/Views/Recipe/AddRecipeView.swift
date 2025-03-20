@@ -36,6 +36,7 @@ struct AddRecipeView: View {
                     header: NSLocalizedString(
                         "Ingredients", comment: "Section header for ingredients"),
                     ingredients: tempIngredients,
+                    moveHandler: moveTempIngredient,
                     removeHandler: removeTempIngredient,
                     quantityText: { ingredient in
                         let qtyPart =
@@ -152,6 +153,10 @@ struct AddRecipeView: View {
         }
     }
 
+    private func moveTempIngredient(from source: IndexSet, to destination: Int) {
+        tempIngredients.move(fromOffsets: source, toOffset: destination)
+    }
+
     private func validateAndSave() {
         guard !title.isEmpty else {
             validationMessage = NSLocalizedString(
@@ -172,9 +177,14 @@ struct AddRecipeView: View {
         isSaving = true
         do {
             let newRecipe = Recipe(title: title, details: details)
-            for temp in tempIngredients {
-                newRecipe.ingredients.append(
-                    Ingredient(name: temp.name, quantity: temp.quantity, unit: temp.unit))
+            for (index, temp) in tempIngredients.enumerated() {
+                let ingredient = Ingredient(
+                    name: temp.name,
+                    order: index + 1,
+                    quantity: temp.quantity,
+                    unit: temp.unit
+                )
+                newRecipe.ingredients.append(ingredient)
             }
             modelContext.insert(newRecipe)
             try modelContext.save()

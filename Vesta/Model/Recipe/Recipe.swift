@@ -18,19 +18,25 @@ class Recipe {
         self.ingredients = ingredients
         self.meals = []
     }
+
+    var sortedIngredients: [Ingredient] {
+        ingredients.sorted { $0.order < $1.order }
+    }
 }
 
 @Model
 class Ingredient {
     var name: String
+    var order: Int
     var quantity: Double?
     var unit: Unit?
 
     @Relationship(inverse: \Recipe.ingredients)
     var recipe: Recipe?
 
-    init(name: String, quantity: Double?, unit: Unit?, recipe: Recipe? = nil) {
+    init(name: String, order: Int, quantity: Double?, unit: Unit?, recipe: Recipe? = nil) {
         self.name = name
+        self.order = order
         self.quantity = quantity
         self.unit = unit
         self.recipe = recipe

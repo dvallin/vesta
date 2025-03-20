@@ -27,7 +27,8 @@ struct RecipeDetailView: View {
 
             IngredientsSection(
                 header: NSLocalizedString("Ingredients", comment: "Section header for ingredients"),
-                ingredients: viewModel.recipe.ingredients,
+                ingredients: viewModel.recipe.sortedIngredients,
+                moveHandler: viewModel.moveIngredient,
                 removeHandler: viewModel.removeIngredient,
                 quantityText: { ingredient in
                     let qtyPart =
@@ -115,11 +116,13 @@ struct RecipeDetailView: View {
             title: "Spaghetti Bolognese",
             details: "A classic Italian pasta dish."
         )
-        recipe.ingredients.append(Ingredient(name: "Spaghetti", quantity: 200, unit: .gram))
-        recipe.ingredients.append(Ingredient(name: "Ground Beef", quantity: 300, unit: .gram))
         recipe.ingredients.append(
-            Ingredient(name: "Tomato Sauce", quantity: 400, unit: .milliliter))
-        recipe.ingredients.append(Ingredient(name: "Salt", quantity: nil, unit: nil))
+            Ingredient(name: "Spaghetti", order: 1, quantity: 200, unit: .gram))
+        recipe.ingredients.append(
+            Ingredient(name: "Ground Beef", order: 2, quantity: 300, unit: .gram))
+        recipe.ingredients.append(
+            Ingredient(name: "Tomato Sauce", order: 3, quantity: 400, unit: .milliliter))
+        recipe.ingredients.append(Ingredient(name: "Salt", order: 4, quantity: nil, unit: nil))
 
         context.insert(recipe)
         return RecipeDetailView(recipe: recipe)

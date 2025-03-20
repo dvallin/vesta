@@ -52,16 +52,16 @@ struct ShoppingListGeneratorView: View {
 
         // Add ingredients to recipes
         let ingredients1 = [
-            Ingredient(name: "Spaghetti", quantity: 500, unit: .gram, recipe: recipe1),
-            Ingredient(name: "Eggs", quantity: 4, unit: .piece, recipe: recipe1),
-            Ingredient(name: "Parmesan", quantity: 100, unit: .gram, recipe: recipe1),
+            Ingredient(name: "Spaghetti", order: 1, quantity: 500, unit: .gram, recipe: recipe1),
+            Ingredient(name: "Eggs", order: 2, quantity: 4, unit: .piece, recipe: recipe1),
+            Ingredient(name: "Parmesan", order: 3, quantity: 100, unit: .gram, recipe: recipe1),
         ]
         recipe1.ingredients = ingredients1
 
         let ingredients2 = [
-            Ingredient(name: "Chicken", quantity: 500, unit: .gram, recipe: recipe2),
-            Ingredient(name: "Bell Peppers", quantity: 2, unit: .piece, recipe: recipe2),
-            Ingredient(name: "Soy Sauce", quantity: 30, unit: .milliliter, recipe: recipe2),
+            Ingredient(name: "Chicken", order: 1, quantity: 500, unit: .gram, recipe: recipe2),
+            Ingredient(name: "Bell Peppers", order: 2, quantity: 2, unit: .piece, recipe: recipe2),
+            Ingredient(name: "Soy Sauce", order: 3, quantity: 30, unit: .milliliter, recipe: recipe2),
         ]
         recipe2.ingredients = ingredients2
 
@@ -110,6 +110,7 @@ struct ShoppingListGeneratorView: View {
             recipe.ingredients = (1...4).map { j in
                 Ingredient(
                     name: "Ingredient \(j) for Recipe \(i)",
+                    order: j,
                     quantity: Double(j * 100),
                     unit: Unit.allCases[j % Unit.allCases.count],
                     recipe: recipe
