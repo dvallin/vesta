@@ -147,6 +147,8 @@
 "Edit Recurrence Type" = "Editar tipo de repetición";
 "Edit Is Completed" = "Editar estado de completado";
 "Edit Ignore Time Component" = "Editar ignorar componente de tiempo";
+"Edit Priority" = "Editar prioridad";
+"Created Todo Item" = "Tarea creada";
 "Completed" = "Completado";
 
 // Filter Options

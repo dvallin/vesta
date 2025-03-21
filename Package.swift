@@ -27,5 +27,10 @@ let package = Package(
             dependencies: ["Vesta"],
             path: "VestaTests"
         ),
+        .testTarget(
+            name: "VestaUITests",
+            dependencies: ["Vesta"],
+            path: "VestaUITests"
+        ),
     ]
 )

@@ -147,6 +147,8 @@
 "Edit Recurrence Type" = "Modifier le type de récurrence";
 "Edit Is Completed" = "Modifier l'état d'achèvement";
 "Edit Ignore Time Component" = "Modifier l'ignorance du composant de temps";
+"Edit Priority" = "Modifier la priorité";
+"Created Todo Item" = "Tâche créée";
 "Completed" = "Terminé";
 
 // Filter Options

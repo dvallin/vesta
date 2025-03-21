@@ -12,6 +12,9 @@ class AddTodoItemViewModel: ObservableObject {
     @Published var recurrenceInterval: Int? = nil
     @Published var recurrenceType: RecurrenceType? = nil
     @Published var ignoreTimeComponent: Bool = true
+    @Published var priority: Int = 4
+    @Published var category: String = ""
+    @Published var matchingCategories: [TodoItemCategory] = []
 
     @Published var showingValidationAlert = false
     @Published var validationMessage = ""
@@ -41,14 +44,20 @@ class AddTodoItemViewModel: ObservableObject {
 
         isSaving = true
         do {
-            let newItem = TodoItem(
+            let categoryEntity = fetchOrCreateCategory(named: category)
+            let todoItem = TodoItem.create(
                 title: title, details: details, dueDate: dueDate,
                 recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType,
-                recurrenceInterval: recurrenceInterval, ignoreTimeComponent: ignoreTimeComponent)
-            modelContext!.insert(newItem)
+                recurrenceInterval: recurrenceInterval,
+                ignoreTimeComponent: ignoreTimeComponent,
+                priority: priority,
+                category: categoryEntity
+            )
+
+            modelContext!.insert(todoItem)
 
             if dueDate != nil {
-                NotificationManager.shared.scheduleNotification(for: newItem)
+                NotificationManager.shared.scheduleNotification(for: todoItem)
             }
 
             try modelContext!.save()
@@ -66,6 +75,40 @@ class AddTodoItemViewModel: ObservableObject {
             showingValidationAlert = true
         }
         isSaving = false
+    }
+
+    private func fetchOrCreateCategory(named name: String) -> TodoItemCategory? {
+        guard !name.isEmpty, let context = modelContext else { return nil }
+
+        // Replace the deprecated FetchRequest with a FetchDescriptor
+        let fetchDescriptor = FetchDescriptor<TodoItemCategory>(
+            predicate: #Predicate { item in item.name == name },
+            sortBy: []
+        )
+
+        if let existingCategory = try? context.fetch(fetchDescriptor).first {
+            return existingCategory
+        } else {
+            let newCategory = TodoItemCategory(name: name)
+            context.insert(newCategory)
+            return newCategory
+        }
+    }
+
+    func updateMatchingCategories() {
+        guard let context = modelContext else { return }
+
+        // Create a FetchDescriptor for categories that begin with the current text
+        let fetchDescriptor = FetchDescriptor<TodoItemCategory>(
+            predicate: #Predicate { item in
+                item.name.starts(with: category)
+            },
+            sortBy: []
+        )
+
+        if let categories = try? context.fetch(fetchDescriptor) {
+            matchingCategories = categories
+        }
     }
 
     @MainActor

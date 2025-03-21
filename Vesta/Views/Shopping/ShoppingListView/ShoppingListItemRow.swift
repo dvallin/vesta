@@ -8,7 +8,7 @@ struct ShoppingListItemRow: View {
         HStack {
             Button(action: togglePurchased) {
                 Image(systemName: item.isPurchased ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(item.isPurchased ? .secondary : .accentColor)
+                    .foregroundColor(item.isPurchased ? .secondary : .blue)
                     .scaleEffect(item.isPurchased ? 1 : 1.5)
                     .animation(.easeInOut, value: item.isPurchased)
             }
@@ -49,7 +49,7 @@ struct ShoppingListItemRow: View {
                             Text(meal.recipe?.title ?? "Unknown")
                                 .font(.caption)
                                 .padding(4)
-                                .background(Color.accentColor.opacity(0.2))
+                                .background(Color.blue.opacity(0.2))
                                 .cornerRadius(4)
                         }
                     }

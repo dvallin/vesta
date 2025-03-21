@@ -23,7 +23,7 @@ struct TitleDetailsSection: View {
 
             TextEditor(text: $details)
                 .focused($focusedField, equals: "details")
-                .frame(minHeight: 100)
+                .frame(minHeight: 70)
         }
     }
 }

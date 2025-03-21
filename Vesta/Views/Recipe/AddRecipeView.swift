@@ -29,8 +29,11 @@ struct AddRecipeView: View {
     var body: some View {
         NavigationView {
             Form {
-                RecipeTitleInputView(title: $title)
-                    .focused($focusedField, equals: "title")
+                RecipeTitleDetailsSection(
+                    title: $title,
+                    details: $details,
+                    focusedField: $focusedField
+                )
 
                 IngredientsSection(
                     header: NSLocalizedString(
@@ -57,9 +60,6 @@ struct AddRecipeView: View {
                 #if os(iOS)
                     .environment(\.editMode, .constant(.active))
                 #endif
-
-                RecipeDetailsEditorView(details: $details)
-                    .focused($focusedField, equals: "details")
             }
             .navigationTitle(
                 NSLocalizedString("Add Recipe", comment: "Navigation title for add recipe view")

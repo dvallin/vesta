@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		44A3BB682D8D583200389973 /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = 44A3BB672D8D583200389973 /* ViewInspector */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		44D6021E2D5C90ED0036F174 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -66,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44A3BB682D8D583200389973 /* ViewInspector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,6 +163,7 @@
 			);
 			name = VestaUITests;
 			packageProductDependencies = (
+				44A3BB672D8D583200389973 /* ViewInspector */,
 			);
 			productName = VestaUITests;
 			productReference = 44D602272D5C90ED0036F174 /* VestaUITests.xctest */;
@@ -201,6 +207,9 @@
 			);
 			mainGroup = 44D602022D5C90EC0036F174;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				44A3BB662D8D583200389973 /* XCRemoteSwiftPackageReference "ViewInspector" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 44D6020C2D5C90EC0036F174 /* Products */;
 			projectDirPath = "";
@@ -497,6 +506,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4N35M6LFRN;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dvallin.VestaUITests;
@@ -513,6 +523,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4N35M6LFRN;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dvallin.VestaUITests;
@@ -564,6 +575,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		44A3BB662D8D583200389973 /* XCRemoteSwiftPackageReference "ViewInspector" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nalexn/ViewInspector";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.10.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		44A3BB672D8D583200389973 /* ViewInspector */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 44A3BB662D8D583200389973 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			productName = ViewInspector;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 44D602032D5C90EC0036F174 /* Project object */;
 }

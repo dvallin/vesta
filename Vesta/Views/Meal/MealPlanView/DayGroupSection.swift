@@ -20,7 +20,7 @@ struct DayGroupSectionView: View {
                                 : "circle"
                         )
                         .foregroundColor(
-                            meal.isDone ? .secondary : .accentColor
+                            meal.isDone ? .secondary : .blue
                         )
                         .scaleEffect(meal.isDone ? 1 : 1.5)
                         .animation(.easeInOut, value: meal.isDone)

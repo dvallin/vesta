@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 
 enum TodoItemEventType: String, Codable {
+    case created
     case markAsDone
     case editTitle
     case editDetails
@@ -11,6 +12,8 @@ enum TodoItemEventType: String, Codable {
     case editIsCompleted
     case editIgnoreTimeComponent
     case editRecurrenceInterval
+    case editPriority
+    case editCategory
 
     var displayName: String {
         switch self {
@@ -35,6 +38,15 @@ enum TodoItemEventType: String, Codable {
         case .editRecurrenceInterval:
             return NSLocalizedString(
                 "Edit Recurrence Interval", comment: "Edit Recurrence Interval event")
+        case .editPriority:
+            return NSLocalizedString(
+                "Edit Priority", comment: "Edit Priority event")
+        case .editCategory:
+            return NSLocalizedString(
+                "Edit Category", comment: "Edit Category event")
+        case .created:
+            return NSLocalizedString(
+                "Created Todo Item", comment: "Created Todo Item event")
         }
     }
 }
@@ -52,6 +64,8 @@ class TodoItemEvent {
     var previousRecurrenceType: RecurrenceType?
     var previousRecurrenceInterval: Int?
     var previousIgnoreTimeComponent: Bool?
+    var previousPriority: Int?
+    var previousCategory: String?
 
     @Relationship(inverse: \TodoItem.events)
     var todoItem: TodoItem?
@@ -61,7 +75,8 @@ class TodoItemEvent {
         previousDetails: String? = nil, previousDueDate: Date? = nil,
         previousIsCompleted: Bool? = nil, previousRecurrenceFrequency: RecurrenceFrequency? = nil,
         previousRecurrenceType: RecurrenceType? = nil, previousRecurrenceInterval: Int? = nil,
-        previousIgnoreTimeComponent: Bool? = nil
+        previousIgnoreTimeComponent: Bool? = nil, previousPriority: Int? = nil,
+        previousCategory: String? = nil
     ) {
         self.type = type
         self.date = date
@@ -75,5 +90,7 @@ class TodoItemEvent {
         self.previousRecurrenceType = previousRecurrenceType
         self.previousRecurrenceInterval = previousRecurrenceInterval
         self.previousIgnoreTimeComponent = previousIgnoreTimeComponent
+        self.previousPriority = previousPriority
+        self.previousCategory = previousCategory
     }
 }

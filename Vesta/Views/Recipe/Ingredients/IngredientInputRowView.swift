@@ -61,7 +61,7 @@ struct IngredientInputRowView: View {
             }) {
                 Image(systemName: "plus.circle")
                     .foregroundColor(.green)
-            }
+            }.accessibilityIdentifier("AddButton")
         }
     }
 }

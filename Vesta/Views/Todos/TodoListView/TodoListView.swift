@@ -7,6 +7,7 @@ struct TodoListView: View {
     @Query(
         sort: [
             SortDescriptor(\TodoItem.dueDate, order: .forward),
+            SortDescriptor(\TodoItem.priority, order: .forward),
             SortDescriptor(\TodoItem.title, order: .forward),
         ]) var todoItems: [TodoItem]
 
@@ -95,11 +96,13 @@ struct TodoListView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
+        let d = Date()
         // Sample items with different dates and titles
         let todoItems = [
             TodoItem(title: "Z Task", details: "Details", dueDate: nil),
-            TodoItem(title: "A Task", details: "Details", dueDate: Date().addingTimeInterval(3600)),
-            TodoItem(title: "B Task", details: "Details", dueDate: Date().addingTimeInterval(3600)),
+            TodoItem(title: "A Task", details: "Details", dueDate: d.addingTimeInterval(3600)),
+            TodoItem(title: "B Task", details: "Details", dueDate: d.addingTimeInterval(3600)),
+            TodoItem(title: "D Task", details: "Details", dueDate: d.addingTimeInterval(3600), priority: 2),
             TodoItem(title: "C Task", details: "Details", dueDate: nil),
         ]
 

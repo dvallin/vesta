@@ -3,25 +3,20 @@ import SwiftUI
 
 struct MigrationManager {
     @MainActor
-    static func migrateIngredientOrder(toDefault container: ModelContainer) {
+    static func migratePriority(toDefault container: ModelContainer) {
         let context = container.mainContext
 
-        // Fetch all Recipe objects.
-        let recipeFetchDescriptor = FetchDescriptor<Recipe>(predicate: nil, sortBy: [])
+        let allTodoItems = FetchDescriptor<TodoItem>(predicate: nil, sortBy: [])
 
         do {
-            let recipes = try context.fetch(recipeFetchDescriptor)
+            let items = try context.fetch(allTodoItems)
 
-            // For each recipe, assign an order to its ingredients based on their current order.
-            for recipe in recipes {
-                // Enumerate ingredients in their current array order (if that order is meaningful).
-                for (index, ingredient) in recipe.ingredients.enumerated() {
-                    ingredient.order = index
-                }
+            for item in items {
+                item.priority = 4
             }
 
             try context.save()
-            print("Migration succeeded: All Ingredient records now have default order values.")
+            print("Migration succeeded: All Items records now have default order values.")
         } catch {
             // Handle errors as appropriate in your app’s logic.
             print("Migration failed with error: \(error)")

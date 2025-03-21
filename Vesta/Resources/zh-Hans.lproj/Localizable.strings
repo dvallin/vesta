@@ -147,6 +147,8 @@
 "Edit Recurrence Type" = "编辑重复类型";
 "Edit Is Completed" = "编辑完成状态";
 "Edit Ignore Time Component" = "时间组件忽略";
+"Edit Priority" = "编辑优先级";
+"Created Todo Item" = "已创建待办事项";
 "Completed" = "已完成";
 
 // Filter Options

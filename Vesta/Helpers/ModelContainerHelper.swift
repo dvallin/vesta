@@ -5,6 +5,7 @@ class ModelContainerHelper {
         let schema = Schema([
             TodoItem.self,
             TodoItemEvent.self,
+            TodoItemCategory.self,
             Recipe.self,
             Meal.self,
             ShoppingListItem.self,
