@@ -22,8 +22,11 @@ struct RecipeDetailView: View {
 
     var body: some View {
         Form {
-            RecipeTitleInputView(title: $viewModel.recipe.title)
-                .focused($focusedField, equals: "title")
+            RecipeTitleDetailsSection(
+                title: $viewModel.recipe.title,
+                details: $viewModel.recipe.details,
+                focusedField: $focusedField
+            )
 
             IngredientsSection(
                 header: NSLocalizedString("Ingredients", comment: "Section header for ingredients"),
@@ -49,9 +52,6 @@ struct RecipeDetailView: View {
             #if os(iOS)
                 .environment(\.editMode, .constant(.active))
             #endif
-
-            RecipeDetailsEditorView(details: $viewModel.recipe.details)
-                .focused($focusedField, equals: "details")
         }
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -112,18 +112,7 @@ struct RecipeDetailView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
-        let recipe = Recipe(
-            title: "Spaghetti Bolognese",
-            details: "A classic Italian pasta dish."
-        )
-        recipe.ingredients.append(
-            Ingredient(name: "Spaghetti", order: 1, quantity: 200, unit: .gram))
-        recipe.ingredients.append(
-            Ingredient(name: "Ground Beef", order: 2, quantity: 300, unit: .gram))
-        recipe.ingredients.append(
-            Ingredient(name: "Tomato Sauce", order: 3, quantity: 400, unit: .milliliter))
-        recipe.ingredients.append(Ingredient(name: "Salt", order: 4, quantity: nil, unit: nil))
-
+        let recipe = Fixtures.createRecipe()
         context.insert(recipe)
         return RecipeDetailView(recipe: recipe)
             .modelContainer(container)

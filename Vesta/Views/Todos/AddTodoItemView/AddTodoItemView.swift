@@ -22,6 +22,14 @@ struct AddTodoItemView: View {
                     recurrenceType: $viewModel.recurrenceType,
                     ignoreTimeComponent: $viewModel.ignoreTimeComponent
                 )
+
+                PriorityCategorySection(
+                    priority: $viewModel.priority,
+                    category: $viewModel.category,
+                    matchingCategories: $viewModel.matchingCategories,
+                    focusedField: $focusedField,
+                    updateMatchingCategories: viewModel.updateMatchingCategories
+                )
             }
             .toolbar {
                 #if os(iOS)

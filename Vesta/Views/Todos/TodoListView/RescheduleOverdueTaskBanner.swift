@@ -36,7 +36,7 @@ struct RescheduleOverdueTaskBanner: View {
                     .foregroundColor(.white)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(Color.accentColor)
+                    .background(Color.blue)
                 }
                 .padding(.top, 4)
             }

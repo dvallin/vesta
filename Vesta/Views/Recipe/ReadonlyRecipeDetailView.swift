@@ -7,8 +7,11 @@ struct ReadOnlyRecipeDetailView: View {
 
     var body: some View {
         Form {
-            Section(header: Text(NSLocalizedString("Title", comment: "Section header"))) {
+            Section(header: Text(NSLocalizedString("Recipe Details", comment: "Section header"))) {
                 Text(recipe.title)
+                    .font(.title)
+                    .bold()
+                Text(recipe.details)
             }
 
             Section(header: Text(NSLocalizedString("Ingredients", comment: "Section header"))) {
@@ -19,10 +22,6 @@ struct ReadOnlyRecipeDetailView: View {
                         Text(formattedQuantity(for: ingredient))
                     }
                 }
-            }
-
-            Section(header: Text(NSLocalizedString("Description", comment: "Section header"))) {
-                Text(recipe.details)
             }
         }
     }

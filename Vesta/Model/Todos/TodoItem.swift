@@ -42,6 +42,7 @@ class TodoItem {
     var recurrenceType: RecurrenceType?
     var recurrenceInterval: Int?
     var ignoreTimeComponent: Bool
+    var priority: Int
 
     @Relationship(deleteRule: .cascade)
     var events: [TodoItemEvent]
@@ -52,6 +53,9 @@ class TodoItem {
     @Relationship(inverse: \ShoppingListItem.todoItem)
     var shoppingListItem: ShoppingListItem?
 
+    @Relationship()
+    var category: TodoItemCategory?
+
     init(
         title: String,
         details: String,
@@ -60,10 +64,12 @@ class TodoItem {
         recurrenceFrequency: RecurrenceFrequency? = nil,
         recurrenceType: RecurrenceType? = nil,
         recurrenceInterval: Int? = nil,
-        events: [TodoItemEvent] = [],
         ignoreTimeComponent: Bool = true,
+        priority: Int = 4,
+        events: [TodoItemEvent] = [],
         meal: Meal? = nil,
-        shoppingListItem: ShoppingListItem? = nil
+        shoppingListItem: ShoppingListItem? = nil,
+        category: TodoItemCategory? = nil
     ) {
         self.title = title
         self.details = details
@@ -72,10 +78,39 @@ class TodoItem {
         self.recurrenceFrequency = recurrenceFrequency
         self.recurrenceType = recurrenceType
         self.recurrenceInterval = recurrenceInterval
-        self.events = events
         self.ignoreTimeComponent = ignoreTimeComponent
+        self.priority = priority
         self.meal = meal
         self.shoppingListItem = shoppingListItem
+        self.events = events
+        self.category = category
+    }
+
+    static func create(
+        title: String, details: String,
+        dueDate: Date? = nil,
+        recurrenceFrequency: RecurrenceFrequency? = nil,
+        recurrenceType: RecurrenceType? = nil,
+        recurrenceInterval: Int? = nil,
+        ignoreTimeComponent: Bool = true,
+        priority: Int = 4,
+        events: [TodoItemEvent] = [],
+        meal: Meal? = nil,
+        shoppingListItem: ShoppingListItem? = nil,
+        category: TodoItemCategory? = nil
+    ) -> TodoItem {
+        let item = TodoItem(
+            title: title, details: details, dueDate: dueDate,
+            recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType,
+            recurrenceInterval: recurrenceInterval, ignoreTimeComponent: ignoreTimeComponent,
+            priority: priority, category: category)
+        item.recordCreationEvent()
+        return item
+    }
+
+    func recordCreationEvent() {
+        let event = TodoItemEvent(type: .created, date: Date(), todoItem: self)
+        self.events.append(event)
     }
 
     var isToday: Bool {
@@ -176,6 +211,16 @@ class TodoItem {
         NotificationManager.shared.scheduleNotification(for: self)
     }
 
+    func setPriority(priority: Int) {
+        let _ = createEvent(type: .editPriority, previousPriority: self.priority)
+        self.priority = priority
+    }
+
+    func setCategory(category: TodoItemCategory?) {
+        let _ = createEvent(type: .editCategory, previousCategory: self.category?.name)
+        self.category = category
+    }
+
     func undoLastEvent() -> TodoItemEvent? {
         guard let lastEvent = events.popLast() else { return nil }
 
@@ -200,6 +245,13 @@ class TodoItem {
         case .editIgnoreTimeComponent:
             self.ignoreTimeComponent =
                 lastEvent.previousIgnoreTimeComponent ?? self.ignoreTimeComponent
+        case .editPriority:
+            self.priority = lastEvent.previousPriority ?? self.priority
+        case .editCategory:
+            // TODO: somehow fetch the category by name or create it.
+            self.category = self.category
+        case .created:
+            break
         }
 
         return lastEvent
@@ -234,7 +286,9 @@ class TodoItem {
         previousRecurrenceFrequency: RecurrenceFrequency? = nil,
         previousRecurrenceType: RecurrenceType? = nil,
         previousRecurrenceInterval: Int? = nil,
-        previousIgnoreTimeComponent: Bool? = nil
+        previousIgnoreTimeComponent: Bool? = nil,
+        previousPriority: Int? = nil,
+        previousCategory: String? = nil
     ) -> TodoItemEvent {
         let event = TodoItemEvent(
             type: type,
@@ -247,7 +301,9 @@ class TodoItem {
             previousRecurrenceFrequency: previousRecurrenceFrequency,
             previousRecurrenceType: previousRecurrenceType,
             previousRecurrenceInterval: previousRecurrenceInterval,
-            previousIgnoreTimeComponent: previousIgnoreTimeComponent
+            previousIgnoreTimeComponent: previousIgnoreTimeComponent,
+            previousPriority: previousPriority,
+            previousCategory: previousCategory
         )
         events.append(event)
         return event

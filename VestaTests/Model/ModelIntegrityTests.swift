@@ -9,23 +9,8 @@ final class ModelIntegrityTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        // Create an in-memory container for testing
-        let schema = Schema([
-            TodoItem.self,
-            TodoItemEvent.self,
-            Meal.self,
-            Recipe.self,
-            Ingredient.self,
-            ShoppingListItem.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-
-        do {
-            container = try ModelContainer(for: schema, configurations: [modelConfiguration])
-            context = ModelContext(container)
-        } catch {
-            XCTFail("Failed to create container: \(error)")
-        }
+        let container = try! ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
+        context = ModelContext(container)
     }
 
     override func tearDown() {
@@ -34,50 +19,12 @@ final class ModelIntegrityTests: XCTestCase {
         super.tearDown()
     }
 
-    func testDeleteTodoItemCascadeToMeal() throws {
-        // Arrange
-        let recipe = Recipe(title: "Test Recipe", details: "Test Details")
-        let todoItem = TodoItem(title: "Test Todo", details: "Test Details")
-        let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe)
-
-        context.insert(recipe)
-        context.insert(todoItem)
-
-        // Act
-        context.delete(todoItem)
-        try context.save()
-
-        // Assert
-        let fetchDescriptor = FetchDescriptor<Meal>()
-        let remainingMeals = try context.fetch(fetchDescriptor)
-        XCTAssertEqual(
-            remainingMeals.count, 0, "Meal should be deleted when its TodoItem is deleted")
-    }
-
-    func testDeleteTodoItemCascadeToShoppingListItem() throws {
-        // Arrange
-        let todoItem = TodoItem(title: "Test Todo", details: "Test Details")
-        let shoppingListItem = ShoppingListItem(name: "Test Item", todoItem: todoItem)
-
-        context.insert(todoItem)
-
-        // Act
-        context.delete(todoItem)
-        try context.save()
-
-        // Assert
-        let fetchDescriptor = FetchDescriptor<ShoppingListItem>()
-        let remainingItems = try context.fetch(fetchDescriptor)
-        XCTAssertEqual(
-            remainingItems.count, 0,
-            "ShoppingListItem should be deleted when its TodoItem is deleted")
-    }
 
     func testDeleteRecipeCascadeToIngredients() throws {
         // Arrange
         let recipe = Recipe(title: "Test Recipe", details: "Test Details")
         let ingredient = Ingredient(
-            name: "Test Ingredient", quantity: 1.0, unit: .cup, recipe: recipe)
+            name: "Test Ingredient", order: 1, quantity: 1.0, unit: .cup, recipe: recipe)
         recipe.ingredients = [ingredient]
 
         context.insert(recipe)

@@ -16,6 +16,9 @@ class TodoItemDetailViewModel: ObservableObject {
     @Published var tempRecurrenceType: RecurrenceType?
     @Published var tempIgnoreTimeComponent: Bool
     @Published var tempIsCompleted: Bool
+    @Published var tempPriority: Int
+    @Published var tempCategory: String
+    @Published var matchingCategories: [TodoItemCategory] = []
 
     @Published var showingValidationAlert = false
     @Published var validationMessage = ""
@@ -32,6 +35,8 @@ class TodoItemDetailViewModel: ObservableObject {
         self.tempRecurrenceType = item.recurrenceType
         self.tempIgnoreTimeComponent = item.ignoreTimeComponent
         self.tempIsCompleted = item.isCompleted
+        self.tempPriority = item.priority
+        self.tempCategory = item.category?.name ?? ""
     }
 
     func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction) {
@@ -46,6 +51,8 @@ class TodoItemDetailViewModel: ObservableObject {
             || tempRecurrenceType != item.recurrenceType
             || tempIgnoreTimeComponent != item.ignoreTimeComponent
             || tempIsCompleted != item.isCompleted
+            || tempPriority != item.priority
+            || tempCategory != item.category?.name
     }
 
     func markAsDone() {
@@ -95,6 +102,13 @@ class TodoItemDetailViewModel: ObservableObject {
         if tempIsCompleted != item.isCompleted {
             item.setIsCompleted(isCompleted: tempIsCompleted)
         }
+        if tempPriority != item.priority {
+            item.setPriority(priority: tempPriority)
+        }
+        if tempCategory != item.category?.name {
+            let categoryEntity = fetchOrCreateCategory(named: tempCategory)
+            item.setCategory(category: categoryEntity)
+        }
         saveContext()
     }
 
@@ -118,6 +132,40 @@ class TodoItemDetailViewModel: ObservableObject {
             showingValidationAlert = true
         }
         isSaving = false
+    }
+
+    private func fetchOrCreateCategory(named name: String) -> TodoItemCategory? {
+        guard !name.isEmpty, let context = modelContext else { return nil }
+
+        // Replace the deprecated FetchRequest with a FetchDescriptor
+        let fetchDescriptor = FetchDescriptor<TodoItemCategory>(
+            predicate: #Predicate { item in item.name == name },
+            sortBy: []
+        )
+
+        if let existingCategory = try? context.fetch(fetchDescriptor).first {
+            return existingCategory
+        } else {
+            let newCategory = TodoItemCategory(name: name)
+            context.insert(newCategory)
+            return newCategory
+        }
+    }
+
+    func updateMatchingCategories() {
+        guard let context = modelContext else { return }
+
+        // Create a FetchDescriptor for categories that begin with the current text
+        let fetchDescriptor = FetchDescriptor<TodoItemCategory>(
+            predicate: #Predicate { item in
+                item.name.starts(with: tempCategory)
+            },
+            sortBy: []
+        )
+
+        if let categories = try? context.fetch(fetchDescriptor) {
+            matchingCategories = categories
+        }
     }
 
     @MainActor

@@ -27,6 +27,14 @@ struct TodoItemDetailView: View {
                     ignoreTimeComponent: $viewModel.tempIgnoreTimeComponent
                 )
 
+                PriorityCategorySection(
+                    priority: $viewModel.tempPriority,
+                    category: $viewModel.tempCategory,
+                    matchingCategories: $viewModel.matchingCategories,
+                    focusedField: $focusedField,
+                    updateMatchingCategories: viewModel.updateMatchingCategories
+                )
+
                 Section(NSLocalizedString("Actions", comment: "Actions section header")) {
                     Button(action: { viewModel.markAsDone() }) {
                         Label(

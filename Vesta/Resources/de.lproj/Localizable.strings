@@ -143,6 +143,8 @@
 "Edit Recurrence Type" = "Wiederholungstyp bearbeiten";
 "Edit Is Completed" = "Abgeschlossen-Status bearbeiten";
 "Edit Ignore Time Component" = "Zeitkomponente ignorieren";
+"Edit Priority" = "Priorität bearbeiten";
+"Created Todo Item" = "Aufgabe erstellt";
 "Completed" = "Abgeschlossen";
 
 // Filter Options

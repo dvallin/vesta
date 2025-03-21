@@ -147,6 +147,8 @@
 "Edit Recurrence Type" = "繰り返しタイプを編集";
 "Edit Is Completed" = "完了状態を編集";
 "Edit Ignore Time Component" = "時間コンポーネントを無視する";
+"Edit Priority" = "優先度を編集";
+"Created Todo Item" = "ToDo項目を作成";
 "Completed" = "完了";
 
 // Filter Options

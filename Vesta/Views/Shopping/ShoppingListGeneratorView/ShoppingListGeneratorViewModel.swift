@@ -55,7 +55,7 @@ class ShoppingListGeneratorViewModel: ObservableObject {
                 format: NSLocalizedString("Buy for: %@", comment: "Shopping list item details"),
                 selection.meals.map { $0.recipe?.title ?? "" }.joined(separator: ", "))
 
-            let todoItem = TodoItem(
+            let todoItem = TodoItem.create(
                 title: todoTitle,
                 details: todoDetails,
                 dueDate: selection.earliestDueDate,
