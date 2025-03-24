@@ -25,6 +25,13 @@ class TodoItemCategoryService {
         }
     }
 
+    func fetchAllCategories() -> [TodoItemCategory] {
+        let fetchDescriptor = FetchDescriptor<TodoItemCategory>(
+            sortBy: [SortDescriptor(\.name)]
+        )
+        return (try? modelContext.fetch(fetchDescriptor)) ?? []
+    }
+
     func findMatchingCategories(startingWith prefix: String) -> [TodoItemCategory] {
         let fetchDescriptor = FetchDescriptor<TodoItemCategory>(
             predicate: #Predicate { item in

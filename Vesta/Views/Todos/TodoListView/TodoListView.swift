@@ -13,15 +13,18 @@ struct TodoListView: View {
 
     @StateObject var viewModel: TodoListViewModel
 
-    init(filterMode: FilterMode = .all, showCompletedItems: Bool = false) {
+    init(filterMode: FilterMode = .all) {
         _viewModel = StateObject(
             wrappedValue: TodoListViewModel(
-                filterMode: filterMode, showCompletedItems: showCompletedItems))
+                filterMode: filterMode))
     }
 
     var body: some View {
         NavigationView {
             VStack {
+                QuickFilterView(viewModel: viewModel)
+                    .padding(.vertical, 8)
+
                 RescheduleOverdueTaskBanner(viewModel: viewModel, todoItems: todoItems)
 
                 ZStack {
@@ -37,25 +40,10 @@ struct TodoListView: View {
                 }
             }
             .navigationTitle(viewModel.displayTitle)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                #if os(iOS)
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: {
-                            viewModel.isPresentingFilterCriteriaView = true
-                            HapticFeedbackManager.shared.generateSelectionFeedback()
-                        }) {
-                            Image(systemName: "line.horizontal.3.decrease.circle")
-                        }
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            viewModel.isPresentingTodoEventsView = true
-                            HapticFeedbackManager.shared.generateSelectionFeedback()
-                        }) {
-                            Image(systemName: "clock.arrow.circlepath")
-                        }
-                    }
-                #endif
                 ToolbarItem(placement: .principal) {
                     TextField(
                         NSLocalizedString("Search", comment: "Search text field placeholder"),
@@ -64,6 +52,16 @@ struct TodoListView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .frame(maxWidth: 200)
                 }
+                #if os(iOS)
+                    ToolbarItem(placement: .automatic) {
+                        Button(action: {
+                            viewModel.isPresentingTodoEventsView = true
+                            HapticFeedbackManager.shared.generateSelectionFeedback()
+                        }) {
+                            Image(systemName: "clock.arrow.circlepath")
+                        }
+                    }
+                #endif
             }
         }
         .sheet(item: $viewModel.selectedTodoItem) { item in
@@ -74,10 +72,6 @@ struct TodoListView: View {
         }
         .sheet(isPresented: $viewModel.isPresentingTodoEventsView) {
             TodoEventsView()
-        }
-        .sheet(isPresented: $viewModel.isPresentingFilterCriteriaView) {
-            FilterCriteriaView(viewModel: viewModel)
-                .presentationDetents([.medium, .large])
         }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
@@ -102,7 +96,10 @@ struct TodoListView: View {
             TodoItem(title: "Z Task", details: "Details", dueDate: nil),
             TodoItem(title: "A Task", details: "Details", dueDate: d.addingTimeInterval(3600)),
             TodoItem(title: "B Task", details: "Details", dueDate: d.addingTimeInterval(3600)),
-            TodoItem(title: "D Task", details: "Details", dueDate: d.addingTimeInterval(3600), priority: 2),
+            TodoItem(
+                title: "D Task", details: "Details", dueDate: d.addingTimeInterval(3600),
+                priority: 2),
+            TodoItem(title: "B Task", details: "Details", dueDate: d.addingTimeInterval(-24 * 3600)),
             TodoItem(title: "C Task", details: "Details", dueDate: nil),
         ]
 
