@@ -1,29 +1,58 @@
 import SwiftData
 import SwiftUI
 
+enum FilterMode: String, CaseIterable {
+    case all
+    case today
+    case noDueDate
+    case overdue
+    case completed
+
+    var displayName: String {
+        switch self {
+        case .all:
+            return NSLocalizedString("Show All", comment: "Filter mode: show all items")
+        case .today:
+            return NSLocalizedString("Only Today", comment: "Filter mode: show only today's items")
+        case .noDueDate:
+            return NSLocalizedString(
+                "No Due Date", comment: "Filter mode: show items with no due date")
+        case .overdue:
+            return NSLocalizedString("Overdue", comment: "Filter mode: show overdue items")
+        case .completed:
+            return NSLocalizedString("Completed", comment: "Filter mode: completed items")
+        }
+    }
+}
+
 class TodoListViewModel: ObservableObject {
     private var modelContext: ModelContext?
+    private var categoryService: TodoItemCategoryService?
 
     @Published var currentDay: Date = Date()
     @Published var toastMessages: [ToastMessage] = []
 
     @Published var searchText: String = ""
     @Published var filterMode: FilterMode = .all
-    @Published var showCompletedItems: Bool = false
+    @Published var selectedPriority: Int? = nil
+    @Published var selectedCategory: TodoItemCategory? = nil
 
     @Published var selectedTodoItem: TodoItem? = nil
 
     @Published var isPresentingAddTodoItemView = false
     @Published var isPresentingTodoEventsView = false
-    @Published var isPresentingFilterCriteriaView = false
 
-    init(filterMode: FilterMode = .all, showCompletedItems: Bool = false) {
+    init(filterMode: FilterMode = .all) {
         self.filterMode = filterMode
-        self.showCompletedItems = showCompletedItems
     }
 
     func configureContext(_ context: ModelContext) {
         self.modelContext = context
+        self.categoryService = TodoItemCategoryService(modelContext: context)
+    }
+
+    func fetchCategories() -> [TodoItemCategory] {
+        return categoryService?.fetchAllCategories() ?? []
     }
 
     func saveContext() -> Bool {
@@ -100,7 +129,6 @@ class TodoListViewModel: ObservableObject {
 
     func showRescheduleOverdueTasks() {
         filterMode = .overdue
-        showCompletedItems = false
     }
 
     func rescheduleOverdueTasks(todoItems: [TodoItem]) {
@@ -128,19 +156,23 @@ class TodoListViewModel: ObservableObject {
                 searchText.isEmpty
                 || item.title.localizedCaseInsensitiveContains(searchText)
                 || item.details.localizedCaseInsensitiveContains(searchText)
-            let matchesCompleted = showCompletedItems || !item.isCompleted
-            guard matchesSearchText && matchesCompleted else { return false }
+            let matchesPriority = selectedPriority == nil || item.priority == selectedPriority
+            let matchesCategory = selectedCategory == nil || item.category == selectedCategory
+            guard matchesSearchText && matchesPriority && matchesCategory else { return false }
 
             switch filterMode {
             case .all:
-                return true
+                return !item.isCompleted
             case .today:
-                return Calendar.current.isDate(
-                    item.dueDate ?? Date.distantPast, inSameDayAs: currentDay)
+                return !item.isCompleted
+                    && Calendar.current.isDate(
+                        item.dueDate ?? Date.distantPast, inSameDayAs: currentDay)
             case .noDueDate:
-                return item.dueDate == nil
+                return !item.isCompleted && item.dueDate == nil
             case .overdue:
                 return item.isOverdue
+            case .completed:
+                return item.isCompleted
             }
         }
     }
@@ -156,6 +188,8 @@ class TodoListViewModel: ObservableObject {
                 "No Due Date", comment: "Filter mode: tasks without due date")
         case .overdue:
             return NSLocalizedString("Overdue Tasks", comment: "Filter mode: overdue tasks")
+        case .completed:
+            return NSLocalizedString("Completed Tasks", comment: "Filter mode: completed tasks")
         }
     }
 }

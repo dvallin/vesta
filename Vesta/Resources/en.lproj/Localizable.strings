@@ -171,10 +171,11 @@
 // Filter Options
 "Filter Mode" = "Filter Mode";
 "Filter Criteria" = "Filter Criteria";
-"Show Completed Items" = "Show Completed Items";
 "Only Today" = "Only Today";
 "No Due Date" = "No Due Date";
 "Overdue" = "Overdue";
+"All Priorities" = "All Priorities";
+"All Categories" = "All Categories";
 
 // Main Tabs
 "Today" = "Today";

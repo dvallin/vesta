@@ -34,13 +34,13 @@ struct TodoList: View {
                     },
                     actions: {
                         HStack {
-                            if viewModel.filterMode != .all || viewModel.showCompletedItems != true
+                            if viewModel.filterMode != .all || viewModel.selectedPriority != nil
                             {
                                 Button(
                                     NSLocalizedString("Show All", comment: "Show all todos button")
                                 ) {
                                     viewModel.filterMode = .all
-                                    viewModel.showCompletedItems = true
+                                    viewModel.selectedPriority = nil
                                 }
                             }
                         }
@@ -176,7 +176,6 @@ struct TodoList: View {
     ]
 
     let viewModel = TodoListViewModel()
-    viewModel.showCompletedItems = false
 
     return NavigationView {
         TodoList(
