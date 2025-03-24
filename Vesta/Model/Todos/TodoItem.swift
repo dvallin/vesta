@@ -138,10 +138,9 @@ class TodoItem {
             type: .markAsDone, previousDueDate: dueDate, previousIsCompleted: isCompleted)
 
         if let frequency = recurrenceFrequency {
-            updateDueDate(
-                for: frequency,
-                basedOn: recurrenceType == .fixed ? (dueDate ?? event.date) : event.date
-            )
+            let baseDate = recurrenceType == .fixed ? (dueDate ?? event.date) : event.date
+            let baseDateWithTime = DateUtils.preserveTime(from: dueDate, applying: baseDate)
+            updateDueDate(for: frequency, basedOn: baseDateWithTime ?? baseDate)
         } else {
             isCompleted.toggle()
         }

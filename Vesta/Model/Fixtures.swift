@@ -4,7 +4,8 @@ struct Fixtures {
     static func createRecipe() -> Recipe {
         let recipe = Recipe(
             title: "Spaghetti Bolognese",
-            details: "A classic Italian pasta dish."
+            details:
+                "A classic Italian pasta dish. [link to original recipe](https://www.youtube.com/watch?v=0O2Xd-Yw\\_cQ)"
         )
         recipe.ingredients.append(
             Ingredient(name: "Spaghetti", order: 1, quantity: 200, unit: .gram))

@@ -46,6 +46,11 @@ class ShoppingListGeneratorViewModel: ObservableObject {
     }
 
     func generateShoppingList(modelContext: ModelContext) {
+        let categoryService = TodoItemCategoryService(modelContext: modelContext)
+        let shoppingCategory = categoryService.fetchOrCreate(
+            named: NSLocalizedString("Shopping", comment: "Shopping category name")
+        )
+
         for selection in ingredientSelections where selection.isSelected {
             let todoTitle = String(
                 format: NSLocalizedString("Buy %@", comment: "Shopping list item title"),
@@ -59,7 +64,8 @@ class ShoppingListGeneratorViewModel: ObservableObject {
                 title: todoTitle,
                 details: todoDetails,
                 dueDate: selection.earliestDueDate,
-                ignoreTimeComponent: false
+                ignoreTimeComponent: false,
+                category: shoppingCategory
             )
             modelContext.insert(todoItem)
 

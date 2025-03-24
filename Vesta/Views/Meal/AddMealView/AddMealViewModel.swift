@@ -4,6 +4,7 @@ import SwiftUI
 class AddMealViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
+    private var categoryService: TodoItemCategoryService?
 
     @Published var selectedRecipe: Recipe?
     @Published var selectedDate: Date
@@ -19,6 +20,7 @@ class AddMealViewModel: ObservableObject {
 
     func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction) {
         self.modelContext = context
+        self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
     }
 
@@ -38,9 +40,17 @@ class AddMealViewModel: ObservableObject {
         }
 
         do {
+            let mealCategory = categoryService?.fetchOrCreate(
+                named: NSLocalizedString("Meals", comment: "Category name for meal todo items")
+            )
+
             let todoItem = TodoItem.create(
-                title: recipe.title, details: recipe.details,
-                dueDate: selectedDate, ignoreTimeComponent: false)
+                title: recipe.title,
+                details: recipe.details,
+                dueDate: selectedDate,
+                ignoreTimeComponent: false,
+                category: mealCategory
+            )
 
             let meal = Meal(
                 scalingFactor: scalingFactor, todoItem: todoItem, recipe: recipe,
