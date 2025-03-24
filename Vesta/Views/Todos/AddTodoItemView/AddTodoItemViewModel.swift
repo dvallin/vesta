@@ -4,6 +4,7 @@ import SwiftUI
 class AddTodoItemViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
+    private var categoryService: TodoItemCategoryService?
 
     @Published var title: String = ""
     @Published var details: String = ""
@@ -23,6 +24,7 @@ class AddTodoItemViewModel: ObservableObject {
 
     func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction) {
         self.modelContext = context
+        self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
     }
 
@@ -44,7 +46,7 @@ class AddTodoItemViewModel: ObservableObject {
 
         isSaving = true
         do {
-            let categoryEntity = fetchOrCreateCategory(named: category)
+            let categoryEntity = categoryService?.fetchOrCreate(named: category)
             let todoItem = TodoItem.create(
                 title: title, details: details, dueDate: dueDate,
                 recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType,
@@ -77,38 +79,9 @@ class AddTodoItemViewModel: ObservableObject {
         isSaving = false
     }
 
-    private func fetchOrCreateCategory(named name: String) -> TodoItemCategory? {
-        guard !name.isEmpty, let context = modelContext else { return nil }
-
-        // Replace the deprecated FetchRequest with a FetchDescriptor
-        let fetchDescriptor = FetchDescriptor<TodoItemCategory>(
-            predicate: #Predicate { item in item.name == name },
-            sortBy: []
-        )
-
-        if let existingCategory = try? context.fetch(fetchDescriptor).first {
-            return existingCategory
-        } else {
-            let newCategory = TodoItemCategory(name: name)
-            context.insert(newCategory)
-            return newCategory
-        }
-    }
-
     func updateMatchingCategories() {
-        guard let context = modelContext else { return }
-
-        // Create a FetchDescriptor for categories that begin with the current text
-        let fetchDescriptor = FetchDescriptor<TodoItemCategory>(
-            predicate: #Predicate { item in
-                item.name.starts(with: category)
-            },
-            sortBy: []
-        )
-
-        if let categories = try? context.fetch(fetchDescriptor) {
-            matchingCategories = categories
-        }
+        guard let categoryService = categoryService else { return }
+        matchingCategories = categoryService.findMatchingCategories(startingWith: category)
     }
 
     @MainActor

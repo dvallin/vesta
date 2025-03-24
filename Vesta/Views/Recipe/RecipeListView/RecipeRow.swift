@@ -7,7 +7,7 @@ struct RecipeRow: View {
         VStack(alignment: .leading) {
             Text(recipe.title)
                 .font(.headline)
-            Text(recipe.details)
+            Text(LocalizedStringKey(recipe.details))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .lineLimit(2)

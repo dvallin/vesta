@@ -4,6 +4,7 @@ struct TitleDetailsSection: View {
     @Binding var title: String
     @Binding var details: String
     @FocusState.Binding var focusedField: String?
+    @State private var isEditing = false
 
     var body: some View {
         Section(
@@ -21,9 +22,22 @@ struct TitleDetailsSection: View {
                     focusedField = "details"
                 }
 
-            TextEditor(text: $details)
-                .focused($focusedField, equals: "details")
-                .frame(minHeight: 70)
+            if isEditing {
+                TextEditor(text: $details)
+                    .focused($focusedField, equals: "details")
+                    .frame(minHeight: 100)
+            } else {
+                Text(LocalizedStringKey(details))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        isEditing = true
+                        focusedField = "details"
+                    }
+            }
+        }
+        .onAppear {
+            isEditing = details.isEmpty
         }
     }
 }

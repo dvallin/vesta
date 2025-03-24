@@ -14,7 +14,7 @@ struct TodoListItem: View {
                         : "circle"
                 )
                 .foregroundColor(
-                    item.isCompleted ? .secondary : priorityColor(priority: item.priority)
+                    item.isCompleted ? .gray : priorityColor(priority: item.priority)
                 )
                 .scaleEffect(item.isCompleted ? 1 : 1.5)
                 .animation(.easeInOut, value: item.isCompleted)
@@ -51,13 +51,13 @@ struct TodoListItem: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         }
-
+                        Spacer()
                         if let category = item.category {
                             Text(category.name)
                                 .font(.caption)
                                 .padding(.horizontal, 8)
-                                .background(Color.blue.opacity(0.2))
-                                .cornerRadius(10)
+                                .cornerRadius(5)
+                                .background(Color.blue.opacity(0.1))
                                 .foregroundColor(.blue)
                         }
                     }
@@ -73,9 +73,9 @@ struct TodoListItem: View {
         case 2:  // Warning level
             return .orange
         case 3:  // Highlighted
-            return .green
-        default:  // Default priority (4)
             return .blue
+        default:  // Default priority (4)
+            return .gray
         }
     }
     private func selectItem() {
@@ -147,7 +147,7 @@ struct TodoListItem: View {
                 dueDate: Date().addingTimeInterval(3600)
             )
         )
-        
+
         // Priority 1 (Urgent)
         TodoListItem(
             viewModel: viewModel,
@@ -208,7 +208,7 @@ struct TodoListItem: View {
                 dueDate: Date().addingTimeInterval(3600)
             )
         )
-        
+
         // Recurring todo item (fixed)
         TodoListItem(
             viewModel: viewModel,
@@ -250,7 +250,7 @@ struct TodoListItem: View {
                 dueDate: Date().addingTimeInterval(3600)
             )
         )
-        
+
         // Work category
         TodoListItem(
             viewModel: viewModel,
