@@ -171,7 +171,8 @@
 // Filter Options
 "Filter Mode" = "Filter Mode";
 "Filter Criteria" = "Filter Criteria";
-"Only Today" = "Only Today";
+"Today" = "Today";
+"This Week" = "This Week";
 "No Due Date" = "No Due Date";
 "Overdue" = "Overdue";
 "All Priorities" = "All Priorities";

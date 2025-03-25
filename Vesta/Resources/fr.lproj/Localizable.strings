@@ -28,6 +28,10 @@
 "Edit Title" = "Modifier le titre";
 "Edit Description" = "Modifier la description";
 
+// Todo Item Category Names
+"Shopping" = "Courses";
+"Meals" = "Repas";
+
 // Shopping List
 "Shopping List" = "Liste de courses";
 "No Shopping Items" = "Aucun article";
@@ -40,6 +44,8 @@
 "Show Purchased Items" = "Afficher les articles achetés";
 "Generate Shopping List" = "Générer la liste de courses";
 "Generate" = "Générer";
+"Add Shopping Item" = "Ajouter un article de courses";
+"Add Quantity" = "Ajouter une quantité";
 "Exclude" = "Exclure";
 "Include" = "Inclure";
 "Purchased" = "Acheté";
@@ -108,6 +114,7 @@
 "There are overdue tasks" = "Il y a des tâches en retard";
 "Reschedule all overdue tasks to today" = "Replanifier toutes les tâches en retard à aujourd'hui";
 "No due date" = "Sans échéance";
+"%@ marked as done" = "%@ marqué comme terminé";
 
 // Meal Types
 "breakfast" = "Petit déjeuner";
@@ -138,6 +145,15 @@
 "Every" = "Tous les";
 "Interval" = "Intervalle";
 
+// Priority & Category Section
+"Priority & Category" = "Priorité & Catégorie";
+"Priority" = "Priorité";
+"Highest" = "Très haute";
+"High" = "Haute";
+"Medium" = "Moyenne";
+"Low" = "Basse";
+"Enter category" = "Saisir la catégorie";
+
 // Actions & Status
 "Mark as Done" = "Marquer comme terminé";
 "Edit Title" = "Modifier le titre";
@@ -148,6 +164,7 @@
 "Edit Is Completed" = "Modifier l'état d'achèvement";
 "Edit Ignore Time Component" = "Modifier l'ignorance du composant de temps";
 "Edit Priority" = "Modifier la priorité";
+"Edit Category" = "Modifier la catégorie";
 "Created Todo Item" = "Tâche créée";
 "Completed" = "Terminé";
 
@@ -155,9 +172,12 @@
 "Filter Mode" = "Mode de filtrage";
 "Filter Criteria" = "Critères de filtrage";
 "Show Completed Items" = "Afficher les éléments terminés";
-"Only Today" = "Aujourd'hui uniquement";
+"Today" = "Aujourd'hui";
+"This Week" = "Cette semaine";
 "No Due Date" = "Sans échéance";
 "Overdue" = "En retard";
+"All Priorities" = "Toutes les priorités";
+"All Categories" = "Toutes les catégories";
 
 // Main Tabs
 "Today" = "Aujourd'hui";

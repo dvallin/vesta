@@ -28,6 +28,10 @@
 "Edit Title" = "Editar título";
 "Edit Description" = "Editar descripción";
 
+// Todo Item Category Names
+"Shopping" = "Compras";
+"Meals" = "Comidas";
+
 // Shopping List
 "Shopping List" = "Lista de la compra";
 "No Shopping Items" = "No hay artículos";
@@ -40,6 +44,8 @@
 "Show Purchased Items" = "Mostrar artículos comprados";
 "Generate Shopping List" = "Generar lista de la compra";
 "Generate" = "Generar";
+"Add Shopping Item" = "Añadir artículo de compra";
+"Add Quantity" = "Añadir cantidad";
 "Exclude" = "Excluir";
 "Include" = "Incluir";
 "Purchased" = "Comprado";
@@ -108,6 +114,7 @@
 "There are overdue tasks" = "Hay tareas vencidas";
 "Reschedule all overdue tasks to today" = "Reprogramar todas las tareas vencidas para hoy";
 "No due date" = "Sin fecha límite";
+"%@ marked as done" = "%@ marcado como completado";
 
 // Meal Types
 "breakfast" = "Desayuno";
@@ -127,16 +134,25 @@
 "pc" = "ud";
 
 // Recurrence
-"No Recurrence" = "Nessuna ricorrenza";
-"Daily" = "giorni";
-"Weekly" = "settimane";
-"Monthly" = "mesi";
-"Yearly" = "anni";
-"Fixed" = "Fisso";
-"Flexible" = "Flessibile";
-"Fixed Recurrence" = "Ricorrenza fissa";
-"Every" = "Ogni";
-"Interval" = "Intervallo";
+"No Recurrence" = "Sin recurrencia";
+"Daily" = "Diario";
+"Weekly" = "Semanal";
+"Monthly" = "Mensual";
+"Yearly" = "Anual";
+"Fixed" = "Fijo";
+"Flexible" = "Flexible";
+"Fixed Recurrence" = "Recurrencia fija";
+"Every" = "Cada";
+"Interval" = "Intervalo";
+
+// Priority & Category Section
+"Priority & Category" = "Prioridad y categoría";
+"Priority" = "Prioridad";
+"Highest" = "Más alta";
+"High" = "Alta";
+"Medium" = "Media";
+"Low" = "Baja";
+"Enter category" = "Introducir categoría";
 
 // Actions & Status
 "Mark as Done" = "Marcar como completado";
@@ -148,16 +164,19 @@
 "Edit Is Completed" = "Editar estado de completado";
 "Edit Ignore Time Component" = "Editar ignorar componente de tiempo";
 "Edit Priority" = "Editar prioridad";
+"Edit Category" = "Editar categoría";
 "Created Todo Item" = "Tarea creada";
 "Completed" = "Completado";
 
 // Filter Options
 "Filter Mode" = "Modo de filtro";
 "Filter Criteria" = "Criterios de filtro";
-"Show Completed Items" = "Mostrar elementos completados";
-"Only Today" = "Solo hoy";
+"Today" = "Hoy";
+"This Week" = "Esta semana";
 "No Due Date" = "Sin fecha límite";
 "Overdue" = "Vencido";
+"All Priorities" = "Todas las prioridades";
+"All Categories" = "Todas las categorías";
 
 // Main Tabs
 "Today" = "Hoy";

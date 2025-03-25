@@ -4,6 +4,7 @@ import SwiftUI
 enum FilterMode: String, CaseIterable {
     case all
     case today
+    case currentWeek
     case noDueDate
     case overdue
     case completed
@@ -12,6 +13,8 @@ enum FilterMode: String, CaseIterable {
         switch self {
         case .all:
             return NSLocalizedString("Show All", comment: "Filter mode: show all items")
+        case .currentWeek:
+            return NSLocalizedString("This Week", comment: "Filter mode: show this week's items")
         case .today:
             return NSLocalizedString("Only Today", comment: "Filter mode: show only today's items")
         case .noDueDate:
@@ -106,7 +109,6 @@ class TodoListViewModel: ObservableObject {
 
             toastMessages.removeAll { $0.id == id }
         }
-
     }
 
     func deleteItem(_ item: TodoItem) {
@@ -164,9 +166,9 @@ class TodoListViewModel: ObservableObject {
             case .all:
                 return !item.isCompleted
             case .today:
-                return !item.isCompleted
-                    && Calendar.current.isDate(
-                        item.dueDate ?? Date.distantPast, inSameDayAs: currentDay)
+                return !item.isCompleted && item.isToday
+            case .currentWeek:
+                return !item.isCompleted && item.isCurrentWeek
             case .noDueDate:
                 return !item.isCompleted && item.dueDate == nil
             case .overdue:
@@ -183,6 +185,8 @@ class TodoListViewModel: ObservableObject {
             return NSLocalizedString("All Tasks", comment: "Filter mode: all tasks")
         case .today:
             return NSLocalizedString("Today's Tasks", comment: "Filter mode: today's tasks")
+        case .currentWeek:
+            return NSLocalizedString("This Week's Tasks", comment: "Filter mode: this week's tasks")
         case .noDueDate:
             return NSLocalizedString(
                 "No Due Date", comment: "Filter mode: tasks without due date")

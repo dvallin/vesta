@@ -28,6 +28,10 @@
 "Edit Title" = "Titel bearbeiten";
 "Edit Description" = "Beschreibung bearbeiten";
 
+// Todo Item Category Names
+"Shopping" = "Einkauf";
+"Meals" = "Mahlzeiten";
+
 // Shopping List
 "Shopping List" = "Einkaufszettel";
 "No Shopping Items" = "Keine Artikel";
@@ -40,6 +44,8 @@
 "Show Purchased Items" = "Gekaufte Artikel anzeigen";
 "Generate Shopping List" = "Einkaufszettel generieren";
 "Generate" = "Generieren";
+"Add Shopping Item" = "Artikel hinzufügen";
+"Add Quantity" = "Menge hinzufügen";
 "Exclude" = "Ausschließen";
 "Include" = "Einschließen";
 "Purchased" = "Gekauft";
@@ -50,6 +56,10 @@
 "%@ marked as %@" = "%@ als %@ markiert";
 "purchased" = "gekauft";
 "not purchased" = "nicht gekauft";
+"Qty" = "Menge";
+"today" = "heute";
+"%dd" = "%dd";
+"1d" = "1d";
 
 // Shopping Item Details
 "Name: %@" = "Name: %@";
@@ -104,6 +114,7 @@
 "There are overdue tasks" = "Es gibt überfällige Aufgaben";
 "Reschedule all overdue tasks to today" = "Alle überfälligen Aufgaben auf heute verschieben";
 "No due date" = "Kein Fälligkeitsdatum";
+"%@ marked as done" = "%@ als erledigt markiert";
 
 // Meal Types
 "breakfast" = "Frühstück";
@@ -134,6 +145,15 @@
 "Every" = "Alle";
 "Interval" = "Intervall";
 
+// Priority & Category Section
+"Priority & Category" = "Priorität & Kategorie";
+"Priority" = "Priorität";
+"Highest" = "Höchste";
+"High" = "Hoch";
+"Medium" = "Mittel";
+"Low" = "Niedrig";
+"Enter category" = "Kategorie eingeben";
+
 // Actions & Status
 "Mark as Done" = "Als erledigt markieren";
 "Edit Title" = "Titel bearbeiten";
@@ -144,6 +164,7 @@
 "Edit Is Completed" = "Abgeschlossen-Status bearbeiten";
 "Edit Ignore Time Component" = "Zeitkomponente ignorieren";
 "Edit Priority" = "Priorität bearbeiten";
+"Edit Category" = "Kategorie bearbeiten";
 "Created Todo Item" = "Aufgabe erstellt";
 "Completed" = "Abgeschlossen";
 
@@ -151,9 +172,12 @@
 "Filter Mode" = "Filtermodus";
 "Filter Criteria" = "Filterkriterien";
 "Show Completed Items" = "Abgeschlossene Einträge anzeigen";
-"Only Today" = "Nur heute";
+"Today" = "Heute";
+"This Week" = "Diese Woche";
 "No Due Date" = "Kein Fälligkeitsdatum";
 "Overdue" = "Überfällig";
+"All Priorities" = "Alle Prioritäten";
+"All Categories" = "Alle Kategorien";
 
 // Main Tabs
 "Today" = "Heute";

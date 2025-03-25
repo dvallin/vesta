@@ -26,7 +26,7 @@ struct ToastModifier: ViewModifier {
 }
 
 extension View {
-    func toast(messages: Binding<[ToastMessage]>, duration: TimeInterval = 10) -> some View {
+    func toast(messages: Binding<[ToastMessage]>, duration: TimeInterval = 5) -> some View {
         self.modifier(ToastModifier(messages: messages, duration: duration))
     }
 }

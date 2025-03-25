@@ -115,7 +115,11 @@ class TodoItem {
 
     var isToday: Bool {
         guard let dueDate = dueDate else { return false }
-        return DateUtils.calendar.isDateInToday(dueDate)
+        return Calendar.current.isDateInToday(dueDate)
+    }
+    var isCurrentWeek: Bool {
+        guard let dueDate = dueDate else { return false }
+        return Calendar.current.isDate(dueDate, equalTo: Date(), toGranularity: .weekOfYear)
     }
 
     var isOverdue: Bool {
