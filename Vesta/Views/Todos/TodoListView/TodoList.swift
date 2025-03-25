@@ -1,6 +1,10 @@
 import SwiftUI
+import os
 
+/// View representing a list of todo items.
 struct TodoList: View {
+    private let logger = Logger(subsystem: "com.yourapp.Vesta", category: "TodoList")
+
     @ObservedObject var viewModel: TodoListViewModel
 
     var todoItems: [TodoItem]
@@ -34,11 +38,11 @@ struct TodoList: View {
                     },
                     actions: {
                         HStack {
-                            if viewModel.filterMode != .all || viewModel.selectedPriority != nil
-                            {
+                            if viewModel.filterMode != .all || viewModel.selectedPriority != nil {
                                 Button(
                                     NSLocalizedString("Show All", comment: "Show all todos button")
                                 ) {
+                                    logger.info("Show All button tapped")
                                     viewModel.filterMode = .all
                                     viewModel.selectedPriority = nil
                                 }
@@ -47,6 +51,9 @@ struct TodoList: View {
                     }
                 )
             }
+        }
+        .onAppear {
+            logger.info("TodoList appeared with \(todoItems.count) items")
         }
     }
 
@@ -62,6 +69,8 @@ struct TodoList: View {
         }
     }
 }
+
+// MARK: - Previews
 
 #Preview {
     let todoItems = [

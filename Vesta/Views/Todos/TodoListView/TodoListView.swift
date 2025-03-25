@@ -6,8 +6,8 @@ struct TodoListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(
         sort: [
-            SortDescriptor(\TodoItem.dueDate, order: .forward),
             SortDescriptor(\TodoItem.priority, order: .forward),
+            SortDescriptor(\TodoItem.dueDate, order: .forward),
             SortDescriptor(\TodoItem.title, order: .forward),
         ]) var todoItems: [TodoItem]
 
@@ -99,7 +99,8 @@ struct TodoListView: View {
             TodoItem(
                 title: "D Task", details: "Details", dueDate: d.addingTimeInterval(3600),
                 priority: 2),
-            TodoItem(title: "B Task", details: "Details", dueDate: d.addingTimeInterval(-24 * 3600)),
+            TodoItem(
+                title: "B Task", details: "Details", dueDate: d.addingTimeInterval(-24 * 3600)),
             TodoItem(title: "C Task", details: "Details", dueDate: nil),
         ]
 

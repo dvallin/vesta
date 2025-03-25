@@ -28,6 +28,10 @@
 "Edit Title" = "Modifica titolo";
 "Edit Description" = "Modifica descrizione";
 
+// Todo Item Category Names
+"Shopping" = "Spesa";
+"Meals" = "Pasti";
+
 // Shopping List
 "Shopping List" = "Lista della spesa";
 "No Shopping Items" = "Nessun articolo";
@@ -40,6 +44,8 @@
 "Show Purchased Items" = "Mostra articoli acquistati";
 "Generate Shopping List" = "Genera lista della spesa";
 "Generate" = "Genera";
+"Add Shopping Item" = "Aggiungi articolo alla spesa";
+"Add Quantity" = "Aggiungi quantità";
 "Exclude" = "Escludi";
 "Include" = "Includi";
 "Purchased" = "Acquistato";
@@ -91,7 +97,7 @@
 "Due Date: %@" = "Scadenza: %@";
 "Needed by: %@" = "Necessario entro: %@";
 "Enable Due Date" = "Abilita scadenza";
-"Ignore Time Component" = "Ignorer le composantes de temps";
+"Ignore Time Component" = "Ignora componente tempo";
 "Please enter a todo title" = "Inserisci un titolo per l'attività";
 "Error saving todo item: %@" = "Errore nel salvare l'attività: %@";
 "Todo Events" = "Eventi da fare";
@@ -108,6 +114,7 @@
 "There are overdue tasks" = "Ci sono attività scadute";
 "Reschedule all overdue tasks to today" = "Ripianifica tutte le attività scadute a oggi";
 "No due date" = "Nessuna scadenza";
+"%@ marked as done" = "%@ segnato come fatto";
 
 // Meal Types
 "breakfast" = "Colazione";
@@ -138,6 +145,15 @@
 "Every" = "Ogni";
 "Interval" = "Intervallo";
 
+// Priority & Category Section
+"Priority & Category" = "Priorità e Categoria";
+"Priority" = "Priorità";
+"Highest" = "Massima";
+"High" = "Alta";
+"Medium" = "Media";
+"Low" = "Bassa";
+"Enter category" = "Inserisci categoria";
+
 // Actions & Status
 "Mark as Done" = "Segna come fatto";
 "Edit Title" = "Modifica titolo";
@@ -148,16 +164,19 @@
 "Edit Is Completed" = "Modifica completamento";
 "Edit Ignore Time Component" = "Modifica ignoranza del componente di tempo";
 "Edit Priority" = "Modifica priorità";
+"Edit Category" = "Modifica categoria";
 "Created Todo Item" = "Attività creata";
 "Completed" = "Completato";
 
 // Filter Options
 "Filter Mode" = "Modalità filtro";
 "Filter Criteria" = "Criteri filtro";
-"Show Completed Items" = "Mostra elementi completati";
-"Only Today" = "Solo oggi";
+"Today" = "Oggi";
+"This Week" = "Questa settimana";
 "No Due Date" = "Nessuna scadenza";
 "Overdue" = "Scaduto";
+"All Priorities" = "Tutte le priorità";
+"All Categories" = "Tutte le categorie";
 
 // Main Tabs
 "Today" = "Oggi";

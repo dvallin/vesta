@@ -28,6 +28,10 @@
 "Edit Title" = "タイトルを編集";
 "Edit Description" = "説明を編集";
 
+// Todo Item Category Names
+"Shopping" = "買い物";
+"Meals" = "食事";
+
 // Shopping List
 "Shopping List" = "買い物リスト";
 "No Shopping Items" = "買い物項目なし";
@@ -40,6 +44,8 @@
 "Show Purchased Items" = "購入済み項目を表示";
 "Generate Shopping List" = "買い物リストを生成";
 "Generate" = "生成";
+"Add Shopping Item" = "買い物項目を追加";
+"Add Quantity" = "数量を追加";
 "Exclude" = "除外";
 "Include" = "含める";
 "Purchased" = "購入済み";
@@ -108,6 +114,7 @@
 "There are overdue tasks" = "期限超過タスクがあります";
 "Reschedule all overdue tasks to today" = "すべての期限超過タスクを今日に再設定";
 "No due date" = "期限なし";
+"%@ marked as done" = "%@を完了としてマーク";
 
 // Meal Types
 "breakfast" = "朝食";
@@ -138,6 +145,15 @@
 "Every" = "毎";
 "Interval" = "間隔";
 
+// Priority & Category Section
+"Priority & Category" = "優先度とカテゴリ";
+"Priority" = "優先度";
+"Highest" = "最高";
+"High" = "高";
+"Medium" = "中";
+"Low" = "低";
+"Enter category" = "カテゴリを入力";
+
 // Actions & Status
 "Mark as Done" = "完了としてマーク";
 "Edit Title" = "タイトルを編集";
@@ -148,16 +164,19 @@
 "Edit Is Completed" = "完了状態を編集";
 "Edit Ignore Time Component" = "時間コンポーネントを無視する";
 "Edit Priority" = "優先度を編集";
+"Edit Category" = "カテゴリを編集";
 "Created Todo Item" = "ToDo項目を作成";
 "Completed" = "完了";
 
 // Filter Options
 "Filter Mode" = "フィルターモード";
 "Filter Criteria" = "フィルター条件";
-"Show Completed Items" = "完了項目を表示";
-"Only Today" = "今日のみ";
+"Today" = "今日";
+"This Week" = "今週";
 "No Due Date" = "期限なし";
 "Overdue" = "期限超過";
+"All Priorities" = "すべての優先度";
+"All Categories" = "すべてのカテゴリ";
 
 // Main Tabs
 "Today" = "今日";

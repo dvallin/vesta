@@ -28,6 +28,10 @@
 "Edit Title" = "编辑标题";
 "Edit Description" = "编辑描述";
 
+// Todo Item Category Names
+"Shopping" = "购物";
+"Meals" = "餐食";
+
 // Shopping List
 "Shopping List" = "购物清单";
 "No Shopping Items" = "无购物项目";
@@ -40,6 +44,8 @@
 "Show Purchased Items" = "显示已购买项目";
 "Generate Shopping List" = "生成购物清单";
 "Generate" = "生成";
+"Add Shopping Item" = "添加购物项目";
+"Add Quantity" = "添加数量";
 "Exclude" = "排除";
 "Include" = "包含";
 "Purchased" = "已购买";
@@ -108,6 +114,7 @@
 "There are overdue tasks" = "有逾期任务";
 "Reschedule all overdue tasks to today" = "将所有逾期任务重排至今天";
 "No due date" = "无截止日期";
+"%@ marked as done" = "%@已标记为完成";
 
 // Meal Types
 "breakfast" = "早餐";
@@ -138,6 +145,15 @@
 "Every" = "每";
 "Interval" = "间隔";
 
+// Priority & Category Section
+"Priority & Category" = "优先级和类别";
+"Priority" = "优先级";
+"Highest" = "最高";
+"High" = "高";
+"Medium" = "中";
+"Low" = "低";
+"Enter category" = "输入类别";
+
 // Actions & Status
 "Mark as Done" = "标记完成";
 "Edit Title" = "编辑标题";
@@ -148,16 +164,19 @@
 "Edit Is Completed" = "编辑完成状态";
 "Edit Ignore Time Component" = "时间组件忽略";
 "Edit Priority" = "编辑优先级";
+"Edit Category" = "编辑类别";
 "Created Todo Item" = "已创建待办事项";
 "Completed" = "已完成";
 
 // Filter Options
 "Filter Mode" = "筛选模式";
 "Filter Criteria" = "筛选条件";
-"Show Completed Items" = "显示已完成项目";
-"Only Today" = "仅今天";
+"Today" = "今天";
+"This Week" = "本周";
 "No Due Date" = "无截止日期";
 "Overdue" = "逾期";
+"All Priorities" = "所有优先级";
+"All Categories" = "所有类别";
 
 // Main Tabs
 "Today" = "今天";
