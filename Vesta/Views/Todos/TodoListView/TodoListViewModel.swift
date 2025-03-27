@@ -36,7 +36,7 @@ class TodoListViewModel: ObservableObject {
     @Published var toastMessages: [ToastMessage] = []
 
     @Published var searchText: String = ""
-    @Published var filterMode: FilterMode = .all
+    @Published var filterMode: FilterMode = .today
     @Published var selectedPriority: Int? = nil
     @Published var selectedCategory: TodoItemCategory? = nil
 
@@ -44,10 +44,6 @@ class TodoListViewModel: ObservableObject {
 
     @Published var isPresentingAddTodoItemView = false
     @Published var isPresentingTodoEventsView = false
-
-    init(filterMode: FilterMode = .all) {
-        self.filterMode = filterMode
-    }
 
     func configureContext(_ context: ModelContext) {
         self.modelContext = context
@@ -67,8 +63,12 @@ class TodoListViewModel: ObservableObject {
         }
     }
 
-    func refresh() {
+    func reset() {
         currentDay = Date()
+        filterMode = .today
+        searchText = ""
+        selectedPriority = nil
+        selectedCategory = nil
     }
 
     func markAsDone(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
