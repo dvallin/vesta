@@ -47,7 +47,7 @@ struct RescheduleOverdueTaskBanner: View {
 #Preview {
     VStack {
         // Warning banner
-        let warningViewModel = TodoListViewModel(filterMode: .all)
+        let warningViewModel = TodoListViewModel()
         RescheduleOverdueTaskBanner(
             viewModel: warningViewModel,
             todoItems: [
@@ -68,7 +68,7 @@ struct RescheduleOverdueTaskBanner: View {
             .padding(.vertical)
 
         // Reschedule banner
-        let rescheduleViewModel = TodoListViewModel(filterMode: .overdue)
+        var rescheduleViewModel = TodoListViewModel()
         RescheduleOverdueTaskBanner(
             viewModel: rescheduleViewModel,
             todoItems: [

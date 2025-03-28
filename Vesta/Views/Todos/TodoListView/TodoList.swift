@@ -45,6 +45,8 @@ struct TodoList: View {
                                     logger.info("Show All button tapped")
                                     viewModel.filterMode = .all
                                     viewModel.selectedPriority = nil
+                                    viewModel.selectedCategory = nil
+                                    viewModel.searchText = ""
                                 }
                             }
                         }
@@ -64,7 +66,7 @@ struct TodoList: View {
     private func deleteTodoItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                viewModel.deleteItem(todoItems[index])
+                viewModel.deleteItem(filteredTodoItems[index])
             }
         }
     }
@@ -153,7 +155,7 @@ struct TodoList: View {
 
     return NavigationView {
         TodoList(
-            viewModel: TodoListViewModel(filterMode: .today),
+            viewModel: TodoListViewModel(),
             todoItems: todoItems
         )
     }

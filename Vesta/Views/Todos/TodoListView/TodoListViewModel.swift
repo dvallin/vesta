@@ -36,18 +36,15 @@ class TodoListViewModel: ObservableObject {
     @Published var toastMessages: [ToastMessage] = []
 
     @Published var searchText: String = ""
-    @Published var filterMode: FilterMode = .all
+    @Published var filterMode: FilterMode = .today
     @Published var selectedPriority: Int? = nil
     @Published var selectedCategory: TodoItemCategory? = nil
+    @Published var showNoCategory: Bool = false
 
     @Published var selectedTodoItem: TodoItem? = nil
 
     @Published var isPresentingAddTodoItemView = false
     @Published var isPresentingTodoEventsView = false
-
-    init(filterMode: FilterMode = .all) {
-        self.filterMode = filterMode
-    }
 
     func configureContext(_ context: ModelContext) {
         self.modelContext = context
@@ -67,8 +64,12 @@ class TodoListViewModel: ObservableObject {
         }
     }
 
-    func refresh() {
+    func reset() {
         currentDay = Date()
+        filterMode = .today
+        searchText = ""
+        selectedPriority = nil
+        selectedCategory = nil
     }
 
     func markAsDone(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
@@ -159,7 +160,14 @@ class TodoListViewModel: ObservableObject {
                 || item.title.localizedCaseInsensitiveContains(searchText)
                 || item.details.localizedCaseInsensitiveContains(searchText)
             let matchesPriority = selectedPriority == nil || item.priority == selectedPriority
-            let matchesCategory = selectedCategory == nil || item.category == selectedCategory
+            var matchesCategory = true
+            if showNoCategory {
+                // no category
+                matchesCategory = item.category == nil
+            } else if selectedCategory != nil {
+                // exact category
+                matchesCategory = item.category == selectedCategory
+            }
             guard matchesSearchText && matchesPriority && matchesCategory else { return false }
 
             switch filterMode {

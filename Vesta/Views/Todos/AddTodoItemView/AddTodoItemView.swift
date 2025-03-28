@@ -8,6 +8,19 @@ struct AddTodoItemView: View {
 
     @FocusState private var focusedField: String?
 
+    init(
+        selectedCategory: TodoItemCategory? = nil,
+        selectedPriority: Int = 4,
+        presetDueDate: Date? = nil
+    ) {
+        _viewModel = StateObject(
+            wrappedValue: AddTodoItemViewModel(
+                initialCategory: selectedCategory?.name ?? "",
+                initialPriority: selectedPriority,
+                initialDueDate: presetDueDate
+            ))
+    }
+
     var body: some View {
         NavigationView {
             Form {

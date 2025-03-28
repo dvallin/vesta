@@ -22,6 +22,16 @@ class AddTodoItemViewModel: ObservableObject {
     @Published var showingDiscardAlert = false
     @Published var isSaving = false
 
+    init(
+        initialCategory: String = "",
+        initialPriority: Int = 4,
+        initialDueDate: Date? = nil
+    ) {
+        self.category = initialCategory
+        self.priority = initialPriority
+        self.dueDate = initialDueDate
+    }
+
     func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)

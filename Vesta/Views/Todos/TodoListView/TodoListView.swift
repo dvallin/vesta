@@ -11,13 +11,7 @@ struct TodoListView: View {
             SortDescriptor(\TodoItem.title, order: .forward),
         ]) var todoItems: [TodoItem]
 
-    @StateObject var viewModel: TodoListViewModel
-
-    init(filterMode: FilterMode = .all) {
-        _viewModel = StateObject(
-            wrappedValue: TodoListViewModel(
-                filterMode: filterMode))
-    }
+    @StateObject var viewModel = TodoListViewModel()
 
     var body: some View {
         NavigationView {
@@ -68,7 +62,12 @@ struct TodoListView: View {
             TodoItemDetailView(item: item)
         }
         .sheet(isPresented: $viewModel.isPresentingAddTodoItemView) {
-            AddTodoItemView()
+            AddTodoItemView(
+                selectedCategory: viewModel.selectedCategory,
+                selectedPriority: viewModel.selectedPriority ?? 4,
+                presetDueDate: viewModel.filterMode == .today
+                    ? DateUtils.calendar.startOfDay(for: Date()) : nil
+            )
         }
         .sheet(isPresented: $viewModel.isPresentingTodoEventsView) {
             TodoEventsView()
@@ -76,10 +75,11 @@ struct TodoListView: View {
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
             viewModel.configureContext(modelContext)
+            viewModel.reset()
         }
         .onChange(of: scenePhase) { newPhase, _ in
             if newPhase == .active {
-                viewModel.refresh()
+                viewModel.reset()
             }
         }
     }
