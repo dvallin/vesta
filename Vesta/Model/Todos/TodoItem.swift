@@ -124,8 +124,7 @@ class TodoItem {
 
     var isOverdue: Bool {
         guard let dueDate = dueDate else { return false }
-        let gracePeriod = TimeInterval(2 * 60 * 60)
-        let isInThePast = dueDate.addingTimeInterval(gracePeriod) < Date()
+        let isInThePast = dueDate < Date()
         if ignoreTimeComponent {
             return !self.isCompleted && isInThePast && !self.isToday
         } else {

@@ -115,12 +115,25 @@ struct QuickFilterView: View {
                 Menu {
                     Button(action: {
                         viewModel.selectedCategory = nil
+                        viewModel.showNoCategory = false
                         HapticFeedbackManager.shared.generateSelectionFeedback()
                     }) {
-                        if viewModel.selectedCategory == nil {
+                        if viewModel.selectedCategory == nil && !viewModel.showNoCategory {
                             Label("All Categories", systemImage: "checkmark")
                         } else {
                             Text("All Categories")
+                        }
+                    }
+
+                    Button(action: {
+                        viewModel.selectedCategory = nil
+                        viewModel.showNoCategory = true
+                        HapticFeedbackManager.shared.generateSelectionFeedback()
+                    }) {
+                        if viewModel.selectedCategory == nil && viewModel.showNoCategory {
+                            Label("No Category", systemImage: "checkmark")
+                        } else {
+                            Text("No Category")
                         }
                     }
 
@@ -129,6 +142,7 @@ struct QuickFilterView: View {
                     ForEach(viewModel.fetchCategories(), id: \.name) { category in
                         Button(action: {
                             viewModel.selectedCategory = category
+                            viewModel.showNoCategory = false
                             HapticFeedbackManager.shared.generateSelectionFeedback()
                         }) {
                             if viewModel.selectedCategory == category {
@@ -169,8 +183,11 @@ struct QuickFilterView: View {
     }
 
     private var categoryDisplayName: String {
-        viewModel.selectedCategory?.name
-            ?? NSLocalizedString("None", comment: "Category filter default text")
+        if viewModel.showNoCategory {
+            return NSLocalizedString("No Category", comment: "Category filter: no category")
+        }
+        return viewModel.selectedCategory?.name
+            ?? NSLocalizedString("All Categories", comment: "Category filter: all categories")
     }
 }
 

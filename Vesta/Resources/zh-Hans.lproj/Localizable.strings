@@ -177,6 +177,7 @@
 "Overdue" = "逾期";
 "All Priorities" = "所有优先级";
 "All Categories" = "所有类别";
+"No Category" = "无类别";
 
 // Main Tabs
 "Today" = "今天";

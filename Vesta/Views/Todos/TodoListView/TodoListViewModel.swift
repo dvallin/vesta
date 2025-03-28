@@ -39,6 +39,7 @@ class TodoListViewModel: ObservableObject {
     @Published var filterMode: FilterMode = .today
     @Published var selectedPriority: Int? = nil
     @Published var selectedCategory: TodoItemCategory? = nil
+    @Published var showNoCategory: Bool = false
 
     @Published var selectedTodoItem: TodoItem? = nil
 
@@ -159,7 +160,14 @@ class TodoListViewModel: ObservableObject {
                 || item.title.localizedCaseInsensitiveContains(searchText)
                 || item.details.localizedCaseInsensitiveContains(searchText)
             let matchesPriority = selectedPriority == nil || item.priority == selectedPriority
-            let matchesCategory = selectedCategory == nil || item.category == selectedCategory
+            var matchesCategory = true
+            if showNoCategory {
+                // no category
+                matchesCategory = item.category == nil
+            } else if selectedCategory != nil {
+                // exact category
+                matchesCategory = item.category == selectedCategory
+            }
             guard matchesSearchText && matchesPriority && matchesCategory else { return false }
 
             switch filterMode {

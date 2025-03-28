@@ -177,6 +177,7 @@
 "Overdue" = "期限超過";
 "All Priorities" = "すべての優先度";
 "All Categories" = "すべてのカテゴリ";
+"No Category" = "カテゴリなし";
 
 // Main Tabs
 "Today" = "今日";

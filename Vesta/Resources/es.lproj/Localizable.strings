@@ -177,6 +177,7 @@
 "Overdue" = "Vencido";
 "All Priorities" = "Todas las prioridades";
 "All Categories" = "Todas las categorías";
+"No Category" = "Sin categoría";
 
 // Main Tabs
 "Today" = "Hoy";
