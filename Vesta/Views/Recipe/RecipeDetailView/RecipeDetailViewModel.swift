@@ -43,11 +43,43 @@ class RecipeDetailViewModel: ObservableObject {
 
     func moveIngredient(from source: IndexSet, to destination: Int) {
         var sortedIngredients = recipe.sortedIngredients
-        
+
         sortedIngredients.move(fromOffsets: source, toOffset: destination)
         for (index, ingredient) in sortedIngredients.enumerated() {
             ingredient.order = index + 1
         }
         recipe.ingredients = sortedIngredients
+    }
+
+    func addStep(instruction: String, type: StepType, duration: TimeInterval?) {
+        let newStep = RecipeStep(
+            order: recipe.steps.count + 1,
+            instruction: instruction,
+            type: type,
+            duration: duration
+        )
+        withAnimation {
+            recipe.steps.append(newStep)
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+        }
+    }
+
+    func removeStep(_ step: RecipeStep) {
+        withAnimation {
+            if let index = recipe.steps.firstIndex(where: { $0 === step }) {
+                recipe.steps.remove(at: index)
+                HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+            }
+        }
+    }
+
+    func moveStep(from source: IndexSet, to destination: Int) {
+        var sortedSteps = recipe.sortedSteps
+
+        sortedSteps.move(fromOffsets: source, toOffset: destination)
+        for (index, step) in sortedSteps.enumerated() {
+            step.order = index + 1
+        }
+        recipe.steps = sortedSteps
     }
 }

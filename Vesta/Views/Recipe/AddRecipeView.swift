@@ -7,17 +7,29 @@ struct TempIngredient: Identifiable {
     let unit: Unit?
 }
 
+struct TempStep: Identifiable {
+    let id = UUID()
+    let instruction: String
+    let type: StepType
+    let duration: TimeInterval?
+}
+
 struct AddRecipeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
     @State private var title: String = ""
     @State private var details: String = ""
-    @State private var tempIngredients: [TempIngredient] = []
 
+    @State private var tempIngredients: [TempIngredient] = []
     @State private var ingredientName: String = ""
     @State private var ingredientQuantity: String = ""
     @State private var ingredientUnit: Unit? = nil
+
+    @State private var tempSteps: [TempStep] = []
+    @State private var stepInstruction: String = ""
+    @State private var stepType: StepType = .cooking
+    @State private var stepDuration: TimeInterval? = nil
 
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
@@ -57,6 +69,27 @@ struct AddRecipeView: View {
                     onAdd: addTempIngredient
                 )
                 .focused($focusedField, equals: "ingredients")
+                #if os(iOS)
+                    .environment(\.editMode, .constant(.active))
+                #endif
+
+                StepsSection(
+                    header: NSLocalizedString("Steps", comment: "Section header for steps"),
+                    steps: tempSteps,
+                    moveHandler: moveTempStep,
+                    removeHandler: removeTempStep,
+                    typeText: { $0.type.displayName },
+                    durationText: { step in
+                        guard let duration = step.duration else { return "" }
+                        return String(format: "%.0f min", duration / 60)
+                    },
+                    instructionText: { $0.instruction },
+                    instruction: $stepInstruction,
+                    type: $stepType,
+                    duration: $stepDuration,
+                    onAdd: addTempStep
+                )
+                .focused($focusedField, equals: "steps")
                 #if os(iOS)
                     .environment(\.editMode, .constant(.active))
                 #endif
@@ -159,6 +192,43 @@ struct AddRecipeView: View {
         tempIngredients.move(fromOffsets: source, toOffset: destination)
     }
 
+    private func addTempStep() {
+        guard !stepInstruction.isEmpty else {
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
+            validationMessage = NSLocalizedString(
+                "Please enter step instructions.",
+                comment: "Validation error message")
+            showingValidationAlert = true
+            return
+        }
+
+        let newStep = TempStep(
+            instruction: stepInstruction,
+            type: stepType,
+            duration: stepDuration
+        )
+
+        withAnimation {
+            tempSteps.append(newStep)
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+        }
+
+        // Reset the input fields
+        stepInstruction = ""
+        stepType = .cooking
+        stepDuration = nil
+    }
+
+    private func removeTempStep(_ step: TempStep) {
+        withAnimation {
+            tempSteps.removeAll { $0.id == step.id }
+        }
+    }
+
+    private func moveTempStep(from source: IndexSet, to destination: Int) {
+        tempSteps.move(fromOffsets: source, toOffset: destination)
+    }
+
     private func validateAndSave() {
         guard !title.isEmpty else {
             validationMessage = NSLocalizedString(
@@ -179,6 +249,8 @@ struct AddRecipeView: View {
         isSaving = true
         do {
             let newRecipe = Recipe(title: title, details: details)
+
+            // Save ingredients
             for (index, temp) in tempIngredients.enumerated() {
                 let ingredient = Ingredient(
                     name: temp.name,
@@ -188,6 +260,18 @@ struct AddRecipeView: View {
                 )
                 newRecipe.ingredients.append(ingredient)
             }
+
+            // Save steps
+            for (index, temp) in tempSteps.enumerated() {
+                let step = RecipeStep(
+                    order: index + 1,
+                    instruction: temp.instruction,
+                    type: temp.type,
+                    duration: temp.duration
+                )
+                newRecipe.steps.append(step)
+            }
+
             modelContext.insert(newRecipe)
             try modelContext.save()
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
@@ -196,8 +280,11 @@ struct AddRecipeView: View {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
             validationMessage = String(
                 format: NSLocalizedString(
-                    "Error saving recipe: %@", comment: "Error saving recipe message"),
-                error.localizedDescription)
+                    "Error saving recipe: %@",
+                    comment: "Error saving recipe message"
+                ),
+                error.localizedDescription
+            )
             showingValidationAlert = true
         }
         isSaving = false
