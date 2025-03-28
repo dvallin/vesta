@@ -49,7 +49,9 @@ class AddShoppingItemViewModel: ObservableObject {
             category: shoppingCategory
         )
 
-        let quantityDouble = Double(quantity)
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        let quantityDouble = numberFormatter.number(from: quantity)?.doubleValue
 
         let newItem = ShoppingListItem(
             name: name,

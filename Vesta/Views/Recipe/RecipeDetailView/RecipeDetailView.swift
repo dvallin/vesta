@@ -97,7 +97,9 @@ struct RecipeDetailView: View {
             return
         }
 
-        let quantity = Double(ingredientQuantity)
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        let quantity = numberFormatter.number(from: ingredientQuantity)?.doubleValue
         viewModel.addIngredient(name: ingredientName, quantity: quantity, unit: ingredientUnit)
 
         // Reset the input fields.

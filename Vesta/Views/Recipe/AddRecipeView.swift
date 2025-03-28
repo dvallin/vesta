@@ -129,7 +129,9 @@ struct AddRecipeView: View {
         }
 
         // Convert the quantity text to a Double; if conversion fails, it ends up as nil.
-        let quantity = Double(ingredientQuantity)
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        let quantity = numberFormatter.number(from: ingredientQuantity)?.doubleValue
         let newIngredient = TempIngredient(
             name: ingredientName,
             quantity: quantity,

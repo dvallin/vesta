@@ -21,10 +21,16 @@ struct ShoppingListItemRow: View {
                         .strikethrough(item.isPurchased)
                         .foregroundColor(item.isPurchased ? .secondary : .primary)
 
-                    if let quantity = item.quantity, let unit = item.unit {
-                        Text("\(quantity, specifier: "%.1f") \(unit.displayName)")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                    if let quantity = item.quantity {
+                        if let unit = item.unit {
+                            Text("\(quantity, specifier: "%.1f") \(unit.displayName)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("\(quantity, specifier: "%.1f")")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
                     }
 
                     if let dueDate = item.todoItem?.dueDate {

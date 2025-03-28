@@ -1,7 +1,20 @@
 import SwiftUI
 
 struct ShoppingItemDetailView: View {
-    var item: ShoppingListItem
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+
+    @State var item: ShoppingListItem
+    @State private var quantity: String
+    @State private var selectedUnit: Unit?
+    @State private var isEditingQuantity = false
+    @FocusState private var focusedField: String?
+
+    init(item: ShoppingListItem) {
+        self._item = State(initialValue: item)
+        self._quantity = State(initialValue: item.quantity != nil ? String(item.quantity!) : "")
+        self._selectedUnit = State(initialValue: item.unit)
+    }
 
     var body: some View {
         NavigationView {
@@ -11,21 +24,54 @@ struct ShoppingItemDetailView: View {
                         NSLocalizedString(
                             "Item Details", comment: "Section header for item details"))
                 ) {
-                    Text(
-                        String(
-                            format: NSLocalizedString("Name: %@", comment: "Item name format"),
-                            item.name))
+                    Text(item.name)
+                        .font(.title)
+                        .textInputAutocapitalization(.words)
 
-                    if let quantity = item.quantity, let unit = item.unit {
-                        Text(
-                            String(
-                                format: NSLocalizedString(
-                                    "Quantity: %.1f %@", comment: "Item quantity format"),
-                                quantity, unit.displayName))
+                    if isEditingQuantity {
+                        HStack {
+                            TextField(
+                                NSLocalizedString(
+                                    "Quantity", comment: "Quantity field placeholder"),
+                                text: $quantity
+                            )
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            #if os(iOS)
+                                .keyboardType(.decimalPad)
+                            #endif
+                            .focused($focusedField, equals: "quantity")
+                            .frame(width: 100)
+
+                            Picker("", selection: $selectedUnit) {
+                                ForEach(Unit.allCases, id: \.self) { unit in
+                                    Text(unit.displayName).tag(unit as Unit?)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                        }
                     } else {
-                        Text(
-                            NSLocalizedString(
-                                "No quantity specified", comment: "No quantity message"))
+                        if !quantity.isEmpty && quantity != "0" {
+                            Text(
+                                String(
+                                    format: NSLocalizedString(
+                                        "Quantity: %.1f %@", comment: "Quantity and unit format"),
+                                    Double(quantity) ?? 0, selectedUnit?.displayName ?? "")
+                            )
+                            .foregroundColor(.primary)
+                            .onTapGesture {
+                                isEditingQuantity = true
+                            }
+                        } else {
+                            Text(
+                                NSLocalizedString(
+                                    "No quantity specified",
+                                    comment: "Displayed when no quantity is set")
+                            )
+                            .foregroundColor(.primary)
+                            .onTapGesture {
+                                isEditingQuantity = true
+                            }
+                        }
                     }
 
                     Toggle(
@@ -42,26 +88,29 @@ struct ShoppingItemDetailView: View {
                                 "Related Meals", comment: "Section header for related meals"))
                     ) {
                         ForEach(item.meals) { meal in
-                            VStack(alignment: .leading) {
-                                Text(
-                                    String(
-                                        format: NSLocalizedString(
-                                            "Recipe: %@", comment: "Recipe name format"),
-                                        meal.recipe?.title ?? "Unknown"))
-                                Text(
-                                    String(
-                                        format: NSLocalizedString(
-                                            "Meal Type: %@", comment: "Meal type format"),
-                                        meal.mealType.displayName))
-                                if let dueDate = meal.todoItem?.dueDate {
+                            NavigationLink(destination: MealDetailView(meal: meal)) {
+                                VStack(alignment: .leading) {
                                     Text(
                                         String(
                                             format: NSLocalizedString(
-                                                "Planned for: %@", comment: "Planned date format"),
-                                            dueDate.formatted(.dateTime)))
+                                                "Recipe: %@", comment: "Recipe name format"),
+                                            meal.recipe?.title ?? "Unknown"))
+                                    Text(
+                                        String(
+                                            format: NSLocalizedString(
+                                                "Meal Type: %@", comment: "Meal type format"),
+                                            meal.mealType.displayName))
+                                    if let dueDate = meal.todoItem?.dueDate {
+                                        Text(
+                                            String(
+                                                format: NSLocalizedString(
+                                                    "Planned for: %@",
+                                                    comment: "Planned date format"),
+                                                dueDate.formatted(.dateTime)))
+                                    }
                                 }
+                                .padding(.vertical, 4)
                             }
-                            .padding(.vertical, 4)
                         }
                     }
                 }
@@ -70,21 +119,70 @@ struct ShoppingItemDetailView: View {
                     header: Text(
                         NSLocalizedString("Todo Item", comment: "Section header for todo item"))
                 ) {
-                    Text(
-                        String(
-                            format: NSLocalizedString("Title: %@", comment: "Todo title format"),
-                            item.todoItem?.title ?? "Unknown"))
-                    if let dueDate = item.todoItem?.dueDate {
+                    if let todoItem = item.todoItem {
+                        NavigationLink(destination: TodoItemDetailView(item: todoItem)) {
+                            VStack(alignment: .leading) {
+                                Text(
+                                    String(
+                                        format: NSLocalizedString(
+                                            "Title: %@", comment: "Todo title format"),
+                                        todoItem.title))
+                                if let dueDate = todoItem.dueDate {
+                                    Text(
+                                        String(
+                                            format: NSLocalizedString(
+                                                "Due Date: %@", comment: "Due date format"),
+                                            dueDate.formatted(.dateTime)))
+                                }
+                            }
+                        }
+                    } else {
                         Text(
                             String(
                                 format: NSLocalizedString(
-                                    "Due Date: %@", comment: "Due date format"),
-                                dueDate.formatted(.dateTime)))
+                                    "Title: %@", comment: "Todo title format"),
+                                "Unknown"))
                     }
                 }
             }
-            .navigationTitle(item.name)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(
+                        NSLocalizedString("Save", comment: "Save button")
+                    ) {
+                        isEditingQuantity = false
+                        focusedField = nil
+                        saveChanges()
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .keyboard) {
+                    Button(NSLocalizedString("Done", comment: "Done button")) {
+                        isEditingQuantity = false
+                        focusedField = nil
+                    }
+                }
+            }
         }
+    }
+
+    private func saveChanges() {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        let quantityDouble = numberFormatter.number(from: quantity)?.doubleValue
+
+        item.quantity = quantityDouble
+        item.unit = selectedUnit
+
+        do {
+            try modelContext.save()
+        } catch {}
     }
 }
 
