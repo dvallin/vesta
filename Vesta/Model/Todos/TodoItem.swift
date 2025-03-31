@@ -43,11 +43,13 @@ class TodoItem: SyncableEntity {
     var recurrenceInterval: Int?
     var ignoreTimeComponent: Bool
     var priority: Int
-
-    var owner: User?
+    
     var lastModified: Date = Date()
     var dirty: Bool = true
-
+    
+    @Relationship(deleteRule: .noAction)
+    var owner: User?
+    
     @Relationship(deleteRule: .cascade)
     var events: [TodoItemEvent]
 
@@ -149,6 +151,7 @@ class TodoItem: SyncableEntity {
         } else {
             isCompleted.toggle()
         }
+        self.markAsDirty()
     }
 
     func setDetails(details: String) {
@@ -200,6 +203,7 @@ class TodoItem: SyncableEntity {
         let _ = createEvent(
             type: .editRecurrenceInterval, previousRecurrenceInterval: self.recurrenceInterval)
         self.recurrenceInterval = recurrenceInterval
+        self.markAsDirty()
     }
 
     func setRecurrenceType(recurrenceType: RecurrenceType?) {

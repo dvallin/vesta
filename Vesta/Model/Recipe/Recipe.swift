@@ -6,7 +6,9 @@ class Recipe: SyncableEntity {
     var title: String
     var details: String
 
+    @Relationship(deleteRule: .noAction)
     var owner: User?
+
     var lastModified: Date = Date()
     var dirty: Bool = true
 
@@ -20,7 +22,8 @@ class Recipe: SyncableEntity {
     var meals: [Meal]
 
     init(
-        title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = [], owner: User
+        title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = [],
+        owner: User
     ) {
         self.title = title
         self.details = details
@@ -54,6 +57,73 @@ class Recipe: SyncableEntity {
 
     var totalDuration: TimeInterval {
         preparationDuration + cookingDuration + maturingDuration
+    }
+
+    // Mutation methods
+
+    func addIngredient(name: String, quantity: Double?, unit: Unit?) {
+        let newIngredient = Ingredient(
+            name: name, order: ingredients.count + 1, quantity: quantity, unit: unit, recipe: self)
+        ingredients.append(newIngredient)
+        markAsDirty()
+    }
+
+    func removeIngredient(_ ingredient: Ingredient) {
+        if let index = ingredients.firstIndex(where: { $0 === ingredient }) {
+            ingredients.remove(at: index)
+            markAsDirty()
+        }
+    }
+
+    func moveIngredient(from source: IndexSet, to destination: Int) {
+        var sortedIngredients = self.sortedIngredients
+
+        sortedIngredients.move(fromOffsets: source, toOffset: destination)
+        for (index, ingredient) in sortedIngredients.enumerated() {
+            ingredient.order = index + 1
+        }
+        ingredients = sortedIngredients
+        markAsDirty()
+    }
+
+    func addStep(instruction: String, type: StepType, duration: TimeInterval?) {
+        let newStep = RecipeStep(
+            order: steps.count + 1,
+            instruction: instruction,
+            type: type,
+            duration: duration,
+            recipe: self
+        )
+        steps.append(newStep)
+        markAsDirty()
+    }
+
+    func removeStep(_ step: RecipeStep) {
+        if let index = steps.firstIndex(where: { $0 === step }) {
+            steps.remove(at: index)
+            markAsDirty()
+        }
+    }
+
+    func moveStep(from source: IndexSet, to destination: Int) {
+        var sortedSteps = self.sortedSteps
+
+        sortedSteps.move(fromOffsets: source, toOffset: destination)
+        for (index, step) in sortedSteps.enumerated() {
+            step.order = index + 1
+        }
+        steps = sortedSteps
+        markAsDirty()
+    }
+
+    func setTitle(_ newTitle: String) {
+        title = newTitle
+        markAsDirty()
+    }
+
+    func setDetails(_ newDetails: String) {
+        details = newDetails
+        markAsDirty()
     }
 }
 

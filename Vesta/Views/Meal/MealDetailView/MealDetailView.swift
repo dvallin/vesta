@@ -93,15 +93,18 @@ struct MealDetailView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
+        let user = Fixtures.createUser()
+        
         // Create sample recipe with ingredients
-        let recipe = Fixtures.bolognese
+        let recipe = Fixtures.bolognese(owner: user)
 
+        
         // Create todo item
         let todoItem = TodoItem(
             title: "Cook Spaghetti Bolognese",
             details: "Make dinner",
             dueDate: Date().addingTimeInterval(3600),
-            owner: Fixtures.defaultUser
+            owner: user
         )
 
         // Create meal
@@ -109,7 +112,7 @@ struct MealDetailView: View {
             scalingFactor: 1.0,
             todoItem: todoItem,
             recipe: recipe,
-            owner: Fixtures.defaultUser
+            owner: user
         )
 
         // Insert objects into context

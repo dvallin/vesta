@@ -55,6 +55,6 @@ struct ReadOnlyRecipeDetailView: View {
 }
 
 #Preview {
-    let recipe = Fixtures.bolognese
+    let recipe = Fixtures.bolognese()
     return ReadOnlyRecipeDetailView(recipe: recipe, scalingFactor: 1.0)
 }
