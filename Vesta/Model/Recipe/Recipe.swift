@@ -2,9 +2,13 @@ import Foundation
 import SwiftData
 
 @Model
-class Recipe {
+class Recipe: SyncableEntity {
     var title: String
     var details: String
+
+    var owner: User?
+    var lastModified: Date = Date()
+    var dirty: Bool = true
 
     @Relationship(deleteRule: .cascade)
     var ingredients: [Ingredient]
@@ -15,12 +19,17 @@ class Recipe {
     @Relationship(deleteRule: .cascade)
     var meals: [Meal]
 
-    init(title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = []) {
+    init(
+        title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = [], owner: User
+    ) {
         self.title = title
         self.details = details
         self.ingredients = ingredients
         self.steps = steps
         self.meals = []
+        self.owner = owner
+        self.lastModified = Date()
+        self.dirty = true
     }
 
     var sortedIngredients: [Ingredient] {

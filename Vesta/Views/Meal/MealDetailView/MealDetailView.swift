@@ -20,7 +20,12 @@ struct MealDetailView: View {
                 Text(NSLocalizedString("Scaling Factor:", comment: "Scaling factor label"))
                 TextField(
                     NSLocalizedString("Scaling Factor", comment: "Scaling factor input field"),
-                    value: $viewModel.meal.scalingFactor,
+                    value: Binding(
+                        get: { viewModel.meal.scalingFactor },
+                        set: { newValue in
+                            viewModel.meal.setScalingFactor(newValue)
+                        }
+                    ),
                     formatter: NumberFormatter()
                 )
                 #if os(iOS)
@@ -34,7 +39,12 @@ struct MealDetailView: View {
                 Text(NSLocalizedString("Meal Type:", comment: "Meal type label"))
                 Picker(
                     NSLocalizedString("Meal Type", comment: "Meal type picker label"),
-                    selection: $viewModel.meal.mealType
+                    selection: Binding(
+                        get: { viewModel.meal.mealType },
+                        set: { newValue in
+                            viewModel.meal.setMealType(newValue)
+                        }
+                    )
                 ) {
                     ForEach(MealType.allCases, id: \.self) { mealType in
                         Text(mealType.displayName).tag(mealType)
@@ -54,7 +64,7 @@ struct MealDetailView: View {
                     selection: Binding(
                         get: { viewModel.meal.todoItem?.dueDate ?? Date() },
                         set: { newValue in
-                            viewModel.meal.updateDueDate(newValue)
+                            viewModel.meal.setDueDate(newValue)
                         }
                     ),
                     displayedComponents: .date
@@ -84,30 +94,22 @@ struct MealDetailView: View {
         let context = container.mainContext
 
         // Create sample recipe with ingredients
-        let recipe = Recipe(
-            title: "Spaghetti Bolognese",
-            details: "Classic Italian pasta dish with meat sauce"
-        )
-        let ingredients = [
-            Ingredient(name: "Spaghetti", order: 1, quantity: 500, unit: .gram, recipe: recipe),
-            Ingredient(name: "Ground Beef", order: 2, quantity: 400, unit: .gram, recipe: recipe),
-            Ingredient(name: "Tomato Sauce", order: 3, quantity: 2, unit: .cup, recipe: recipe),
-            Ingredient(name: "Onion", order: 4, quantity: 1, unit: .piece, recipe: recipe),
-        ]
-        recipe.ingredients = ingredients
+        let recipe = Fixtures.bolognese
 
         // Create todo item
         let todoItem = TodoItem(
             title: "Cook Spaghetti Bolognese",
             details: "Make dinner",
-            dueDate: Date().addingTimeInterval(3600)
+            dueDate: Date().addingTimeInterval(3600),
+            owner: Fixtures.defaultUser
         )
 
         // Create meal
         let meal = Meal(
             scalingFactor: 1.0,
             todoItem: todoItem,
-            recipe: recipe
+            recipe: recipe,
+            owner: Fixtures.defaultUser
         )
 
         // Insert objects into context

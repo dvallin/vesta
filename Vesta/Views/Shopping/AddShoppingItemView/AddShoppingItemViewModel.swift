@@ -33,19 +33,16 @@ class AddShoppingItemViewModel: ObservableObject {
         let shoppingCategory = categoryService?.fetchOrCreate(
             named: NSLocalizedString("Shopping", comment: "Shopping category name")
         )
-
-        let todoItem = TodoItem(
-            title: String(
-                format: NSLocalizedString(
-                    "Buy %@",
-                    comment: "Format for todo item title, where %@ is the item name"
-                ),
-                name
-            ),
-            details: NSLocalizedString(
-                "Shopping item",
-                comment: "Default details text for shopping items"
-            ),
+        let todoTitle = String(
+            format: NSLocalizedString("Buy %@", comment: "Shopping list item details"),
+            name
+        )
+        let todoDetails = NSLocalizedString(
+            "Shopping item", comment: "Default details text for shopping items"
+        )
+        let todoItem = TodoItem.create(
+            title: todoTitle,
+            details: todoDetails,
             category: shoppingCategory
         )
 
@@ -57,7 +54,8 @@ class AddShoppingItemViewModel: ObservableObject {
             name: name,
             quantity: quantityDouble,
             unit: selectedUnit,
-            todoItem: todoItem
+            todoItem: todoItem,
+            owner: todoItem.owner!
         )
 
         modelContext.insert(todoItem)

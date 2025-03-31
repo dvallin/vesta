@@ -2,10 +2,14 @@ import Foundation
 import SwiftData
 
 @Model
-class ShoppingListItem {
+class ShoppingListItem: SyncableEntity {
     var name: String
     var quantity: Double?
     var unit: Unit?
+
+    var owner: User?
+    var lastModified: Date = Date()
+    var dirty: Bool = true
 
     @Relationship(deleteRule: .cascade)
     var todoItem: TodoItem?
@@ -20,20 +24,25 @@ class ShoppingListItem {
 
     init(
         name: String, quantity: Double? = nil, unit: Unit? = nil,
-        todoItem: TodoItem, meals: [Meal] = []
+        todoItem: TodoItem, meals: [Meal] = [], owner: User
     ) {
         self.name = name
         self.quantity = quantity
         self.unit = unit
         self.todoItem = todoItem
         self.meals = meals
+        self.owner = owner
+        self.lastModified = Date()
+        self.dirty = true
     }
 
     func updateQuantity(newQuantity: Double) {
         self.quantity = newQuantity
+        self.markAsDirty()
     }
 
     func updateUnit(newUnit: Unit) {
         self.unit = newUnit
+        self.markAsDirty()
     }
 }

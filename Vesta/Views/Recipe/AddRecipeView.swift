@@ -248,7 +248,9 @@ struct AddRecipeView: View {
     private func saveRecipe() {
         isSaving = true
         do {
-            let newRecipe = Recipe(title: title, details: details)
+            let currentUser = UserManager.shared.getCurrentUser()
+
+            let newRecipe = Recipe(title: title, details: details, owner: currentUser)
 
             // Save ingredients
             for (index, temp) in tempIngredients.enumerated() {

@@ -33,7 +33,7 @@ enum RecurrenceType: String, Codable, CaseIterable {
 }
 
 @Model
-class TodoItem {
+class TodoItem: SyncableEntity {
     var title: String
     var details: String
     var dueDate: Date?
@@ -43,6 +43,10 @@ class TodoItem {
     var recurrenceInterval: Int?
     var ignoreTimeComponent: Bool
     var priority: Int
+
+    var owner: User?
+    var lastModified: Date = Date()
+    var dirty: Bool = true
 
     @Relationship(deleteRule: .cascade)
     var events: [TodoItemEvent]
@@ -69,7 +73,8 @@ class TodoItem {
         events: [TodoItemEvent] = [],
         meal: Meal? = nil,
         shoppingListItem: ShoppingListItem? = nil,
-        category: TodoItemCategory? = nil
+        category: TodoItemCategory? = nil,
+        owner: User
     ) {
         self.title = title
         self.details = details
@@ -84,6 +89,7 @@ class TodoItem {
         self.shoppingListItem = shoppingListItem
         self.events = events
         self.category = category
+        self.owner = owner
     }
 
     static func create(
@@ -99,18 +105,14 @@ class TodoItem {
         shoppingListItem: ShoppingListItem? = nil,
         category: TodoItemCategory? = nil
     ) -> TodoItem {
+        let currentUser = UserManager.shared.getCurrentUser()
         let item = TodoItem(
             title: title, details: details, dueDate: dueDate,
             recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType,
             recurrenceInterval: recurrenceInterval, ignoreTimeComponent: ignoreTimeComponent,
-            priority: priority, category: category)
-        item.recordCreationEvent()
+            priority: priority, category: category, owner: currentUser)
+        _ = item.createEvent(type: TodoItemEventType.created)
         return item
-    }
-
-    func recordCreationEvent() {
-        let event = TodoItemEvent(type: .created, date: Date(), todoItem: self)
-        self.events.append(event)
     }
 
     var isToday: Bool {
@@ -154,11 +156,13 @@ class TodoItem {
     func setDetails(details: String) {
         let _ = createEvent(type: .editDetails, previousDetails: self.details)
         self.details = details
+        self.markAsDirty()
     }
 
     func setTitle(title: String) {
         let _ = createEvent(type: .editTitle, previousTitle: self.title)
         self.title = title
+        self.markAsDirty()
     }
 
     func setDueDate(dueDate: Date?) {
@@ -166,6 +170,7 @@ class TodoItem {
         self.dueDate = dueDate
 
         NotificationManager.shared.scheduleNotification(for: self)
+        self.markAsDirty()
     }
 
     func setIsCompleted(isCompleted: Bool) {
@@ -173,6 +178,7 @@ class TodoItem {
         self.isCompleted = isCompleted
 
         NotificationManager.shared.scheduleNotification(for: self)
+        self.markAsDirty()
     }
 
     func setRecurrenceFrequency(
@@ -181,6 +187,7 @@ class TodoItem {
         let _ = createEvent(
             type: .editRecurrenceFrequency, previousRecurrenceFrequency: self.recurrenceFrequency)
         self.recurrenceFrequency = recurrenceFrequency
+        self.markAsDirty()
     }
 
     func setRecurrenceInterval(recurrenceInterval: Int?) {
@@ -192,6 +199,7 @@ class TodoItem {
     func setRecurrenceType(recurrenceType: RecurrenceType?) {
         let _ = createEvent(type: .editRecurrenceType, previousRecurrenceType: self.recurrenceType)
         self.recurrenceType = recurrenceType
+        self.markAsDirty()
     }
 
     func setIgnoreTimeComponent(ignoreTimeComponent: Bool) {
@@ -205,16 +213,19 @@ class TodoItem {
 
         // Reschedule notification with new time component setting
         NotificationManager.shared.scheduleNotification(for: self)
+        self.markAsDirty()
     }
 
     func setPriority(priority: Int) {
         let _ = createEvent(type: .editPriority, previousPriority: self.priority)
         self.priority = priority
+        self.markAsDirty()
     }
 
     func setCategory(category: TodoItemCategory?) {
         let _ = createEvent(type: .editCategory, previousCategory: self.category?.name)
         self.category = category
+        self.markAsDirty()
     }
 
     func undoLastEvent() -> TodoItemEvent? {
@@ -250,6 +261,8 @@ class TodoItem {
             break
         }
 
+        self.markAsDirty()
+
         return lastEvent
     }
 
@@ -271,6 +284,8 @@ class TodoItem {
         if ignoreTimeComponent, let dueDate = dueDate {
             self.dueDate = DateUtils.calendar.startOfDay(for: dueDate)
         }
+
+        self.markAsDirty()
     }
 
     private func createEvent(
@@ -286,9 +301,11 @@ class TodoItem {
         previousPriority: Int? = nil,
         previousCategory: String? = nil
     ) -> TodoItemEvent {
+        let currentUser = UserManager.shared.getCurrentUser()
         let event = TodoItemEvent(
             type: type,
             date: Date(),
+            owner: currentUser,
             todoItem: self,
             previousTitle: previousTitle,
             previousDetails: previousDetails,

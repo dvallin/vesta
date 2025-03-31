@@ -50,15 +50,23 @@ struct TodoListView: View {
         let d = Date()
         // Sample items with different dates and titles
         let todoItems = [
-            TodoItem(title: "Z Task", details: "Details", dueDate: nil),
-            TodoItem(title: "A Task", details: "Details", dueDate: d.addingTimeInterval(3600)),
-            TodoItem(title: "B Task", details: "Details", dueDate: d.addingTimeInterval(3600)),
+            TodoItem(
+                title: "Z Task", details: "Details", dueDate: nil,
+                owner: Fixtures.defaultUser),
+            TodoItem(
+                title: "A Task", details: "Details", dueDate: d.addingTimeInterval(3600),
+                owner: Fixtures.defaultUser),
+            TodoItem(
+                title: "B Task", details: "Details", dueDate: d.addingTimeInterval(3600),
+                owner: Fixtures.defaultUser),
             TodoItem(
                 title: "D Task", details: "Details", dueDate: d.addingTimeInterval(3600),
-                priority: 2),
+                priority: 2, owner: Fixtures.defaultUser),
             TodoItem(
-                title: "B Task", details: "Details", dueDate: d.addingTimeInterval(-24 * 3600)),
-            TodoItem(title: "C Task", details: "Details", dueDate: nil),
+                title: "B Task", details: "Details", dueDate: d.addingTimeInterval(-24 * 3600),
+                owner: Fixtures.defaultUser),
+            TodoItem(
+                title: "C Task", details: "Details", dueDate: nil, owner: Fixtures.defaultUser),
         ]
 
         for item in todoItems {
