@@ -30,4 +30,11 @@ struct DateUtils {
         case .dinner: return (18, 0)
         }
     }
+
+    static func formattedDuration(_ duration: TimeInterval) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute, .second]
+        formatter.unitsStyle = .abbreviated
+        return formatter.string(from: duration) ?? ""
+    }
 }

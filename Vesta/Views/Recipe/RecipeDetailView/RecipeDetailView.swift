@@ -6,10 +6,13 @@ struct RecipeDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: RecipeDetailViewModel
 
-    // For entering new ingredient values.
     @State private var ingredientName: String = ""
     @State private var ingredientQuantity: String = ""
     @State private var ingredientUnit: Unit? = nil
+
+    @State private var stepInstruction: String = ""
+    @State private var stepType: StepType = .cooking
+    @State private var stepDuration: TimeInterval? = nil
 
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
@@ -27,6 +30,8 @@ struct RecipeDetailView: View {
                 details: $viewModel.recipe.details,
                 focusedField: $focusedField
             )
+
+            DurationSectionView(recipe: viewModel.recipe)
 
             IngredientsSection(
                 header: NSLocalizedString("Ingredients", comment: "Section header for ingredients"),
@@ -49,6 +54,27 @@ struct RecipeDetailView: View {
                 onAdd: addIngredient
             )
             .focused($focusedField, equals: "ingredients")
+            #if os(iOS)
+                .environment(\.editMode, .constant(.active))
+            #endif
+
+            StepsSection(
+                header: NSLocalizedString("Steps", comment: "Section header for steps"),
+                steps: viewModel.recipe.sortedSteps,
+                moveHandler: viewModel.moveStep,
+                removeHandler: viewModel.removeStep,
+                typeText: { $0.type.displayName },
+                durationText: { step in
+                    guard let duration = step.duration else { return "" }
+                    return String(format: "%.0f min", duration / 60)
+                },
+                instructionText: { $0.instruction },
+                instruction: $stepInstruction,
+                type: $stepType,
+                duration: $stepDuration,
+                onAdd: addStep
+            )
+            .focused($focusedField, equals: "steps")
             #if os(iOS)
                 .environment(\.editMode, .constant(.active))
             #endif
@@ -106,6 +132,27 @@ struct RecipeDetailView: View {
         ingredientName = ""
         ingredientQuantity = ""
         ingredientUnit = nil
+    }
+
+    private func addStep() {
+        guard !stepInstruction.isEmpty else {
+            validationMessage = NSLocalizedString(
+                "Please enter step instructions.",
+                comment: "Validation error message")
+            showingValidationAlert = true
+            return
+        }
+
+        viewModel.addStep(
+            instruction: stepInstruction,
+            type: stepType,
+            duration: stepDuration
+        )
+
+        // Reset the input fields
+        stepInstruction = ""
+        stepType = .cooking
+        stepDuration = nil
     }
 }
 

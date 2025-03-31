@@ -11,11 +11,13 @@ struct ReadOnlyRecipeDetailView: View {
                 Text(recipe.title)
                     .font(.title)
                     .bold()
-                Text(recipe.details)
+                Text(LocalizedStringKey(recipe.details))
             }
 
+            DurationSectionView(recipe: recipe)
+
             Section(header: Text(NSLocalizedString("Ingredients", comment: "Section header"))) {
-                ForEach(recipe.sortedIngredients, id: \.self) { ingredient in
+                ForEach(recipe.sortedIngredients) { ingredient in
                     HStack {
                         Text(ingredient.name)
                         Spacer()
@@ -23,10 +25,27 @@ struct ReadOnlyRecipeDetailView: View {
                     }
                 }
             }
+
+            Section(header: Text(NSLocalizedString("Steps", comment: "Section header"))) {
+                ForEach(recipe.sortedSteps) { step in
+                    VStack(alignment: .leading) {
+                        Text(step.instruction)
+                        if let duration = step.duration {
+                            Text(DateUtils.formattedDuration(duration))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
         }
     }
 
     private func formattedQuantity(for ingredient: Ingredient) -> String {
+        if ingredient.quantity == nil {
+            return ""
+        }
         let scaledQuantity = (ingredient.quantity ?? 0) * scalingFactor
         let qtyPart = NumberFormatter.localizedString(
             from: NSNumber(value: scaledQuantity), number: .decimal)
@@ -36,15 +55,6 @@ struct ReadOnlyRecipeDetailView: View {
 }
 
 #Preview {
-    let recipe = Recipe(
-        title: "Spaghetti Bolognese",
-        details: "A classic Italian pasta dish."
-    )
-    recipe.ingredients.append(Ingredient(name: "Spaghetti", order: 1, quantity: 200, unit: .gram))
-    recipe.ingredients.append(Ingredient(name: "Ground Beef", order: 2, quantity: 300, unit: .gram))
-    recipe.ingredients.append(
-        Ingredient(name: "Tomato Sauce", order: 3, quantity: 400, unit: .milliliter))
-    recipe.ingredients.append(Ingredient(name: "Salt", order: 4, quantity: nil, unit: nil))
-
+    let recipe = Fixtures.createRecipe()
     return ReadOnlyRecipeDetailView(recipe: recipe, scalingFactor: 1.0)
 }

@@ -9,17 +9,18 @@ class TodoItemCategoryService {
     }
 
     func fetchOrCreate(named name: String) -> TodoItemCategory? {
-        guard !name.isEmpty else { return nil }
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else { return nil }
 
         let fetchDescriptor = FetchDescriptor<TodoItemCategory>(
-            predicate: #Predicate { item in item.name == name },
+            predicate: #Predicate { item in item.name == trimmedName },
             sortBy: []
         )
 
         if let existingCategory = try? modelContext.fetch(fetchDescriptor).first {
             return existingCategory
         } else {
-            let newCategory = TodoItemCategory(name: name)
+            let newCategory = TodoItemCategory(name: trimmedName)
             modelContext.insert(newCategory)
             return newCategory
         }
@@ -33,9 +34,10 @@ class TodoItemCategoryService {
     }
 
     func findMatchingCategories(startingWith prefix: String) -> [TodoItemCategory] {
+        let trimmedPrefix = prefix.trimmingCharacters(in: .whitespacesAndNewlines)
         let fetchDescriptor = FetchDescriptor<TodoItemCategory>(
             predicate: #Predicate { item in
-                item.name.starts(with: prefix)
+                item.name.starts(with: trimmedPrefix)
             },
             sortBy: []
         )
