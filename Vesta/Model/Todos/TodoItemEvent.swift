@@ -66,8 +66,10 @@ class TodoItemEvent: SyncableEntity {
     var previousIgnoreTimeComponent: Bool?
     var previousPriority: Int?
     var previousCategory: String?
-
+    
+    @Relationship(deleteRule: .noAction)
     var owner: User?
+    
     var lastModified: Date = Date()
     var dirty: Bool = true
 

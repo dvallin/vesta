@@ -178,7 +178,7 @@ struct RecipeDetailView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
-        let recipe = Fixtures.bolognese
+        let recipe = Fixtures.bolognese()
         context.insert(recipe)
         return RecipeDetailView(recipe: recipe)
             .modelContainer(container)

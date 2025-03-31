@@ -81,14 +81,14 @@ struct TodoEventsView: View {
             title: "Buy groceries",
             details: "Milk, Bread, Eggs",
             dueDate: Date().addingTimeInterval(3600),
-            owner: Fixtures.defaultUser
+            owner: Fixtures.createUser()
         )
 
         let todoItem2 = TodoItem(
             title: "Call John",
             details: "Discuss project details",
             dueDate: Date().addingTimeInterval(7200),
-            owner: Fixtures.defaultUser
+            owner: Fixtures.createUser()
         )
 
         // Insert todo items

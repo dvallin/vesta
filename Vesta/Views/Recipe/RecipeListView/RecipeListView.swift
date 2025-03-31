@@ -52,9 +52,10 @@ struct RecipeListView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
 
         let context = container.mainContext
+        let user = Fixtures.createUser()
         let recipes = [
-            Fixtures.bolognese,
-            Fixtures.curry,
+            Fixtures.bolognese(owner: user),
+            Fixtures.curry(owner: user),
         ]
 
         for recipe in recipes {
