@@ -187,23 +187,29 @@ struct ShoppingItemDetailView: View {
 }
 
 #Preview {
-    let todoItem = TodoItem(title: "Grocery Shopping", details: "Weekly groceries", dueDate: Date())
+    let todoItem = TodoItem(title: "Grocery Shopping", details: "Weekly groceries", dueDate: Date(),
+                            owner: Fixtures.defaultUser)
 
     // Create multiple meals
-    let recipe1 = Recipe(title: "Pasta Carbonara", details: "Classic Italian dish")
-    let mealTodo1 = TodoItem(title: "Make dinner", details: "Pasta night")
-    let meal1 = Meal(scalingFactor: 1.0, todoItem: mealTodo1, recipe: recipe1, mealType: .dinner)
+    let recipe1 = Fixtures.curry
+    let mealTodo1 = TodoItem(title: "Make dinner", details: "Pasta night",
+                             owner: Fixtures.defaultUser)
+    let meal1 = Meal(scalingFactor: 1.0, todoItem: mealTodo1, recipe: recipe1, mealType: .dinner,
+                     owner: Fixtures.defaultUser)
 
-    let recipe2 = Recipe(title: "Pasta Primavera", details: "Vegetarian pasta")
-    let mealTodo2 = TodoItem(title: "Make lunch", details: "Light pasta")
-    let meal2 = Meal(scalingFactor: 1.0, todoItem: mealTodo2, recipe: recipe2, mealType: .lunch)
+    let recipe2 = Fixtures.bolognese
+    let mealTodo2 = TodoItem(title: "Make lunch", details: "Light pasta",
+                             owner: Fixtures.defaultUser)
+    let meal2 = Meal(scalingFactor: 1.0, todoItem: mealTodo2, recipe: recipe2, mealType: .lunch,
+                     owner: Fixtures.defaultUser)
 
     let shoppingItem = ShoppingListItem(
         name: "Pasta",
         quantity: 500,
         unit: .gram,
         todoItem: todoItem,
-        meals: [meal1, meal2]
+        meals: [meal1, meal2],
+        owner: Fixtures.defaultUser
     )
 
     return ShoppingItemDetailView(item: shoppingItem)

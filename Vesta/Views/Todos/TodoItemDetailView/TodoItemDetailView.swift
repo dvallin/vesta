@@ -110,7 +110,8 @@ struct TodoItemDetailView: View {
         item: TodoItem(
             title: "Buy groceries",
             details: "Milk, Bread, Eggs, Fresh vegetables, and fruits for the week",
-            dueDate: Date().addingTimeInterval(3600)
+            dueDate: Date().addingTimeInterval(3600),
+            owner: Fixtures.defaultUser
         )
     )
     .modelContainer(for: TodoItem.self)
@@ -124,7 +125,8 @@ struct TodoItemDetailView: View {
                 "Discuss project progress and upcoming milestones with the development team",
             dueDate: Date().addingTimeInterval(24 * 3600),
             recurrenceFrequency: .weekly,
-            recurrenceType: .fixed
+            recurrenceType: .fixed,
+            owner: Fixtures.defaultUser
         )
     )
     .modelContainer(for: TodoItem.self)
@@ -136,7 +138,8 @@ struct TodoItemDetailView: View {
             title: "Send Project Proposal",
             details: "Final review and submission of the Q4 project proposal",
             dueDate: Date().addingTimeInterval(-24 * 3600),
-            isCompleted: true
+            isCompleted: true,
+            owner: Fixtures.defaultUser
         )
     )
     .modelContainer(for: TodoItem.self)
@@ -147,7 +150,8 @@ struct TodoItemDetailView: View {
         item: TodoItem(
             title: "Read Design Patterns Book",
             details: "Study and take notes on the Gang of Four design patterns",
-            dueDate: nil
+            dueDate: nil,
+            owner: Fixtures.defaultUser
         )
     )
     .modelContainer(for: TodoItem.self)

@@ -106,7 +106,8 @@ struct TodoListItem: View {
             item: TodoItem(
                 title: "Buy groceries",
                 details: "Milk, Bread, Eggs",
-                dueDate: Date().addingTimeInterval(3600)
+                dueDate: Date().addingTimeInterval(3600),
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -117,7 +118,8 @@ struct TodoListItem: View {
                 title: "Call John",
                 details: "Discuss project details",
                 dueDate: Date().addingTimeInterval(7200),
-                isCompleted: true
+                isCompleted: true,
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -127,7 +129,8 @@ struct TodoListItem: View {
             item: TodoItem(
                 title: "Read a book",
                 details: "Any book will do",
-                dueDate: nil
+                dueDate: nil,
+                owner: Fixtures.defaultUser
             )
         )
     }
@@ -144,7 +147,8 @@ struct TodoListItem: View {
             item: TodoItem(
                 title: "Buy groceries",
                 details: "Milk, Bread, Eggs",
-                dueDate: Date().addingTimeInterval(3600)
+                dueDate: Date().addingTimeInterval(3600),
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -155,7 +159,8 @@ struct TodoListItem: View {
                 title: "Urgent Meeting",
                 details: "Emergency team sync",
                 dueDate: Date().addingTimeInterval(3600),
-                priority: 1
+                priority: 1,
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -166,7 +171,8 @@ struct TodoListItem: View {
                 title: "Submit Report",
                 details: "Deadline approaching",
                 dueDate: Date().addingTimeInterval(7200),
-                priority: 2
+                priority: 2,
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -177,7 +183,8 @@ struct TodoListItem: View {
                 title: "Review Code",
                 details: "Review pull request",
                 dueDate: Date().addingTimeInterval(24 * 3600),
-                priority: 3
+                priority: 3,
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -188,7 +195,8 @@ struct TodoListItem: View {
                 title: "Read Documentation",
                 details: "Review new features",
                 dueDate: Date().addingTimeInterval(48 * 3600),
-                priority: 4
+                priority: 4,
+                owner: Fixtures.defaultUser
             )
         )
     }
@@ -205,7 +213,8 @@ struct TodoListItem: View {
             item: TodoItem(
                 title: "Buy groceries",
                 details: "Milk, Bread, Eggs",
-                dueDate: Date().addingTimeInterval(3600)
+                dueDate: Date().addingTimeInterval(3600),
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -217,7 +226,8 @@ struct TodoListItem: View {
                 details: "Team sync-up",
                 dueDate: Date().addingTimeInterval(24 * 3600),
                 recurrenceFrequency: .weekly,
-                recurrenceType: .fixed
+                recurrenceType: .fixed,
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -230,7 +240,8 @@ struct TodoListItem: View {
                 dueDate: Date().addingTimeInterval(12 * 3600),
                 recurrenceFrequency: .daily,
                 recurrenceType: .flexible,
-                ignoreTimeComponent: false
+                ignoreTimeComponent: false,
+                owner: Fixtures.defaultUser
             )
         )
     }
@@ -247,7 +258,8 @@ struct TodoListItem: View {
             item: TodoItem(
                 title: "Buy groceries",
                 details: "Milk, Bread, Eggs",
-                dueDate: Date().addingTimeInterval(3600)
+                dueDate: Date().addingTimeInterval(3600),
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -257,7 +269,8 @@ struct TodoListItem: View {
             item: TodoItem(
                 title: "Quarterly Review",
                 details: "Prepare presentation",
-                category: TodoItemCategory(name: "Work")
+                category: TodoItemCategory(name: "Work"),
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -268,7 +281,8 @@ struct TodoListItem: View {
                 title: "Dentist Appointment",
                 details: "Annual checkup",
                 dueDate: Date().addingTimeInterval(48 * 3600),
-                category: TodoItemCategory(name: "Personal")
+                category: TodoItemCategory(name: "Personal"),
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -281,7 +295,8 @@ struct TodoListItem: View {
                 dueDate: Date().addingTimeInterval(24 * 3600),
                 ignoreTimeComponent: false,
                 priority: 2,
-                category: TodoItemCategory(name: "Shopping")
+                category: TodoItemCategory(name: "Shopping"),
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -294,7 +309,8 @@ struct TodoListItem: View {
                 dueDate: Date().addingTimeInterval(12 * 3600),
                 recurrenceFrequency: .daily,
                 recurrenceType: .flexible,
-                category: TodoItemCategory(name: "Health")
+                category: TodoItemCategory(name: "Health"),
+                owner: Fixtures.defaultUser
             )
         )
     }
@@ -312,7 +328,8 @@ struct TodoListItem: View {
                 title: "Submit report",
                 details: "Submit the quarterly report",
                 dueDate: Date().addingTimeInterval(-3600),
-                ignoreTimeComponent: false
+                ignoreTimeComponent: false,
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -323,7 +340,8 @@ struct TodoListItem: View {
                 title: "Pay bills",
                 details: "Pay electricity and water bills",
                 dueDate: Date().addingTimeInterval(-3600 * 24),
-                ignoreTimeComponent: true
+                ignoreTimeComponent: true,
+                owner: Fixtures.defaultUser
             )
         )
 
@@ -334,7 +352,8 @@ struct TodoListItem: View {
                 title: "Morning run",
                 details: "Run 5km",
                 dueDate: Date().addingTimeInterval(3600),
-                ignoreTimeComponent: true
+                ignoreTimeComponent: true,
+                owner: Fixtures.defaultUser
             )
         )
     }

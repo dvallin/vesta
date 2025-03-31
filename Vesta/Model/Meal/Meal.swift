@@ -19,9 +19,13 @@ enum MealType: String, Codable, CaseIterable {
 }
 
 @Model
-class Meal {
+class Meal: SyncableEntity {
     var scalingFactor: Double
     var mealType: MealType
+
+    var owner: User?
+    var lastModified: Date = Date()
+    var dirty: Bool = true
 
     @Relationship(deleteRule: .cascade)
     var todoItem: TodoItem?
@@ -37,23 +41,43 @@ class Meal {
         return todoItem.isCompleted
     }
 
-    init(scalingFactor: Double, todoItem: TodoItem, recipe: Recipe, mealType: MealType = .dinner) {
+    init(
+        scalingFactor: Double, todoItem: TodoItem, recipe: Recipe, mealType: MealType = .dinner,
+        owner: User
+    ) {
         self.scalingFactor = scalingFactor
         self.todoItem = todoItem
         self.recipe = recipe
         self.mealType = mealType
         self.shoppingListItems = []
+        self.owner = owner
+        self.lastModified = Date()
+        self.dirty = true
     }
 
     func updateTodoItemDueDate(for mealType: MealType, on date: Date? = nil) {
         let baseDate = date ?? todoItem?.dueDate ?? Date()
         let (hour, minute) = DateUtils.mealTime(for: mealType)
         if let newDueDate = DateUtils.setTime(hour: hour, minute: minute, for: baseDate) {
-            todoItem?.dueDate = newDueDate
+            todoItem?.setDueDate(dueDate: newDueDate)
         }
+        self.markAsDirty()
     }
 
-    func updateDueDate(_ newDate: Date) {
-        todoItem?.dueDate = DateUtils.preserveTime(from: todoItem?.dueDate, applying: newDate)
+    func setDueDate(_ newDate: Date) {
+        todoItem?.setDueDate(
+            dueDate: DateUtils.preserveTime(from: todoItem?.dueDate, applying: newDate)
+        )
+        self.markAsDirty()
+    }
+
+    func setScalingFactor(_ newScalingFactor: Double) {
+        self.scalingFactor = newScalingFactor
+        self.markAsDirty()
+    }
+
+    func setMealType(_ newMealType: MealType) {
+        self.mealType = newMealType
+        self.markAsDirty()
     }
 }

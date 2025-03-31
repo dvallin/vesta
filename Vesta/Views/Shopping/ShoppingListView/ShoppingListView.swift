@@ -68,15 +68,21 @@ struct ShoppingListView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
 
         let context = container.mainContext
-        let todoItem1 = TodoItem(title: "Grocery Shopping", details: "Weekly groceries")
-        let todoItem2 = TodoItem(title: "Special Items", details: "For dinner party")
+        let todoItem1 = TodoItem(title: "Grocery Shopping", details: "Weekly groceries",
+                                 owner: Fixtures.defaultUser)
+        let todoItem2 = TodoItem(title: "Special Items", details: "For dinner party",
+                                 owner: Fixtures.defaultUser)
 
         let items = [
-            ShoppingListItem(name: "Milk", quantity: 1, unit: .liter, todoItem: todoItem1),
-            ShoppingListItem(name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem1),
-            ShoppingListItem(name: "Eggs", quantity: 12, unit: .piece, todoItem: todoItem1),
+            ShoppingListItem(name: "Milk", quantity: 1, unit: .liter, todoItem: todoItem1,
+                             owner: Fixtures.defaultUser),
+            ShoppingListItem(name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem1,
+                             owner: Fixtures.defaultUser),
+            ShoppingListItem(name: "Eggs", quantity: 12, unit: .piece, todoItem: todoItem1,
+                             owner: Fixtures.defaultUser),
             ShoppingListItem(
-                name: "Wine", quantity: 2, unit: .piece, todoItem: todoItem2),
+                name: "Wine", quantity: 2, unit: .piece, todoItem: todoItem2,
+                owner: Fixtures.defaultUser),
         ]
 
         for item in items {
