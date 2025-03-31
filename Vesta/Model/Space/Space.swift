@@ -13,8 +13,10 @@ final class Space: SyncableEntity {
     var shareAllShoppingItems: Bool = true
 
     var sharedCategories: [TodoItemCategory] = []
-
+    
+    @Relationship(deleteRule: .noAction)
     var owner: User?
+    
     var lastModified: Date = Date()
     var dirty: Bool = true
 

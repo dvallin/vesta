@@ -83,40 +83,46 @@ struct ShoppingListItemRow: View {
 
 #Preview {
     let viewModel = ShoppingListViewModel()
-    let todoItem = TodoItem(
-        title: "Grocery Shopping", details: "Weekly groceries",
-        dueDate: Date().addingTimeInterval(86400), owner: Fixtures.defaultUser)
+    let user = Fixtures.createUser()
+    
+    let todoItem = TodoItem(title: "Grocery Shopping", details: "Weekly groceries",
+                            dueDate: Date().addingTimeInterval(86400), owner: user)
 
     // Create multiple recipes and meals
-    let recipe1 = Fixtures.bolognese
-    let recipe2 = Fixtures.curry
+    let recipe1 = Fixtures.bolognese(owner: user)
+    let recipe2 = Fixtures.curry(owner: user)
 
-    let mealTodo1 = TodoItem(title: "Make dinner", details: "Pasta night", owner: Fixtures.defaultUser)
-    let mealTodo2 = TodoItem(title: "Make lunch", details: "Pasta lunch", owner: Fixtures.defaultUser)
-    let mealTodo3 = TodoItem(title: "Make dinner", details: "Another pasta night", owner: Fixtures.defaultUser)
+    let mealTodo1 = TodoItem(
+        title: "Make dinner", details: "Pasta night", owner: user)
+    let mealTodo2 = TodoItem(
+        title: "Make lunch", details: "Pasta lunch", owner: user)
+    let mealTodo3 = TodoItem(
+        title: "Make dinner", details: "Another pasta night", owner: user)
 
-    let meal1 = Meal(scalingFactor: 1.0, todoItem: mealTodo1, recipe: recipe1, owner: Fixtures.defaultUser)
-    let meal2 = Meal(scalingFactor: 1.0, todoItem: mealTodo2, recipe: recipe2, owner: Fixtures.defaultUser)
-    let meal3 = Meal(scalingFactor: 1.0, todoItem: mealTodo3, recipe: recipe2, owner: Fixtures.defaultUser)
+    let meal1 = Meal(
+        scalingFactor: 1.0, todoItem: mealTodo1, recipe: recipe1, owner: user)
+    let meal2 = Meal(
+        scalingFactor: 1.0, todoItem: mealTodo2, recipe: recipe2, owner: user)
+    let meal3 = Meal(
+        scalingFactor: 1.0, todoItem: mealTodo3, recipe: recipe2, owner: user)
 
     return List {
         // Regular shopping item
         ShoppingListItemRow(
             viewModel: viewModel,
-            item: ShoppingListItem(name: "Milk", quantity: 1, unit: .liter, todoItem: todoItem, owner: Fixtures.defaultUser)
+            item: ShoppingListItem( name: "Milk", quantity: 1, unit: .liter, todoItem: todoItem, owner: user)
         )
 
         // Purchased item
         ShoppingListItemRow(
             viewModel: viewModel,
-            item: ShoppingListItem(
-                name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem, owner: Fixtures.defaultUser)
+            item: ShoppingListItem( name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem,  owner: user)
         )
 
         // Item without quantity/unit
         ShoppingListItemRow(
             viewModel: viewModel,
-            item: ShoppingListItem(name: "Special sauce", todoItem: todoItem, owner: Fixtures.defaultUser)
+            item: ShoppingListItem( name: "Special sauce", todoItem: todoItem, owner: user)
         )
 
         // Item with multiple meal references
@@ -128,7 +134,7 @@ struct ShoppingListItemRow: View {
                 unit: .gram,
                 todoItem: todoItem,
                 meals: [meal1, meal2, meal3],
-                owner: Fixtures.defaultUser
+                owner: user
             )
         )
     }

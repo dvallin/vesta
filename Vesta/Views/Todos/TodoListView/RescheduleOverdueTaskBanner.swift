@@ -55,13 +55,13 @@ struct RescheduleOverdueTaskBanner: View {
                     title: "Overdue Task 1",
                     details: "This task is overdue",
                     dueDate: Calendar.current.date(byAdding: .day, value: -2, to: Date())!,
-                    owner: Fixtures.defaultUser
+                    owner: Fixtures.createUser()
                 ),
                 TodoItem(
                     title: "Future Task",
                     details: "This task is not overdue",
                     dueDate: Date().addingTimeInterval(86400),
-                    owner: Fixtures.defaultUser
+                    owner: Fixtures.createUser()
                 ),
             ]
         )
@@ -78,13 +78,13 @@ struct RescheduleOverdueTaskBanner: View {
                     title: "Overdue Task 1",
                     details: "This task is overdue",
                     dueDate: Calendar.current.date(byAdding: .day, value: -2, to: Date())!,
-                    owner: Fixtures.defaultUser
+                    owner: Fixtures.createUser()
                 ),
                 TodoItem(
                     title: "Overdue Task 2",
                     details: "This task is also overdue",
                     dueDate: Calendar.current.date(byAdding: .day, value: -1, to: Date())!,
-                    owner: Fixtures.defaultUser
+                    owner: Fixtures.createUser()
                 ),
             ]
         )

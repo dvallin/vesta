@@ -47,25 +47,18 @@ struct ShoppingListGeneratorView: View {
         let context = container.mainContext
 
         // Create sample recipes with ingredients
-        let recipe1 = Fixtures.bolognese
-        let recipe2 = Fixtures.curry
+        let user = Fixtures.createUser()
+        let recipe1 = Fixtures.bolognese(owner: user)
+        let recipe2 = Fixtures.curry(owner: user)
 
         // Create todo items for meals
-        let todoItem1 = TodoItem(
-            title: "Make Carbonara", details: "Dinner", dueDate: Date().addingTimeInterval(86400),
-            owner: Fixtures.defaultUser)
-        let todoItem2 = TodoItem(
-            title: "Make Stir Fry", details: "Lunch", dueDate: Date().addingTimeInterval(172800),
-            owner: Fixtures.defaultUser)
+        let todoItem1 = TodoItem(title: "Make Carbonara", details: "Dinner", dueDate: Date().addingTimeInterval(86400), owner: user)
+        let todoItem2 = TodoItem(title: "Make Stir Fry", details: "Lunch", dueDate: Date().addingTimeInterval(172800), owner: user)
 
         // Create meals
         let meals = [
-            Meal(
-                scalingFactor: 1.0, todoItem: todoItem1, recipe: recipe1, mealType: .dinner,
-                owner: Fixtures.defaultUser),
-            Meal(
-                scalingFactor: 1.5, todoItem: todoItem2, recipe: recipe2, mealType: .lunch,
-                owner: Fixtures.defaultUser),
+            Meal(scalingFactor: 1.0, todoItem: todoItem1, recipe: recipe1, mealType: .dinner, owner: user),
+            Meal(scalingFactor: 1.5, todoItem: todoItem2, recipe: recipe2, mealType: .lunch, owner: user),
         ]
 
         // Insert everything into context
@@ -99,7 +92,7 @@ struct ShoppingListGeneratorView: View {
         let recipes = (1...5).map { i in
             let recipe = Recipe(
                 title: "Recipe \(i)", details: "Details for recipe \(i)",
-                owner: Fixtures.defaultUser)
+                owner: Fixtures.createUser())
             recipe.ingredients = (1...4).map { j in
                 Ingredient(
                     name: "Ingredient \(j) for Recipe \(i)",
@@ -118,14 +111,14 @@ struct ShoppingListGeneratorView: View {
                 title: "Cook \(recipe.title)",
                 details: "Meal \(index + 1)",
                 dueDate: Date().addingTimeInterval(Double(86400 * (index + 1))),
-                owner: Fixtures.defaultUser
+                owner: Fixtures.createUser()
             )
             return Meal(
                 scalingFactor: Double(index + 1) * 0.5,
                 todoItem: todoItem,
                 recipe: recipe,
                 mealType: [.breakfast, .lunch, .dinner][index % 3],
-                owner: Fixtures.defaultUser
+                owner: Fixtures.createUser()
             )
         }
 

@@ -86,8 +86,9 @@ struct AddMealView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
-        let bolognese = Fixtures.bolognese
-        let curry = Fixtures.curry
+        let user = Fixtures.createUser()
+        let bolognese = Fixtures.bolognese(owner: user)
+        let curry = Fixtures.curry(owner: user)
 
         for recipe in [bolognese, curry] {
             context.insert(recipe)

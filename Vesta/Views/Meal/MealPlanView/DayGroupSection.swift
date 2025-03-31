@@ -60,6 +60,7 @@ struct DayGroupSectionView: View {
 }
 
 #Preview {
+    let user = Fixtures.createUser()
     List {
         // Preview with multiple meals on a single day
         DayGroupSectionView(
@@ -73,15 +74,15 @@ struct DayGroupSectionView: View {
                             details: "Classic Italian pasta dish",
                             dueDate: Date(),
                             isCompleted: false,
-                            owner: Fixtures.defaultUser
+                            owner: user
                         ),
                         recipe: Recipe(
                             title: "Spaghetti Carbonara",
                             details: "Traditional Roman pasta",
-                            owner: Fixtures.defaultUser
+                            owner: user
                         ),
                         mealType: .dinner,
-                        owner: Fixtures.defaultUser
+                        owner: user
                     ),
                     Meal(
                         scalingFactor: 1.0,
@@ -90,15 +91,15 @@ struct DayGroupSectionView: View {
                             details: "Fluffy breakfast pancakes",
                             dueDate: Date(),
                             isCompleted: true,
-                            owner: Fixtures.defaultUser
+                            owner: user
                         ),
                         recipe: Recipe(
                             title: "Classic Pancakes",
                             details: "American style pancakes",
-                            owner: Fixtures.defaultUser
+                            owner: user
                         ),
                         mealType: .breakfast,
-                        owner: Fixtures.defaultUser
+                        owner: user
                     ),
                     Meal(
                         scalingFactor: 1.0,
@@ -107,15 +108,15 @@ struct DayGroupSectionView: View {
                             details: "Fresh lunch salad",
                             dueDate: Date(),
                             isCompleted: false,
-                            owner: Fixtures.defaultUser
+                            owner: user
                         ),
                         recipe: Recipe(
                             title: "Caesar Salad",
                             details: "Classic Caesar salad",
-                            owner: Fixtures.defaultUser
+                            owner: user
                         ),
                         mealType: .lunch,
-                        owner: Fixtures.defaultUser
+                        owner: user
                     ),
                 ],
                 weekTitle: "This Week"

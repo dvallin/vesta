@@ -22,8 +22,10 @@ enum MealType: String, Codable, CaseIterable {
 class Meal: SyncableEntity {
     var scalingFactor: Double
     var mealType: MealType
-
+    
+    @Relationship(deleteRule: .noAction)
     var owner: User?
+    
     var lastModified: Date = Date()
     var dirty: Bool = true
 

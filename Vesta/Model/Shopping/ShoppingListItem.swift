@@ -7,7 +7,9 @@ class ShoppingListItem: SyncableEntity {
     var quantity: Double?
     var unit: Unit?
 
+    @Relationship(deleteRule: .noAction)
     var owner: User?
+
     var lastModified: Date = Date()
     var dirty: Bool = true
 
@@ -36,12 +38,12 @@ class ShoppingListItem: SyncableEntity {
         self.dirty = true
     }
 
-    func updateQuantity(newQuantity: Double) {
+    func setQuantity(newQuantity: Double) {
         self.quantity = newQuantity
         self.markAsDirty()
     }
 
-    func updateUnit(newUnit: Unit) {
+    func setUnit(newUnit: Unit) {
         self.unit = newUnit
         self.markAsDirty()
     }

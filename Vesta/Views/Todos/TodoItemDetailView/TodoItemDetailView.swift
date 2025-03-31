@@ -111,7 +111,7 @@ struct TodoItemDetailView: View {
             title: "Buy groceries",
             details: "Milk, Bread, Eggs, Fresh vegetables, and fruits for the week",
             dueDate: Date().addingTimeInterval(3600),
-            owner: Fixtures.defaultUser
+            owner: Fixtures.createUser()
         )
     )
     .modelContainer(for: TodoItem.self)
@@ -126,7 +126,7 @@ struct TodoItemDetailView: View {
             dueDate: Date().addingTimeInterval(24 * 3600),
             recurrenceFrequency: .weekly,
             recurrenceType: .fixed,
-            owner: Fixtures.defaultUser
+            owner: Fixtures.createUser()
         )
     )
     .modelContainer(for: TodoItem.self)
@@ -139,7 +139,7 @@ struct TodoItemDetailView: View {
             details: "Final review and submission of the Q4 project proposal",
             dueDate: Date().addingTimeInterval(-24 * 3600),
             isCompleted: true,
-            owner: Fixtures.defaultUser
+            owner: Fixtures.createUser()
         )
     )
     .modelContainer(for: TodoItem.self)
@@ -151,7 +151,7 @@ struct TodoItemDetailView: View {
             title: "Read Design Patterns Book",
             details: "Study and take notes on the Gang of Four design patterns",
             dueDate: nil,
-            owner: Fixtures.defaultUser
+            owner: Fixtures.createUser()
         )
     )
     .modelContainer(for: TodoItem.self)

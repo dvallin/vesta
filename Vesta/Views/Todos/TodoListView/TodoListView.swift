@@ -52,21 +52,21 @@ struct TodoListView: View {
         let todoItems = [
             TodoItem(
                 title: "Z Task", details: "Details", dueDate: nil,
-                owner: Fixtures.defaultUser),
+                owner: Fixtures.createUser()),
             TodoItem(
                 title: "A Task", details: "Details", dueDate: d.addingTimeInterval(3600),
-                owner: Fixtures.defaultUser),
+                owner: Fixtures.createUser()),
             TodoItem(
                 title: "B Task", details: "Details", dueDate: d.addingTimeInterval(3600),
-                owner: Fixtures.defaultUser),
+                owner: Fixtures.createUser()),
             TodoItem(
                 title: "D Task", details: "Details", dueDate: d.addingTimeInterval(3600),
-                priority: 2, owner: Fixtures.defaultUser),
+                priority: 2, owner: Fixtures.createUser()),
             TodoItem(
                 title: "B Task", details: "Details", dueDate: d.addingTimeInterval(-24 * 3600),
-                owner: Fixtures.defaultUser),
+                owner: Fixtures.createUser()),
             TodoItem(
-                title: "C Task", details: "Details", dueDate: nil, owner: Fixtures.defaultUser),
+                title: "C Task", details: "Details", dueDate: nil, owner: Fixtures.createUser()),
         ]
 
         for item in todoItems {

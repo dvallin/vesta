@@ -32,6 +32,8 @@ struct NextMealView: View {
 }
 
 #Preview {
+    let user = Fixtures.createUser()
+    
     List {
         NextMealView(
             meal: Meal(
@@ -40,11 +42,11 @@ struct NextMealView: View {
                     title: "Cook Spaghetti Carbonara",
                     details: "Make dinner",
                     dueDate: Date().addingTimeInterval(3600),
-                    owner: Fixtures.defaultUser
+                    owner: user
                 ),
-                recipe: Fixtures.bolognese,
+                recipe: Fixtures.bolognese(owner: user),
                 mealType: .dinner,
-                owner: Fixtures.defaultUser
+                owner: user
             )
         ) {
             print("Meal selected")

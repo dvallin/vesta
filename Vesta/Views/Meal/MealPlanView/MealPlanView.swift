@@ -95,9 +95,10 @@ struct MealPlanView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
+        let user = Fixtures.createUser()
         let recipes = [
-            Fixtures.bolognese,
-            Fixtures.curry,
+            Fixtures.bolognese(owner: user),
+            Fixtures.curry(owner: user),
         ]
 
         // Insert recipes
@@ -114,19 +115,19 @@ struct MealPlanView: View {
                 title: "Cook Spaghetti",
                 details: "Dinner",
                 dueDate: calendar.date(byAdding: .day, value: 1, to: today),
-                owner: Fixtures.defaultUser
+                owner: user
             ),
             TodoItem(
                 title: "Make Curry",
                 details: "Lunch",
                 dueDate: calendar.date(byAdding: .day, value: 2, to: today),
-                owner: Fixtures.defaultUser
+                owner: user
             ),
             TodoItem(
                 title: "Weekend Pasta",
                 details: "Family dinner",
                 dueDate: calendar.date(byAdding: .day, value: 5, to: today),
-                owner: Fixtures.defaultUser
+                owner: user
             ),
         ]
 
@@ -135,15 +136,9 @@ struct MealPlanView: View {
         }
 
         let meals = [
-            Meal(
-                scalingFactor: 1.0, todoItem: todoItems[0], recipe: recipes[0],
-                owner: Fixtures.defaultUser),
-            Meal(
-                scalingFactor: 2.0, todoItem: todoItems[1], recipe: recipes[1],
-                owner: Fixtures.defaultUser),
-            Meal(
-                scalingFactor: 1.5, todoItem: todoItems[2], recipe: recipes[0],
-                owner: Fixtures.defaultUser),
+            Meal(scalingFactor: 1.0, todoItem: todoItems[0], recipe: recipes[0], owner: user),
+            Meal(scalingFactor: 2.0, todoItem: todoItems[1], recipe: recipes[1], owner: user),
+            Meal(scalingFactor: 1.5, todoItem: todoItems[2], recipe: recipes[0], owner: user),
         ]
 
         for meal in meals {
