@@ -9,6 +9,7 @@ struct VestaApp: App {
         do {
             let container = try ModelContainerHelper.createModelContainer(
                 isStoredInMemoryOnly: false)
+            MigrationManager.migrateToSyncableEntities(in: container.mainContext)
             return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
@@ -40,6 +41,9 @@ struct VestaApp: App {
                 .onAppear {
                     HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
                 }
+            }
+            .onAppear {
+                UserManager.shared.configure(with: sharedModelContainer.mainContext)
             }
         }
         .modelContainer(sharedModelContainer)

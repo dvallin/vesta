@@ -53,9 +53,8 @@ struct RecipeListView: View {
 
         let context = container.mainContext
         let recipes = [
-            Recipe(title: "Spaghetti Bolognese", details: "A classic Italian pasta dish."),
-            Recipe(title: "Chicken Curry", details: "A spicy and flavorful dish."),
-            Recipe(title: "Chocolate Cake", details: "A rich and moist dessert."),
+            Fixtures.bolognese,
+            Fixtures.curry,
         ]
 
         for recipe in recipes {

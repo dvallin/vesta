@@ -52,7 +52,7 @@ enum TodoItemEventType: String, Codable {
 }
 
 @Model
-class TodoItemEvent {
+class TodoItemEvent: SyncableEntity {
     var type: TodoItemEventType
     var date: Date
 
@@ -67,12 +67,16 @@ class TodoItemEvent {
     var previousPriority: Int?
     var previousCategory: String?
 
+    var owner: User?
+    var lastModified: Date = Date()
+    var dirty: Bool = true
+
     @Relationship(inverse: \TodoItem.events)
     var todoItem: TodoItem?
 
     init(
-        type: TodoItemEventType, date: Date, todoItem: TodoItem, previousTitle: String? = nil,
-        previousDetails: String? = nil, previousDueDate: Date? = nil,
+        type: TodoItemEventType, date: Date, owner: User, todoItem: TodoItem,
+        previousTitle: String? = nil, previousDetails: String? = nil, previousDueDate: Date? = nil,
         previousIsCompleted: Bool? = nil, previousRecurrenceFrequency: RecurrenceFrequency? = nil,
         previousRecurrenceType: RecurrenceType? = nil, previousRecurrenceInterval: Int? = nil,
         previousIgnoreTimeComponent: Bool? = nil, previousPriority: Int? = nil,
@@ -80,6 +84,7 @@ class TodoItemEvent {
     ) {
         self.type = type
         self.date = date
+        self.owner = owner
         self.todoItem = todoItem
 
         self.previousTitle = previousTitle
