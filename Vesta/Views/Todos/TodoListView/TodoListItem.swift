@@ -28,12 +28,12 @@ struct TodoListItem: View {
                     HStack(alignment: .bottom) {
                         if let dueDate = item.dueDate {
                             if item.recurrenceFrequency != nil {
-                                Image(
-                                    systemName: item.recurrenceType == .fixed
-                                        ? "repeat"
-                                        : "repeat"
-                                )
-                                .foregroundColor(.secondary)
+                                Image(systemName: "repeat")
+                                    .foregroundColor(.secondary)
+                                if item.recurrenceType == .fixed {
+                                    Image(systemName: "lock")
+                                        .foregroundColor(.secondary)
+                                }
                             }
                             Text(
                                 dueDate,
