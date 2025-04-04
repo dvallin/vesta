@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4400DFB02DA058470034E862 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4400DFAF2DA058470034E862 /* GoogleService-Info.plist */; };
 		44A3BB682D8D583200389973 /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = 44A3BB672D8D583200389973 /* ViewInspector */; };
 		44C873522D9A8530005F58E2 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 44C873512D9A8530005F58E2 /* FirebaseAuth */; };
 		44C873542D9A8530005F58E2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 44C873532D9A8530005F58E2 /* FirebaseCore */; };
@@ -31,6 +32,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4400DFAF2DA058470034E862 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		44D6020B2D5C90EC0036F174 /* Vesta.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vesta.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		44D6021D2D5C90ED0036F174 /* VestaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VestaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		44D602272D5C90ED0036F174 /* VestaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VestaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -90,6 +92,7 @@
 				44D602202D5C90ED0036F174 /* VestaTests */,
 				44D6022A2D5C90ED0036F174 /* VestaUITests */,
 				44D6020C2D5C90EC0036F174 /* Products */,
+				4400DFAF2DA058470034E862 /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -237,6 +240,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4400DFB02DA058470034E862 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

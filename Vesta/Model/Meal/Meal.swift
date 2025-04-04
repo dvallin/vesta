@@ -22,14 +22,14 @@ enum MealType: String, Codable, CaseIterable {
 class Meal: SyncableEntity {
     var scalingFactor: Double
     var mealType: MealType
-    
+
     @Relationship(deleteRule: .noAction)
     var owner: User?
-    
+
     var lastModified: Date = Date()
     var dirty: Bool = true
 
-    @Relationship(deleteRule: .cascade)
+    @Relationship(deleteRule: .cascade, inverse: \TodoItem.meal)
     var todoItem: TodoItem?
 
     @Relationship(inverse: \Recipe.meals)
@@ -37,6 +37,9 @@ class Meal: SyncableEntity {
 
     @Relationship(inverse: \ShoppingListItem.meals)
     var shoppingListItems: [ShoppingListItem]
+
+    @Relationship
+    var spaces: [Space]
 
     var isDone: Bool {
         guard let todoItem = todoItem else { return true }
@@ -55,6 +58,7 @@ class Meal: SyncableEntity {
         self.owner = owner
         self.lastModified = Date()
         self.dirty = true
+        self.spaces = []
     }
 
     func updateTodoItemDueDate(for mealType: MealType, on date: Date? = nil) {

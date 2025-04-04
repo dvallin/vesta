@@ -86,7 +86,8 @@ final class ModelIntegrityTests: XCTestCase {
         let recipe = Recipe(title: "Test Recipe", details: "Test Details", owner: user)
         let todoItem = TodoItem(title: "Test Todo", details: "Test Details", owner: user)
         let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe, owner: user)
-        _ = ShoppingListItem(name: "Test Item", todoItem: todoItem, meals: [meal], owner: user)
+        let item = ShoppingListItem(name: "Test Item", todoItem: todoItem, owner: user)
+        item.meals = [meal]
 
         context.insert(recipe)
         context.insert(todoItem)

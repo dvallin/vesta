@@ -7,22 +7,31 @@ class UserManager: ObservableObject {
     static let shared = UserManager()
 
     @Published private(set) var currentUser: User?
+    @Published private(set) var isAuthenticating = false
+
     private var cancellables = Set<AnyCancellable>()
     private var modelContext: ModelContext?
+    private var authStateHandler: AuthStateDidChangeListenerHandle?
 
-    private init() {
-        // Listen for Firebase auth state changes
-        // Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
-        //     self?.handleAuthStateChange(firebaseUser: firebaseUser)
-        // }
-    }
+    private init() {}
 
     func configure(with modelContext: ModelContext) {
         self.modelContext = modelContext
-        // Check if there's already a user signed in
-        // if let firebaseUser = Auth.auth().currentUser {
-        //     handleAuthStateChange(firebaseUser: firebaseUser)
-        // }
+
+        // Listen for Firebase auth state changes
+        authStateHandler = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
+            self?.handleAuthStateChange(firebaseUser: firebaseUser)
+        }
+    }
+
+    deinit {
+        if let handler = authStateHandler {
+            Auth.auth().removeStateDidChangeListener(handler)
+        }
+    }
+
+    var isAuthenticated: Bool {
+        return currentUser != nil
     }
 
     private func handleAuthStateChange(firebaseUser: FirebaseAuth.User?) {
@@ -63,6 +72,152 @@ class UserManager: ObservableObject {
         } catch {
             print("Error fetching user: \(error)")
             return nil
+        }
+    }
+
+    // MARK: - Authentication Methods
+
+    func signIn(email: String, password: String) -> Future<User, Error> {
+        return Future { [weak self] promise in
+            guard let self = self else {
+                promise(
+                    .failure(
+                        NSError(
+                            domain: "UserManager", code: 0,
+                            userInfo: [NSLocalizedDescriptionKey: "UserManager instance is nil"])))
+                return
+            }
+
+            self.isAuthenticating = true
+
+            Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
+                self.isAuthenticating = false
+
+                if let error = error {
+                    promise(.failure(error))
+                    return
+                }
+
+                guard let firebaseUser = authResult?.user else {
+                    promise(
+                        .failure(
+                            NSError(
+                                domain: "UserManager", code: 1,
+                                userInfo: [
+                                    NSLocalizedDescriptionKey: "User not found after authentication"
+                                ])))
+                    return
+                }
+
+                // Directly handle the auth change to ensure the user is set
+                Task { @MainActor in
+                    self.handleAuthStateChange(firebaseUser: firebaseUser)
+
+                    // Short delay to ensure database operations complete
+                    try? await Task.sleep(nanoseconds: 500_000_000)  // 0.5 seconds
+
+                    guard let user = self.currentUser else {
+                        promise(
+                            .failure(
+                                NSError(
+                                    domain: "UserManager", code: 1,
+                                    userInfo: [
+                                        NSLocalizedDescriptionKey:
+                                            "User not found after authentication"
+                                    ])))
+                        return
+                    }
+
+                    promise(.success(user))
+                }
+            }
+        }
+    }
+
+    func signUp(email: String, password: String, displayName: String) -> Future<User, Error> {
+        return Future { [weak self] promise in
+            guard let self = self else {
+                promise(
+                    .failure(
+                        NSError(
+                            domain: "UserManager", code: 0,
+                            userInfo: [NSLocalizedDescriptionKey: "UserManager instance is nil"])))
+                return
+            }
+
+            print("Starting sign up process for email: \(email)")
+            self.isAuthenticating = true
+
+            Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+                if let error = error {
+                    print("ERROR during Firebase createUser: \(error.localizedDescription)")
+                    if let errorCode = AuthErrorCode(rawValue: (error as NSError).code) {
+                        print("Firebase Auth Error Code: \(errorCode)")
+                    }
+                    self.isAuthenticating = false
+                    promise(.failure(error))
+                    return
+                }
+
+                guard let firebaseUser = authResult?.user else {
+                    print("ERROR: authResult?.user is nil after successful createUser")
+                    self.isAuthenticating = false
+                    promise(
+                        .failure(
+                            NSError(
+                                domain: "UserManager", code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "User not created"])))
+                    return
+                }
+
+                print(
+                    "User created successfully in Firebase, updating profile with displayName: \(displayName)"
+                )
+
+                // Update display name
+                let changeRequest = firebaseUser.createProfileChangeRequest()
+                changeRequest.displayName = displayName
+
+                changeRequest.commitChanges { error in
+                    self.isAuthenticating = false
+                    // Refresh the user to get updated profile
+                    do {
+                        try await firebaseUser.reload()
+
+                        // Now handle the updated user
+                        self.handleAuthStateChange(firebaseUser: Auth.auth().currentUser)
+
+                        // Short delay to ensure database operations complete
+                        try await Task.sleep(nanoseconds: 500_000_000)  // 0.5 seconds
+
+                        guard let user = self.currentUser else {
+                            promise(
+                                .failure(
+                                    NSError(
+                                        domain: "UserManager", code: 2,
+                                        userInfo: [
+                                            NSLocalizedDescriptionKey:
+                                                "User not found after creation"
+                                        ])))
+                            return
+                        }
+                        promise(.success(user))
+                    } catch {
+                        promise(.failure(error))
+                    }
+                }
+            }
+        }
+    }
+
+    func signOut() -> Future<Void, Error> {
+        return Future { promise in
+            do {
+                try Auth.auth().signOut()
+                promise(.success(()))
+            } catch {
+                promise(.failure(error))
+            }
         }
     }
 

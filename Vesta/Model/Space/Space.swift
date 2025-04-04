@@ -6,6 +6,7 @@ final class Space: SyncableEntity {
     var id: UUID = UUID()
     var name: String
 
+    @Relationship(deleteRule: .noAction, inverse: \User.spaces)
     var members: [User] = []
 
     var shareAllRecipes: Bool = true
@@ -13,10 +14,10 @@ final class Space: SyncableEntity {
     var shareAllShoppingItems: Bool = true
 
     var sharedCategories: [TodoItemCategory] = []
-    
+
     @Relationship(deleteRule: .noAction)
     var owner: User?
-    
+
     var lastModified: Date = Date()
     var dirty: Bool = true
 

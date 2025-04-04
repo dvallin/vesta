@@ -178,7 +178,7 @@ struct ShoppingItemDetailView: View {
         let quantityDouble = numberFormatter.number(from: quantity)?.doubleValue
 
         item.setQuantity(newQuantity: quantityDouble)
-        item.setUnit(newQuantity: selectedUnit)
+        item.setUnit(newUnit: selectedUnit)
 
         do {
             try modelContext.save()
@@ -208,9 +208,10 @@ struct ShoppingItemDetailView: View {
         quantity: 500,
         unit: .gram,
         todoItem: todoItem,
-        meals: [meal1, meal2],
         owner: user
     )
+    shoppingItem.meals.append(meal1)
+    shoppingItem.meals.append(meal2)
 
     return ShoppingItemDetailView(item: shoppingItem)
 }
