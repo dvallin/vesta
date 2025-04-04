@@ -32,6 +32,8 @@ struct NextMealView: View {
 }
 
 #Preview {
+    let user = Fixtures.createUser()
+    
     List {
         NextMealView(
             meal: Meal(
@@ -39,18 +41,12 @@ struct NextMealView: View {
                 todoItem: TodoItem(
                     title: "Cook Spaghetti Carbonara",
                     details: "Make dinner",
-                    dueDate: Date().addingTimeInterval(3600)
+                    dueDate: Date().addingTimeInterval(3600),
+                    owner: user
                 ),
-                recipe: Recipe(
-                    title: "Spaghetti Carbonara",
-                    details: "Classic Italian pasta dish",
-                    ingredients: [
-                        Ingredient(name: "Spaghetti", order: 1, quantity: 500, unit: .gram),
-                        Ingredient(name: "Eggs", order: 2, quantity: 4, unit: .piece),
-                        Ingredient(name: "Pecorino Romano", order: 3, quantity: 100, unit: .gram),
-                    ]
-                ),
-                mealType: .dinner
+                recipe: Fixtures.bolognese(owner: user),
+                mealType: .dinner,
+                owner: user
             )
         ) {
             print("Meal selected")

@@ -54,7 +54,7 @@ class AddMealViewModel: ObservableObject {
 
             let meal = Meal(
                 scalingFactor: scalingFactor, todoItem: todoItem, recipe: recipe,
-                mealType: selectedMealType
+                mealType: selectedMealType, owner: todoItem.owner!
             )
             meal.updateTodoItemDueDate(for: selectedMealType, on: selectedDate)
 
@@ -75,6 +75,7 @@ class AddMealViewModel: ObservableObject {
 
     @MainActor
     func cancel() {
+        modelContext?.rollback()
         dismiss!()
     }
 }

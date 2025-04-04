@@ -177,8 +177,8 @@ struct ShoppingItemDetailView: View {
         numberFormatter.numberStyle = .decimal
         let quantityDouble = numberFormatter.number(from: quantity)?.doubleValue
 
-        item.quantity = quantityDouble
-        item.unit = selectedUnit
+        item.setQuantity(newQuantity: quantityDouble)
+        item.setUnit(newUnit: selectedUnit)
 
         do {
             try modelContext.save()
@@ -187,24 +187,31 @@ struct ShoppingItemDetailView: View {
 }
 
 #Preview {
-    let todoItem = TodoItem(title: "Grocery Shopping", details: "Weekly groceries", dueDate: Date())
+    let user = Fixtures.createUser()
+
+    let todoItem = TodoItem(
+        title: "Grocery Shopping", details: "Weekly groceries", dueDate: Date(), owner: user)
 
     // Create multiple meals
-    let recipe1 = Recipe(title: "Pasta Carbonara", details: "Classic Italian dish")
-    let mealTodo1 = TodoItem(title: "Make dinner", details: "Pasta night")
-    let meal1 = Meal(scalingFactor: 1.0, todoItem: mealTodo1, recipe: recipe1, mealType: .dinner)
+    let recipe1 = Fixtures.curry(owner: user)
+    let mealTodo1 = TodoItem(title: "Make dinner", details: "Pasta night", owner: user)
+    let meal1 = Meal(
+        scalingFactor: 1.0, todoItem: mealTodo1, recipe: recipe1, mealType: .dinner, owner: user)
 
-    let recipe2 = Recipe(title: "Pasta Primavera", details: "Vegetarian pasta")
-    let mealTodo2 = TodoItem(title: "Make lunch", details: "Light pasta")
-    let meal2 = Meal(scalingFactor: 1.0, todoItem: mealTodo2, recipe: recipe2, mealType: .lunch)
+    let recipe2 = Fixtures.bolognese(owner: user)
+    let mealTodo2 = TodoItem(title: "Make lunch", details: "Light pasta", owner: user)
+    let meal2 = Meal(
+        scalingFactor: 1.0, todoItem: mealTodo2, recipe: recipe2, mealType: .lunch, owner: user)
 
     let shoppingItem = ShoppingListItem(
         name: "Pasta",
         quantity: 500,
         unit: .gram,
         todoItem: todoItem,
-        meals: [meal1, meal2]
+        owner: user
     )
+    shoppingItem.meals.append(meal1)
+    shoppingItem.meals.append(meal2)
 
     return ShoppingItemDetailView(item: shoppingItem)
 }

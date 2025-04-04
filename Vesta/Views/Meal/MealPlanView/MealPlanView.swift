@@ -95,25 +95,10 @@ struct MealPlanView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
+        let user = Fixtures.createUser()
         let recipes = [
-            Recipe(
-                title: "Spaghetti Bolognese",
-                details: "Classic Italian pasta dish",
-                ingredients: [
-                    Ingredient(name: "Ground beef", order: 1, quantity: 500, unit: .gram),
-                    Ingredient(name: "Spaghetti", order: 2, quantity: 400, unit: .gram),
-                    Ingredient(name: "Tomato sauce", order: 3, quantity: 2, unit: .cup),
-                ]
-            ),
-            Recipe(
-                title: "Chicken Curry",
-                details: "Spicy Indian curry",
-                ingredients: [
-                    Ingredient(name: "Chicken", order: 1, quantity: 1, unit: .kilogram),
-                    Ingredient(name: "Curry powder", order: 2, quantity: 2, unit: .tablespoon),
-                    Ingredient(name: "Coconut milk", order: 3, quantity: 400, unit: .milliliter),
-                ]
-            ),
+            Fixtures.bolognese(owner: user),
+            Fixtures.curry(owner: user),
         ]
 
         // Insert recipes
@@ -129,17 +114,20 @@ struct MealPlanView: View {
             TodoItem(
                 title: "Cook Spaghetti",
                 details: "Dinner",
-                dueDate: calendar.date(byAdding: .day, value: 1, to: today)
+                dueDate: calendar.date(byAdding: .day, value: 1, to: today),
+                owner: user
             ),
             TodoItem(
                 title: "Make Curry",
                 details: "Lunch",
-                dueDate: calendar.date(byAdding: .day, value: 2, to: today)
+                dueDate: calendar.date(byAdding: .day, value: 2, to: today),
+                owner: user
             ),
             TodoItem(
                 title: "Weekend Pasta",
                 details: "Family dinner",
-                dueDate: calendar.date(byAdding: .day, value: 5, to: today)
+                dueDate: calendar.date(byAdding: .day, value: 5, to: today),
+                owner: user
             ),
         ]
 
@@ -148,9 +136,9 @@ struct MealPlanView: View {
         }
 
         let meals = [
-            Meal(scalingFactor: 1.0, todoItem: todoItems[0], recipe: recipes[0]),
-            Meal(scalingFactor: 2.0, todoItem: todoItems[1], recipe: recipes[1]),
-            Meal(scalingFactor: 1.5, todoItem: todoItems[2], recipe: recipes[0]),
+            Meal(scalingFactor: 1.0, todoItem: todoItems[0], recipe: recipes[0], owner: user),
+            Meal(scalingFactor: 2.0, todoItem: todoItems[1], recipe: recipes[1], owner: user),
+            Meal(scalingFactor: 1.5, todoItem: todoItems[2], recipe: recipes[0], owner: user),
         ]
 
         for meal in meals {
