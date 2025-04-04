@@ -7,6 +7,8 @@ protocol SyncableEntity: AnyObject {
     var dirty: Bool { get set }
 
     func markAsDirty()
+
+    func toDTO() -> [String: Any]
 }
 
 extension SyncableEntity {
