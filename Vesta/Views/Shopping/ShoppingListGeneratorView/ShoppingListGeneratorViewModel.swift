@@ -74,9 +74,10 @@ class ShoppingListGeneratorViewModel: ObservableObject {
                 quantity: selection.quantity,
                 unit: selection.unit,
                 todoItem: todoItem,
-                meals: selection.meals,
                 owner: todoItem.owner!
             )
+            shoppingListItem.meals = selection.meals
+            
             modelContext.insert(shoppingListItem)
         }
         do {

@@ -12,14 +12,17 @@ class Recipe: SyncableEntity {
     var lastModified: Date = Date()
     var dirty: Bool = true
 
-    @Relationship(deleteRule: .cascade)
+    @Relationship(deleteRule: .cascade, inverse: \Ingredient.recipe)
     var ingredients: [Ingredient]
 
-    @Relationship(deleteRule: .cascade)
+    @Relationship(deleteRule: .cascade, inverse: \RecipeStep.recipe)
     var steps: [RecipeStep]
 
     @Relationship(deleteRule: .cascade)
     var meals: [Meal]
+
+    @Relationship
+    var spaces: [Space]
 
     init(
         title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = [],
@@ -27,12 +30,20 @@ class Recipe: SyncableEntity {
     ) {
         self.title = title
         self.details = details
-        self.ingredients = ingredients
-        self.steps = steps
+        self.ingredients = []
+        self.steps = []
         self.meals = []
         self.owner = owner
         self.lastModified = Date()
         self.dirty = true
+        self.spaces = []
+
+        for ingredient in ingredients {
+            ingredient.recipe = self
+        }
+        for step in steps {
+            step.recipe = self
+        }
     }
 
     var sortedIngredients: [Ingredient] {
@@ -134,7 +145,7 @@ class Ingredient {
     var quantity: Double?
     var unit: Unit?
 
-    @Relationship(inverse: \Recipe.ingredients)
+    @Relationship
     var recipe: Recipe?
 
     init(name: String, order: Int, quantity: Double?, unit: Unit?, recipe: Recipe? = nil) {
@@ -153,7 +164,7 @@ class RecipeStep {
     var type: StepType
     var duration: TimeInterval?
 
-    @Relationship(inverse: \Recipe.steps)
+    @Relationship
     var recipe: Recipe?
 
     init(

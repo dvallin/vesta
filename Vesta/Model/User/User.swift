@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-class User {
+class User: SyncableEntity {
     var uid: String
     var email: String?
     var displayName: String?
@@ -11,6 +11,10 @@ class User {
     var createdAt: Date
     var lastSignInAt: Date
 
+    @Relationship
+    var spaces: [Space]
+
+    var owner: User? = nil
     var dirty: Bool = false
     var lastModified: Date = Date()
 
@@ -26,5 +30,6 @@ class User {
         self.isEmailVerified = isEmailVerified
         self.createdAt = createdAt
         self.lastSignInAt = lastSignInAt
+        self.spaces = []
     }
 }

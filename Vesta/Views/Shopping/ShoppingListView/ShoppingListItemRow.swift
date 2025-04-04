@@ -105,7 +105,16 @@ struct ShoppingListItemRow: View {
         scalingFactor: 1.0, todoItem: mealTodo2, recipe: recipe2, owner: user)
     let meal3 = Meal(
         scalingFactor: 1.0, todoItem: mealTodo3, recipe: recipe2, owner: user)
-
+    
+    let itemWithMeals = ShoppingListItem(
+        name: "Pasta",
+        quantity: 500,
+        unit: .gram,
+        todoItem: todoItem,
+        owner: user
+    )
+    itemWithMeals.meals = [meal1, meal2, meal3]
+    
     return List {
         // Regular shopping item
         ShoppingListItemRow(
@@ -128,14 +137,7 @@ struct ShoppingListItemRow: View {
         // Item with multiple meal references
         ShoppingListItemRow(
             viewModel: viewModel,
-            item: ShoppingListItem(
-                name: "Pasta",
-                quantity: 500,
-                unit: .gram,
-                todoItem: todoItem,
-                meals: [meal1, meal2, meal3],
-                owner: user
-            )
+            item: itemWithMeals
         )
     }
     .listStyle(.plain)

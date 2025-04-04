@@ -43,24 +43,27 @@ class TodoItem: SyncableEntity {
     var recurrenceInterval: Int?
     var ignoreTimeComponent: Bool
     var priority: Int
-    
+
     var lastModified: Date = Date()
     var dirty: Bool = true
-    
+
     @Relationship(deleteRule: .noAction)
     var owner: User?
-    
-    @Relationship(deleteRule: .cascade)
+
+    @Relationship(deleteRule: .cascade, inverse: \TodoItemEvent.todoItem)
     var events: [TodoItemEvent]
 
-    @Relationship(inverse: \Meal.todoItem)
+    @Relationship
     var meal: Meal?
 
-    @Relationship(inverse: \ShoppingListItem.todoItem)
+    @Relationship
     var shoppingListItem: ShoppingListItem?
 
-    @Relationship()
+    @Relationship
     var category: TodoItemCategory?
+
+    @Relationship
+    var spaces: [Space]
 
     init(
         title: String,
@@ -92,6 +95,7 @@ class TodoItem: SyncableEntity {
         self.events = events
         self.category = category
         self.owner = owner
+        self.spaces = []
     }
 
     static func create(
