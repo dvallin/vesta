@@ -4,58 +4,15 @@ import SwiftUI
 struct TodoListView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
-    @Query(
-        sort: [
-            SortDescriptor(\TodoItem.priority, order: .forward),
-            SortDescriptor(\TodoItem.dueDate, order: .forward),
-            SortDescriptor(\TodoItem.title, order: .forward),
-        ]) var todoItems: [TodoItem]
 
     @StateObject var viewModel = TodoListViewModel()
 
     var body: some View {
         NavigationView {
-            VStack {
-                QuickFilterView(viewModel: viewModel)
-                    .padding(.vertical, 8)
-
-                RescheduleOverdueTaskBanner(viewModel: viewModel, todoItems: todoItems)
-
-                ZStack {
-                    TodoList(
-                        viewModel: viewModel,
-                        todoItems: todoItems
-                    )
-
-                    FloatingAddButton {
-                        viewModel.isPresentingAddTodoItemView = true
-                        HapticFeedbackManager.shared.generateImpactFeedback(style: .light)
-                    }
-                }
-            }
-            .navigationTitle(viewModel.displayTitle)
-            #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    TextField(
-                        NSLocalizedString("Search", comment: "Search text field placeholder"),
-                        text: $viewModel.searchText
-                    )
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .frame(maxWidth: 200)
-                }
-                #if os(iOS)
-                    ToolbarItem(placement: .automatic) {
-                        Button(action: {
-                            viewModel.isPresentingTodoEventsView = true
-                            HapticFeedbackManager.shared.generateSelectionFeedback()
-                        }) {
-                            Image(systemName: "clock.arrow.circlepath")
-                        }
-                    }
-                #endif
+            if viewModel.filterMode == .completed {
+                CompletedTodoListView(viewModel: viewModel)
+            } else {
+                ActiveTodoListView(viewModel: viewModel)
             }
         }
         .sheet(item: $viewModel.selectedTodoItem) { item in
