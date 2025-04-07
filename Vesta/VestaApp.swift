@@ -1,3 +1,6 @@
+import FirebaseAuth
+import FirebaseCore
+import FirebaseFirestore
 import SwiftData
 import SwiftUI
 
@@ -5,43 +8,33 @@ import SwiftUI
 struct VestaApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
-    var sharedModelContainer: ModelContainer = {
+    let sharedModelContainer: ModelContainer
+    let userManager: UserManager
+    let syncService: SyncService
+
+    init() {
+        FirebaseApp.configure()
+
         do {
-            let container = try ModelContainerHelper.createModelContainer(
+            self.sharedModelContainer = try ModelContainerHelper.createModelContainer(
                 isStoredInMemoryOnly: false)
-            return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
-    }()
 
-    init() {
+        let modelContext = sharedModelContainer.mainContext
+        userManager = UserManager(modelContext: modelContext)
+        syncService = SyncService(userManager: userManager, modelContext: modelContext)
+
         NotificationManager.shared.requestAuthorization()
     }
 
     var body: some Scene {
         WindowGroup {
-            TabView {
-                TodayView().tabItem {
-                    Label("Today", systemImage: "list.bullet")
-                }
-                .onAppear {
-                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
-                }
-                MealsView().tabItem {
-                    Label("Meals", systemImage: "fork.knife")
-                }
-                .onAppear {
-                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
-                }
-                ShoppingView().tabItem {
-                    Label("Shopping", systemImage: "cart")
-                }
-                .onAppear {
-                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
-                }
-            }
+            VestaMainPage()
         }
         .modelContainer(sharedModelContainer)
+        .environmentObject(userManager)
+        .environmentObject(syncService)
     }
 }

@@ -2,16 +2,27 @@ import Foundation
 import SwiftData
 
 @Model
-class ShoppingListItem {
+class ShoppingListItem: SyncableEntity {
+    @Attribute(.unique) var uid: String?
+
     var name: String
     var quantity: Double?
     var unit: Unit?
 
-    @Relationship(deleteRule: .cascade)
+    @Relationship(deleteRule: .noAction)
+    var owner: User?
+
+    var lastModified: Date = Date()
+    var dirty: Bool = true
+
+    @Relationship(deleteRule: .cascade, inverse: \TodoItem.shoppingListItem)
     var todoItem: TodoItem?
 
     @Relationship(deleteRule: .nullify)
     var meals: [Meal]
+
+    @Relationship
+    var spaces: [Space]
 
     var isPurchased: Bool {
         guard let todoItem = todoItem else { return true }
@@ -20,20 +31,27 @@ class ShoppingListItem {
 
     init(
         name: String, quantity: Double? = nil, unit: Unit? = nil,
-        todoItem: TodoItem, meals: [Meal] = []
+        todoItem: TodoItem?, owner: User
     ) {
+        self.uid = UUID().uuidString
         self.name = name
         self.quantity = quantity
         self.unit = unit
         self.todoItem = todoItem
-        self.meals = meals
+        self.meals = []
+        self.owner = owner
+        self.lastModified = Date()
+        self.dirty = true
+        self.spaces = []
     }
 
-    func updateQuantity(newQuantity: Double) {
+    func setQuantity(newQuantity: Double?) {
         self.quantity = newQuantity
+        self.markAsDirty()
     }
 
-    func updateUnit(newUnit: Unit) {
+    func setUnit(newUnit: Unit?) {
         self.unit = newUnit
+        self.markAsDirty()
     }
 }

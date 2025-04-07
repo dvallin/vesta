@@ -2,25 +2,51 @@ import Foundation
 import SwiftData
 
 @Model
-class Recipe {
+class Recipe: SyncableEntity {
+    @Attribute(.unique) var uid: String?
+
     var title: String
     var details: String
 
-    @Relationship(deleteRule: .cascade)
+    @Relationship(deleteRule: .noAction)
+    var owner: User?
+
+    var lastModified: Date = Date()
+    var dirty: Bool = true
+
+    @Relationship(deleteRule: .cascade, inverse: \Ingredient.recipe)
     var ingredients: [Ingredient]
 
-    @Relationship(deleteRule: .cascade)
+    @Relationship(deleteRule: .cascade, inverse: \RecipeStep.recipe)
     var steps: [RecipeStep]
 
     @Relationship(deleteRule: .cascade)
     var meals: [Meal]
 
-    init(title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = []) {
+    @Relationship
+    var spaces: [Space]
+
+    init(
+        title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = [],
+        owner: User
+    ) {
+        self.uid = UUID().uuidString
         self.title = title
         self.details = details
-        self.ingredients = ingredients
-        self.steps = steps
+        self.ingredients = []
+        self.steps = []
         self.meals = []
+        self.owner = owner
+        self.lastModified = Date()
+        self.dirty = true
+        self.spaces = []
+
+        for ingredient in ingredients {
+            ingredient.recipe = self
+        }
+        for step in steps {
+            step.recipe = self
+        }
     }
 
     var sortedIngredients: [Ingredient] {
@@ -46,6 +72,73 @@ class Recipe {
     var totalDuration: TimeInterval {
         preparationDuration + cookingDuration + maturingDuration
     }
+
+    // Mutation methods
+
+    func addIngredient(name: String, quantity: Double?, unit: Unit?) {
+        let newIngredient = Ingredient(
+            name: name, order: ingredients.count + 1, quantity: quantity, unit: unit, recipe: self)
+        ingredients.append(newIngredient)
+        markAsDirty()
+    }
+
+    func removeIngredient(_ ingredient: Ingredient) {
+        if let index = ingredients.firstIndex(where: { $0 === ingredient }) {
+            ingredients.remove(at: index)
+            markAsDirty()
+        }
+    }
+
+    func moveIngredient(from source: IndexSet, to destination: Int) {
+        var sortedIngredients = self.sortedIngredients
+
+        sortedIngredients.move(fromOffsets: source, toOffset: destination)
+        for (index, ingredient) in sortedIngredients.enumerated() {
+            ingredient.order = index + 1
+        }
+        ingredients = sortedIngredients
+        markAsDirty()
+    }
+
+    func addStep(instruction: String, type: StepType, duration: TimeInterval?) {
+        let newStep = RecipeStep(
+            order: steps.count + 1,
+            instruction: instruction,
+            type: type,
+            duration: duration,
+            recipe: self
+        )
+        steps.append(newStep)
+        markAsDirty()
+    }
+
+    func removeStep(_ step: RecipeStep) {
+        if let index = steps.firstIndex(where: { $0 === step }) {
+            steps.remove(at: index)
+            markAsDirty()
+        }
+    }
+
+    func moveStep(from source: IndexSet, to destination: Int) {
+        var sortedSteps = self.sortedSteps
+
+        sortedSteps.move(fromOffsets: source, toOffset: destination)
+        for (index, step) in sortedSteps.enumerated() {
+            step.order = index + 1
+        }
+        steps = sortedSteps
+        markAsDirty()
+    }
+
+    func setTitle(_ newTitle: String) {
+        title = newTitle
+        markAsDirty()
+    }
+
+    func setDetails(_ newDetails: String) {
+        details = newDetails
+        markAsDirty()
+    }
 }
 
 @Model
@@ -55,7 +148,7 @@ class Ingredient {
     var quantity: Double?
     var unit: Unit?
 
-    @Relationship(inverse: \Recipe.ingredients)
+    @Relationship
     var recipe: Recipe?
 
     init(name: String, order: Int, quantity: Double?, unit: Unit?, recipe: Recipe? = nil) {
@@ -74,7 +167,7 @@ class RecipeStep {
     var type: StepType
     var duration: TimeInterval?
 
-    @Relationship(inverse: \Recipe.steps)
+    @Relationship
     var recipe: Recipe?
 
     init(

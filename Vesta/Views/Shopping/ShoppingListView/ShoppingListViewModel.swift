@@ -3,6 +3,7 @@ import SwiftUI
 
 class ShoppingListViewModel: ObservableObject {
     private var modelContext: ModelContext?
+    private var userManager: UserManager?
 
     @Published var toastMessages: [ToastMessage] = []
 
@@ -18,8 +19,9 @@ class ShoppingListViewModel: ObservableObject {
         self.showPurchased = showPurchased
     }
 
-    func configureContext(_ context: ModelContext) {
+    func configureContext(_ context: ModelContext, _ userManager: UserManager) {
         self.modelContext = context
+        self.userManager = userManager
     }
 
     func saveContext() -> Bool {
@@ -34,7 +36,8 @@ class ShoppingListViewModel: ObservableObject {
     func togglePurchased(
         _ item: ShoppingListItem, undoAction: @escaping (ShoppingListItem, UUID) -> Void
     ) {
-        item.todoItem?.markAsDone()
+        guard let currentUser = userManager?.currentUser else { return }
+        item.todoItem?.markAsDone(currentUser: currentUser)
 
         if saveContext() {
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
