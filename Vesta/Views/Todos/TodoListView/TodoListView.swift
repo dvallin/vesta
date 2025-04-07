@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct TodoListView: View {
+    @EnvironmentObject private var userManager: UserManager
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
 
@@ -31,7 +32,7 @@ struct TodoListView: View {
         }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
-            viewModel.configureContext(modelContext)
+            viewModel.configureContext(modelContext, userManager)
             viewModel.reset()
         }
         .onChange(of: scenePhase) { newPhase, _ in

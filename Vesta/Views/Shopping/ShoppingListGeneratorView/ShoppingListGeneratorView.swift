@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct ShoppingListGeneratorView: View {
+    @EnvironmentObject private var userManager: UserManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -29,13 +30,14 @@ struct ShoppingListGeneratorView: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button(NSLocalizedString("Generate", comment: "Generate button")) {
-                        viewModel.generateShoppingList(modelContext: modelContext)
+                        viewModel.generateShoppingList()
                         dismiss()
                     }
                 }
             }
         }
         .onAppear {
+            viewModel.configureContext(modelContext, userManager)
             viewModel.prepareMealsForShoppingList(meals)
         }
     }

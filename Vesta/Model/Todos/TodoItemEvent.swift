@@ -53,6 +53,8 @@ enum TodoItemEventType: String, Codable {
 
 @Model
 class TodoItemEvent: SyncableEntity {
+    @Attribute(.unique) var uid: String?
+
     var type: TodoItemEventType
     var date: Date
 
@@ -87,6 +89,7 @@ class TodoItemEvent: SyncableEntity {
         previousIgnoreTimeComponent: Bool? = nil, previousPriority: Int? = nil,
         previousCategory: String? = nil
     ) {
+        self.uid = UUID().uuidString
         self.type = type
         self.date = date
         self.owner = owner

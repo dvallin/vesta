@@ -4,6 +4,7 @@ import SwiftUI
 class AddMealViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
+    private var userManager: UserManager?
     private var categoryService: TodoItemCategoryService?
 
     @Published var selectedRecipe: Recipe?
@@ -18,14 +19,16 @@ class AddMealViewModel: ObservableObject {
         self.selectedDate = selectedDate
     }
 
-    func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction) {
+    func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction, _ userManager: UserManager) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
+        self.userManager = userManager
         self.dismiss = dismiss
     }
 
     @MainActor
     func save() {
+        guard let currentUser = userManager?.currentUser else { return }
         guard let recipe = selectedRecipe else {
             validationMessage = NSLocalizedString(
                 "Please select a recipe", comment: "Recipe selection validation message")
@@ -49,14 +52,15 @@ class AddMealViewModel: ObservableObject {
                 details: recipe.details,
                 dueDate: selectedDate,
                 ignoreTimeComponent: false,
-                category: mealCategory
+                category: mealCategory,
+                owner: currentUser
             )
 
             let meal = Meal(
                 scalingFactor: scalingFactor, todoItem: todoItem, recipe: recipe,
-                mealType: selectedMealType, owner: todoItem.owner!
+                mealType: selectedMealType, owner: currentUser
             )
-            meal.updateTodoItemDueDate(for: selectedMealType, on: selectedDate)
+            meal.updateTodoItemDueDate(for: selectedMealType, on: selectedDate, currentUser: currentUser)
 
             modelContext!.insert(todoItem)
             modelContext!.insert(meal)

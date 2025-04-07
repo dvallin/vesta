@@ -6,9 +6,9 @@ extension TodoItem {
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
             "entityType": "TodoItem",
-            "id": id,
-            "lastModified": lastModified.timeIntervalSince1970,
-            "ownerId": owner?.id ?? "",
+            "uid": uid,
+            "lastModified": lastModified,
+            "ownerId": owner?.uid ?? "",
 
             "title": title,
             "details": details,
@@ -19,7 +19,7 @@ extension TodoItem {
 
         // Add optional properties
         if let dueDate = dueDate {
-            dto["dueDate"] = dueDate.timeIntervalSince1970
+            dto["dueDate"] = dueDate
         }
 
         if let recurrenceFrequency = recurrenceFrequency {
@@ -39,11 +39,11 @@ extension TodoItem {
             dto["categoryName"] = categoryName
         }
 
-        if let mealId = meal?.id {
+        if let mealId = meal?.uid {
             dto["mealId"] = mealId
         }
 
-        if let shoppingListItemId = shoppingListItem?.id {
+        if let shoppingListItemId = shoppingListItem?.uid {
             dto["shoppingListItemId"] = shoppingListItemId
         }
 

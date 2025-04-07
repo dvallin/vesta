@@ -3,6 +3,8 @@ import SwiftData
 
 @Model
 class ShoppingListItem: SyncableEntity {
+    @Attribute(.unique) var uid: String?
+
     var name: String
     var quantity: Double?
     var unit: Unit?
@@ -31,6 +33,7 @@ class ShoppingListItem: SyncableEntity {
         name: String, quantity: Double? = nil, unit: Unit? = nil,
         todoItem: TodoItem?, owner: User
     ) {
+        self.uid = UUID().uuidString
         self.name = name
         self.quantity = quantity
         self.unit = unit

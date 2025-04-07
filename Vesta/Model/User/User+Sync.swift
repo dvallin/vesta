@@ -6,13 +6,12 @@ extension User {
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
             "entityType": "User",
-            "id": id,
-            "lastModified": lastModified.timeIntervalSince1970,
-
             "uid": uid,
+            "lastModified": lastModified,
+
             "isEmailVerified": isEmailVerified,
-            "createdAt": createdAt.timeIntervalSince1970,
-            "lastSignInAt": lastSignInAt.timeIntervalSince1970,
+            "createdAt": createdAt,
+            "lastSignInAt": lastSignInAt,
         ]
 
         // Add optional properties

@@ -10,10 +10,10 @@ enum SyncError: Error {
 }
 
 /// Service responsible for synchronizing entities marked as dirty to the backend
-class SyncService {
-    static let shared = SyncService()
+class SyncService: ObservableObject {
+    private var modelContext: ModelContext
+    private var userManager: UserManager
 
-    private var modelContext: ModelContext?
     private var cancellables = Set<AnyCancellable>()
     private var syncTimer: Timer?
     private var isSyncing = false
@@ -23,12 +23,13 @@ class SyncService {
     // API client would be injected here
     private let apiClient: APIClient
 
-    private init(apiClient: APIClient = FirebaseAPIClient.shared) {
+    public init(
+        apiClient: APIClient = FirebaseAPIClient(), userManager: UserManager,
+        modelContext: ModelContext
+    ) {
         self.apiClient = apiClient
-    }
-
-    func configure(with context: ModelContext) {
-        self.modelContext = context
+        self.modelContext = modelContext
+        self.userManager = userManager
     }
 
     /// Start periodic sync operations
@@ -78,13 +79,8 @@ class SyncService {
             return
         }
 
-        guard let context = modelContext else {
-            completion?(.failure(.unknown))
-            return
-        }
-
         // Check if user is authenticated
-        guard UserManager.shared.isAuthenticated else {
+        guard userManager.currentUser != nil else {
             completion?(.failure(.notAuthenticated))
             return
         }
@@ -92,13 +88,13 @@ class SyncService {
         isSyncing = true
 
         // Synchronize all entity types
-        syncEntities(of: TodoItem.self, in: context)
-            .flatMap { _ in self.syncEntities(of: TodoItemEvent.self, in: context) }
-            .flatMap { _ in self.syncEntities(of: TodoItem.self, in: context) }
-            .flatMap { _ in self.syncEntities(of: Recipe.self, in: context) }
-            .flatMap { _ in self.syncEntities(of: Meal.self, in: context) }
-            .flatMap { _ in self.syncEntities(of: ShoppingListItem.self, in: context) }
-            .flatMap { _ in self.syncEntities(of: Space.self, in: context) }
+        syncEntities(of: TodoItem.self)
+            .flatMap { _ in self.syncEntities(of: TodoItemEvent.self) }
+            .flatMap { _ in self.syncEntities(of: TodoItem.self) }
+            .flatMap { _ in self.syncEntities(of: Recipe.self) }
+            .flatMap { _ in self.syncEntities(of: Meal.self) }
+            .flatMap { _ in self.syncEntities(of: ShoppingListItem.self) }
+            .flatMap { _ in self.syncEntities(of: Space.self) }
             .sink(
                 receiveCompletion: { [weak self] completionState in
                     self?.isSyncing = false
@@ -113,9 +109,9 @@ class SyncService {
             .store(in: &cancellables)
     }
 
-    private func syncEntities<T: PersistentModel & SyncableEntity>(
-        of type: T.Type, in context: ModelContext
-    ) -> Future<Void, SyncError> {
+    private func syncEntities<T: PersistentModel & SyncableEntity>(of type: T.Type) -> Future<
+        Void, SyncError
+    > {
         return Future { [weak self] promise in
             guard let self = self else {
                 promise(.failure(.unknown))
@@ -126,7 +122,7 @@ class SyncService {
             let descriptor = FetchDescriptor<T>(predicate: #Predicate<T> { $0.dirty == true })
 
             do {
-                let dirtyEntities = try context.fetch(descriptor)
+                let dirtyEntities = try modelContext.fetch(descriptor)
 
                 guard !dirtyEntities.isEmpty else {
                     // No dirty entities to sync
@@ -151,7 +147,7 @@ class SyncService {
                         guard let self = self else {
                             return Fail(error: SyncError.unknown).eraseToAnyPublisher()
                         }
-                        return self.syncBatch(batch, context: context)
+                        return self.syncBatch(batch)
                     }.eraseToAnyPublisher()
                 }
 
@@ -176,7 +172,7 @@ class SyncService {
     }
 
     private func syncBatch<T: PersistentModel & SyncableEntity>(
-        _ entities: [T], context: ModelContext
+        _ entities: [T]
     ) -> AnyPublisher<Void, SyncError> {
         return Future { [weak self] promise in
             guard let self = self else {
@@ -185,12 +181,12 @@ class SyncService {
             }
 
             // Convert entities to DTOs for API
-            let dtos = entities.map { self.convertToDTO($0) }
+            let dtos = entities.map { $0.toDTO() }
 
             // Call appropriate API endpoint based on entity type
             let entityName = String(describing: T.self).lowercased()
 
-            self.apiClient.syncEntities(entityName: entityName, dtos: dtos)
+            self.apiClient.syncEntities(dtos: dtos)
                 .sink(
                     receiveCompletion: { completion in
                         switch completion {
@@ -202,7 +198,7 @@ class SyncService {
 
                             // Save context
                             do {
-                                try context.save()
+                                try self.modelContext.save()
                                 promise(.success(()))
                             } catch {
                                 print("Error saving context after sync: \(error)")
@@ -218,32 +214,8 @@ class SyncService {
                 .store(in: &self.cancellables)
         }.eraseToAnyPublisher()
     }
-
-    // Convert entity to a DTO (Data Transfer Object) for API
-    private func convertToDTO<T: SyncableEntity>(_ entity: T) -> [String: Any] {
-        if let meal = entity as? Meal {
-            return meal.toDTO()
-        } else if let shoppingItem = entity as? ShoppingListItem {
-            return shoppingItem.toDTO()
-        } else if let recipe = entity as? Recipe {
-            return recipe.toDTO()
-        } else if let space = entity as? Space {
-            return space.toDTO()
-        } else if let todoItem = entity as? TodoItem {
-            return todoItem.toDTO()
-        } else if let todoItemEvent = entity as? TodoItemEvent {
-            return todoItemEvent.toDTO()
-        } else if let user = entity as? User {
-            return user.toDTO()
-        }
-
-        return [
-            "lastModified": entity.lastModified.timeIntervalSince1970,
-            "ownerId": entity.owner?.id ?? "",
-        ]
-    }
 }
 
 protocol APIClient {
-    func syncEntities(entityName: String, dtos: [[String: Any]]) -> AnyPublisher<Void, Error>
+    func syncEntities(dtos: [[String: Any]]) -> AnyPublisher<Void, Error>
 }

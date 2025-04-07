@@ -34,6 +34,8 @@ enum RecurrenceType: String, Codable, CaseIterable {
 
 @Model
 class TodoItem: SyncableEntity {
+    @Attribute(.unique) var uid: String?
+
     var title: String
     var details: String
     var dueDate: Date?
@@ -81,6 +83,7 @@ class TodoItem: SyncableEntity {
         category: TodoItemCategory? = nil,
         owner: User
     ) {
+        self.uid = UUID().uuidString
         self.title = title
         self.details = details
         self.dueDate = dueDate
@@ -109,15 +112,15 @@ class TodoItem: SyncableEntity {
         events: [TodoItemEvent] = [],
         meal: Meal? = nil,
         shoppingListItem: ShoppingListItem? = nil,
-        category: TodoItemCategory? = nil
+        category: TodoItemCategory? = nil,
+        owner: User
     ) -> TodoItem {
-        let currentUser = UserManager.shared.getCurrentUser()
         let item = TodoItem(
             title: title, details: details, dueDate: dueDate,
             recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType,
             recurrenceInterval: recurrenceInterval, ignoreTimeComponent: ignoreTimeComponent,
-            priority: priority, category: category, owner: currentUser)
-        _ = item.createEvent(type: TodoItemEventType.created)
+            priority: priority, category: category, owner: owner)
+        _ = item.createEvent(type: TodoItemEventType.created, currentUser: owner)
         return item
     }
 
@@ -144,9 +147,10 @@ class TodoItem: SyncableEntity {
         return self.isOverdue && !self.isToday
     }
 
-    func markAsDone() {
+    func markAsDone(currentUser: User) {
         let event = createEvent(
-            type: .markAsDone, previousDueDate: dueDate, previousIsCompleted: isCompleted)
+            type: .markAsDone, previousDueDate: dueDate, previousIsCompleted: isCompleted,
+            currentUser: currentUser)
 
         if let frequency = recurrenceFrequency {
             let baseDate = recurrenceType == .fixed ? (dueDate ?? event.date) : event.date
@@ -160,28 +164,31 @@ class TodoItem: SyncableEntity {
         self.markAsDirty()
     }
 
-    func setDetails(details: String) {
-        let _ = createEvent(type: .editDetails, previousDetails: self.details)
+    func setDetails(details: String, currentUser: User) {
+        let _ = createEvent(
+            type: .editDetails, previousDetails: self.details, currentUser: currentUser)
         self.details = details
         self.markAsDirty()
     }
 
-    func setTitle(title: String) {
-        let _ = createEvent(type: .editTitle, previousTitle: self.title)
+    func setTitle(title: String, currentUser: User) {
+        let _ = createEvent(type: .editTitle, previousTitle: self.title, currentUser: currentUser)
         self.title = title
         self.markAsDirty()
     }
 
-    func setDueDate(dueDate: Date?) {
-        let _ = createEvent(type: .editDueDate, previousDueDate: self.dueDate)
+    func setDueDate(dueDate: Date?, currentUser: User) {
+        let _ = createEvent(
+            type: .editDueDate, previousDueDate: self.dueDate, currentUser: currentUser)
         self.dueDate = dueDate
 
         NotificationManager.shared.scheduleNotification(for: self)
         self.markAsDirty()
     }
 
-    func setIsCompleted(isCompleted: Bool) {
-        let _ = createEvent(type: .editIsCompleted, previousIsCompleted: self.isCompleted)
+    func setIsCompleted(isCompleted: Bool, currentUser: User) {
+        let _ = createEvent(
+            type: .editIsCompleted, previousIsCompleted: self.isCompleted, currentUser: currentUser)
         self.isCompleted = isCompleted
 
         NotificationManager.shared.scheduleNotification(for: self)
@@ -189,30 +196,35 @@ class TodoItem: SyncableEntity {
     }
 
     func setRecurrenceFrequency(
-        recurrenceFrequency: RecurrenceFrequency?
+        recurrenceFrequency: RecurrenceFrequency?, currentUser: User
     ) {
         let _ = createEvent(
-            type: .editRecurrenceFrequency, previousRecurrenceFrequency: self.recurrenceFrequency)
+            type: .editRecurrenceFrequency, previousRecurrenceFrequency: self.recurrenceFrequency,
+            currentUser: currentUser)
         self.recurrenceFrequency = recurrenceFrequency
         self.markAsDirty()
     }
 
-    func setRecurrenceInterval(recurrenceInterval: Int?) {
+    func setRecurrenceInterval(recurrenceInterval: Int?, currentUser: User) {
         let _ = createEvent(
-            type: .editRecurrenceInterval, previousRecurrenceInterval: self.recurrenceInterval)
+            type: .editRecurrenceInterval, previousRecurrenceInterval: self.recurrenceInterval,
+            currentUser: currentUser)
         self.recurrenceInterval = recurrenceInterval
         self.markAsDirty()
     }
 
-    func setRecurrenceType(recurrenceType: RecurrenceType?) {
-        let _ = createEvent(type: .editRecurrenceType, previousRecurrenceType: self.recurrenceType)
+    func setRecurrenceType(recurrenceType: RecurrenceType?, currentUser: User) {
+        let _ = createEvent(
+            type: .editRecurrenceType, previousRecurrenceType: self.recurrenceType,
+            currentUser: currentUser)
         self.recurrenceType = recurrenceType
         self.markAsDirty()
     }
 
-    func setIgnoreTimeComponent(ignoreTimeComponent: Bool) {
+    func setIgnoreTimeComponent(ignoreTimeComponent: Bool, currentUser: User) {
         let _ = createEvent(
-            type: .editIgnoreTimeComponent, previousIgnoreTimeComponent: self.ignoreTimeComponent)
+            type: .editIgnoreTimeComponent, previousIgnoreTimeComponent: self.ignoreTimeComponent,
+            currentUser: currentUser)
         self.ignoreTimeComponent = ignoreTimeComponent
 
         if ignoreTimeComponent, let dueDate = self.dueDate {
@@ -224,14 +236,16 @@ class TodoItem: SyncableEntity {
         self.markAsDirty()
     }
 
-    func setPriority(priority: Int) {
-        let _ = createEvent(type: .editPriority, previousPriority: self.priority)
+    func setPriority(priority: Int, currentUser: User) {
+        let _ = createEvent(
+            type: .editPriority, previousPriority: self.priority, currentUser: currentUser)
         self.priority = priority
         self.markAsDirty()
     }
 
-    func setCategory(category: TodoItemCategory?) {
-        let _ = createEvent(type: .editCategory, previousCategory: self.category?.name)
+    func setCategory(category: TodoItemCategory?, currentUser: User) {
+        let _ = createEvent(
+            type: .editCategory, previousCategory: self.category?.name, currentUser: currentUser)
         self.category = category
         self.markAsDirty()
     }
@@ -307,9 +321,9 @@ class TodoItem: SyncableEntity {
         previousRecurrenceInterval: Int? = nil,
         previousIgnoreTimeComponent: Bool? = nil,
         previousPriority: Int? = nil,
-        previousCategory: String? = nil
+        previousCategory: String? = nil,
+        currentUser: User
     ) -> TodoItemEvent {
-        let currentUser = UserManager.shared.getCurrentUser()
         let event = TodoItemEvent(
             type: type,
             date: Date(),

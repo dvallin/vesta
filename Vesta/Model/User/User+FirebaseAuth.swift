@@ -1,7 +1,7 @@
 import FirebaseAuth
 
 extension User {
-    
+
     convenience init(firebaseUser: FirebaseAuth.User) {
         self.init(
             uid: firebaseUser.uid,

@@ -30,9 +30,9 @@
             filePath = "Vesta/MigrationManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "9"
-            endingLineNumber = "9"
-            landmarkName = "migrateToSyncableEntities(in:)"
+            startingLineNumber = "8"
+            endingLineNumber = "8"
+            landmarkName = "migrateToSyncableEntities(in:userManager:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

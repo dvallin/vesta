@@ -3,6 +3,8 @@ import SwiftData
 
 @Model
 class Recipe: SyncableEntity {
+    @Attribute(.unique) var uid: String?
+
     var title: String
     var details: String
 
@@ -28,6 +30,7 @@ class Recipe: SyncableEntity {
         title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = [],
         owner: User
     ) {
+        self.uid = UUID().uuidString
         self.title = title
         self.details = details
         self.ingredients = []

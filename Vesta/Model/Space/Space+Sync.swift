@@ -6,9 +6,9 @@ extension Space {
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
             "entityType": "Space",
-            "id": id,
-            "lastModified": lastModified.timeIntervalSince1970,
-            "ownerId": owner?.id ?? "",
+            "uid": uid,
+            "lastModified": lastModified,
+            "ownerId": owner?.uid ?? "",
 
             "name": name,
             "shareAllRecipes": shareAllRecipes,
@@ -17,7 +17,7 @@ extension Space {
         ]
 
         // Include member references
-        dto["memberIds"] = members.compactMap { $0.id }
+        dto["memberIds"] = members.compactMap { $0.uid }
 
         // Include shared category references
         dto["sharedCategoryNames"] = sharedCategories.compactMap { $0.name }

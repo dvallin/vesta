@@ -3,10 +3,9 @@ import SwiftUI
 
 struct MigrationManager {
 
-    static func migrateToSyncableEntities(in context: ModelContext) {
+    static func migrateToSyncableEntities(in context: ModelContext, userManager: UserManager) {
         // Get the dummy user for offline development
-        UserManager.shared.configure(with: context)
-        let dummyUser = UserManager.shared.getCurrentUser()
+        guard let dummyUser = userManager.currentUser else { return }
 
         // Assign owners to all entities that implement SyncableEntity
         migrateTodoItemEvents(in: context, defaultOwner: dummyUser)
@@ -29,6 +28,9 @@ struct MigrationManager {
         do {
             let items = try context.fetch(descriptor)
             for item in items {
+                if item.uid == nil {
+                    item.uid = UUID().uuidString
+                }
                 if item.owner == nil {
                     item.owner = defaultOwner
                     item.lastModified = Date()
@@ -45,6 +47,9 @@ struct MigrationManager {
         do {
             let items = try context.fetch(descriptor)
             for item in items {
+                if item.uid == nil {
+                    item.uid = UUID().uuidString
+                }
                 if item.owner == nil {
                     item.owner = defaultOwner
                     item.lastModified = Date()
@@ -61,6 +66,9 @@ struct MigrationManager {
         do {
             let recipes = try context.fetch(descriptor)
             for recipe in recipes {
+                if recipe.uid == nil {
+                    recipe.uid = UUID().uuidString
+                }
                 if recipe.owner == nil {
                     recipe.owner = defaultOwner
                     recipe.lastModified = Date()
@@ -77,6 +85,9 @@ struct MigrationManager {
         do {
             let meals = try context.fetch(descriptor)
             for meal in meals {
+                if meal.uid == nil {
+                    meal.uid = UUID().uuidString
+                }
                 if meal.owner == nil {
                     meal.owner = defaultOwner
                     meal.lastModified = Date()
@@ -93,6 +104,9 @@ struct MigrationManager {
         do {
             let items = try context.fetch(descriptor)
             for item in items {
+                if item.uid == nil {
+                    item.uid = UUID().uuidString
+                }
                 if item.owner == nil {
                     item.owner = defaultOwner
                     item.lastModified = Date()
@@ -109,6 +123,9 @@ struct MigrationManager {
         do {
             let spaces = try context.fetch(descriptor)
             for space in spaces {
+                if space.uid == nil {
+                    space.uid = UUID().uuidString
+                }
                 if space.owner == nil {
                     space.owner = defaultOwner
                     space.lastModified = Date()

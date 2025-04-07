@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct MealDetailView: View {
+    @EnvironmentObject private var userManager: UserManager
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: MealDetailViewModel
 
@@ -64,7 +65,8 @@ struct MealDetailView: View {
                     selection: Binding(
                         get: { viewModel.meal.todoItem?.dueDate ?? Date() },
                         set: { newValue in
-                            viewModel.meal.setDueDate(newValue)
+                            guard let currentUser = userManager.currentUser else { return }
+                            viewModel.meal.setDueDate(newValue, currentUser: currentUser)
                         }
                     ),
                     displayedComponents: .date
@@ -83,7 +85,7 @@ struct MealDetailView: View {
             #endif
         }
         .onAppear {
-            viewModel.configureEnvironment(modelContext)
+            viewModel.configureEnvironment(modelContext, userManager)
         }
     }
 }
