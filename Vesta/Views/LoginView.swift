@@ -2,7 +2,8 @@ import Combine
 import SwiftUI
 
 struct LoginView: View {
-    @ObservedObject private var userManager = UserManager.shared
+    @EnvironmentObject var userManager: UserManager
+
     @State private var email = ""
     @State private var password = ""
     @State private var displayName = ""

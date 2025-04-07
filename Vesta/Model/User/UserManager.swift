@@ -1,10 +1,15 @@
 import Combine
 import FirebaseAuth
 import Foundation
+import OSLog
 import SwiftData
 
 class UserManager: ObservableObject {
-    static let shared = UserManager()
+    // MARK: - Logging
+    private let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "com.vesta",
+        category: "UserManager"
+    )
 
     @Published private(set) var currentUser: User?
     @Published private(set) var isAuthenticating = false
@@ -13,64 +18,80 @@ class UserManager: ObservableObject {
     private var modelContext: ModelContext?
     private var authStateHandler: AuthStateDidChangeListenerHandle?
 
-    private init() {}
-
-    func configure(with modelContext: ModelContext) {
+    public init(modelContext: ModelContext) {
         self.modelContext = modelContext
+        logger.info("UserManager configured with ModelContext")
 
         // Listen for Firebase auth state changes
         authStateHandler = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
             self?.handleAuthStateChange(firebaseUser: firebaseUser)
         }
+        logger.debug("Firebase auth state listener registered")
     }
 
     deinit {
         if let handler = authStateHandler {
             Auth.auth().removeStateDidChangeListener(handler)
+            logger.debug("Firebase auth state listener removed")
         }
-    }
-
-    var isAuthenticated: Bool {
-        return currentUser != nil
     }
 
     private func handleAuthStateChange(firebaseUser: FirebaseAuth.User?) {
         guard let modelContext = modelContext else {
-            print("Model context not configured in UserManager")
+            logger.error("Model context not configured in UserManager")
             return
         }
 
         Task { @MainActor in
             if let firebaseUser = firebaseUser {
                 // User signed in
+                logger.info("Auth state changed: user signed in with UID: \(firebaseUser.uid)")
+
                 if let existingUser = fetchUserByUID(firebaseUser.uid) {
                     // Update existing user
+                    logger.debug("Updating existing user with UID: \(firebaseUser.uid)")
                     existingUser.update(from: firebaseUser)
                     self.currentUser = existingUser
                 } else {
                     // Create new user
+                    logger.debug("Creating new user with UID: \(firebaseUser.uid)")
                     let newUser = User(firebaseUser: firebaseUser)
-                    modelContext.insert(newUser)
                     self.currentUser = newUser
+                    modelContext.insert(newUser)
                 }
 
-                try? modelContext.save()
+                do {
+                    try modelContext.save()
+                    logger.debug("User data saved successfully")
+                } catch {
+                    logger.error("Failed to save user data: \(error.localizedDescription)")
+                }
             } else {
                 // User signed out
+                logger.info("Auth state changed: user signed out")
                 self.currentUser = nil
             }
         }
     }
 
     private func fetchUserByUID(_ uid: String) -> User? {
-        guard let modelContext = modelContext else { return nil }
+        guard let modelContext = modelContext else {
+            logger.error("Model context not configured when fetching user by UID")
+            return nil
+        }
 
         let descriptor = FetchDescriptor<User>(predicate: #Predicate { $0.uid == uid })
         do {
             let users = try modelContext.fetch(descriptor)
-            return users.first
+            if let user = users.first {
+                logger.debug("Found existing user with UID: \(uid)")
+                return user
+            } else {
+                logger.debug("No user found with UID: \(uid)")
+                return nil
+            }
         } catch {
-            print("Error fetching user: \(error)")
+            logger.error("Error fetching user: \(error.localizedDescription)")
             return nil
         }
     }
@@ -80,56 +101,52 @@ class UserManager: ObservableObject {
     func signIn(email: String, password: String) -> Future<User, Error> {
         return Future { [weak self] promise in
             guard let self = self else {
-                promise(
-                    .failure(
-                        NSError(
-                            domain: "UserManager", code: 0,
-                            userInfo: [NSLocalizedDescriptionKey: "UserManager instance is nil"])))
+                let error = NSError(
+                    domain: "UserManager", code: 0,
+                    userInfo: [NSLocalizedDescriptionKey: "UserManager instance is nil"])
+                self?.logger.error("Sign in failed: UserManager instance is nil")
+                promise(.failure(error))
                 return
             }
 
+            self.logger.info("Attempting sign in for email: \(email)")
             self.isAuthenticating = true
 
             Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
                 self.isAuthenticating = false
 
                 if let error = error {
+                    self.logger.error("Sign in failed: \(error.localizedDescription)")
                     promise(.failure(error))
                     return
                 }
 
                 guard let firebaseUser = authResult?.user else {
-                    promise(
-                        .failure(
-                            NSError(
-                                domain: "UserManager", code: 1,
-                                userInfo: [
-                                    NSLocalizedDescriptionKey: "User not found after authentication"
-                                ])))
+                    let error = NSError(
+                        domain: "UserManager", code: 1,
+                        userInfo: [NSLocalizedDescriptionKey: "User not found after authentication"]
+                    )
+                    self.logger.error("Sign in succeeded but user is nil")
+                    promise(.failure(error))
                     return
                 }
 
+                self.logger.info("Sign in successful for user: \(firebaseUser.uid)")
+
                 // Directly handle the auth change to ensure the user is set
-                Task { @MainActor in
-                    self.handleAuthStateChange(firebaseUser: firebaseUser)
-
-                    // Short delay to ensure database operations complete
-                    try? await Task.sleep(nanoseconds: 500_000_000)  // 0.5 seconds
-
-                    guard let user = self.currentUser else {
-                        promise(
-                            .failure(
-                                NSError(
-                                    domain: "UserManager", code: 1,
-                                    userInfo: [
-                                        NSLocalizedDescriptionKey:
-                                            "User not found after authentication"
-                                    ])))
-                        return
-                    }
-
-                    promise(.success(user))
+                guard let user = self.currentUser else {
+                    let error = NSError(
+                        domain: "UserManager", code: 1,
+                        userInfo: [
+                            NSLocalizedDescriptionKey: "User not found after authentication"
+                        ])
+                    self.logger.error("User not set in currentUser after successful sign in")
+                    promise(.failure(error))
+                    return
                 }
+
+                self.logger.debug("Sign in process completed successfully")
+                promise(.success(user))
             }
         }
     }
@@ -137,22 +154,22 @@ class UserManager: ObservableObject {
     func signUp(email: String, password: String, displayName: String) -> Future<User, Error> {
         return Future { [weak self] promise in
             guard let self = self else {
-                promise(
-                    .failure(
-                        NSError(
-                            domain: "UserManager", code: 0,
-                            userInfo: [NSLocalizedDescriptionKey: "UserManager instance is nil"])))
+                let error = NSError(
+                    domain: "UserManager", code: 0,
+                    userInfo: [NSLocalizedDescriptionKey: "UserManager instance is nil"])
+                self?.logger.error("Sign up failed: UserManager instance is nil")
+                promise(.failure(error))
                 return
             }
 
-            print("Starting sign up process for email: \(email)")
+            self.logger.info("Starting sign up process for email: \(email)")
             self.isAuthenticating = true
 
             Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
                 if let error = error {
-                    print("ERROR during Firebase createUser: \(error.localizedDescription)")
+                    self.logger.error("Firebase createUser failed: \(error.localizedDescription)")
                     if let errorCode = AuthErrorCode(rawValue: (error as NSError).code) {
-                        print("Firebase Auth Error Code: \(errorCode)")
+                        self.logger.error("Firebase Auth Error Code: \(errorCode.rawValue)")
                     }
                     self.isAuthenticating = false
                     promise(.failure(error))
@@ -160,50 +177,61 @@ class UserManager: ObservableObject {
                 }
 
                 guard let firebaseUser = authResult?.user else {
-                    print("ERROR: authResult?.user is nil after successful createUser")
+                    self.logger.error("authResult?.user is nil after successful createUser")
                     self.isAuthenticating = false
-                    promise(
-                        .failure(
-                            NSError(
-                                domain: "UserManager", code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "User not created"])))
+                    let error = NSError(
+                        domain: "UserManager", code: 1,
+                        userInfo: [NSLocalizedDescriptionKey: "User not created"])
+                    promise(.failure(error))
                     return
                 }
 
-                print(
-                    "User created successfully in Firebase, updating profile with displayName: \(displayName)"
-                )
+                self.logger.info(
+                    "User created successfully in Firebase with UID: \(firebaseUser.uid)")
+                self.logger.debug("Updating profile with displayName: \(displayName)")
 
                 // Update display name
                 let changeRequest = firebaseUser.createProfileChangeRequest()
                 changeRequest.displayName = displayName
 
                 changeRequest.commitChanges { error in
-                    self.isAuthenticating = false
+                    if let error = error {
+                        self.logger.error("Failed to update profile: \(error.localizedDescription)")
+                        self.isAuthenticating = false
+                        promise(.failure(error))
+                        return
+                    }
+
+                    self.logger.debug("Profile updated successfully, reloading user")
+
                     // Refresh the user to get updated profile
-                    do {
-                        try await firebaseUser.reload()
-
-                        // Now handle the updated user
-                        self.handleAuthStateChange(firebaseUser: Auth.auth().currentUser)
-
-                        // Short delay to ensure database operations complete
-                        try await Task.sleep(nanoseconds: 500_000_000)  // 0.5 seconds
-
-                        guard let user = self.currentUser else {
-                            promise(
-                                .failure(
-                                    NSError(
-                                        domain: "UserManager", code: 2,
-                                        userInfo: [
-                                            NSLocalizedDescriptionKey:
-                                                "User not found after creation"
-                                        ])))
+                    firebaseUser.reload { error in
+                        if let error = error {
+                            self.logger.error(
+                                "Failed to reload user: \(error.localizedDescription)")
+                            self.isAuthenticating = false
+                            promise(.failure(error))
                             return
                         }
-                        promise(.success(user))
-                    } catch {
-                        promise(.failure(error))
+
+                        // Now handle the updated user
+                        Task { @MainActor in
+                            self.handleAuthStateChange(firebaseUser: firebaseUser)
+
+                            guard let user = self.currentUser else {
+                                self.logger.error("User not found after creation and reload")
+                                let error = NSError(
+                                    domain: "UserManager", code: 2,
+                                    userInfo: [
+                                        NSLocalizedDescriptionKey: "User not found after creation"
+                                    ])
+                                promise(.failure(error))
+                                return
+                            }
+                            self.isAuthenticating = false
+                            self.logger.info("Sign up completed successfully for user: \(user.uid ?? "-")")
+                            promise(.success(user))
+                        }
                     }
                 }
             }
@@ -211,38 +239,21 @@ class UserManager: ObservableObject {
     }
 
     func signOut() -> Future<Void, Error> {
-        return Future { promise in
+        return Future { [weak self] promise in
+            self?.logger.info("Attempting to sign out user")
             do {
                 try Auth.auth().signOut()
+                self?.logger.info("User signed out successfully")
                 promise(.success(()))
             } catch {
+                self?.logger.error("Sign out failed: \(error.localizedDescription)")
                 promise(.failure(error))
             }
         }
     }
 
-    // Add a method to get current user, creating one if needed for offline development
-    func getCurrentUser() -> User {
-        if let user = currentUser {
-            return user
-        }
-
-        guard let modelContext = modelContext else {
-            fatalError("Model context not configured in UserManager")
-        }
-
-        // For development/offline use, create a dummy user
-        let dummyUser = User(
-            uid: "offline-user",
-            email: "offline@example.com",
-            displayName: "Offline User"
-        )
-        modelContext.insert(dummyUser)
-        self.currentUser = dummyUser
-        return dummyUser
-    }
-
     func setCurrentUser(user: User) {
+        logger.debug("Manually setting current user: \(user.uid ?? "-")")
         self.currentUser = user
     }
 }

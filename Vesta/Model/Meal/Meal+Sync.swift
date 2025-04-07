@@ -6,9 +6,9 @@ extension Meal {
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
             "entityType": "Meal",
-            "id": id,
-            "lastModified": lastModified.timeIntervalSince1970,
-            "ownerId": owner?.id ?? "",
+            "uid": uid,
+            "lastModified": lastModified,
+            "ownerId": owner?.uid ?? "",
 
             "scalingFactor": scalingFactor,
             "mealType": mealType.rawValue,
@@ -26,7 +26,7 @@ extension Meal {
 
         // Add shopping list item references
         dto["shoppingListItemIds"] = shoppingListItems.compactMap {
-            $0.id
+            $0.uid
         }
 
         return dto

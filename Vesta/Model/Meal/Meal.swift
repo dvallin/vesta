@@ -20,6 +20,8 @@ enum MealType: String, Codable, CaseIterable {
 
 @Model
 class Meal: SyncableEntity {
+    @Attribute(.unique) var uid: String?
+
     var scalingFactor: Double
     var mealType: MealType
 
@@ -50,6 +52,7 @@ class Meal: SyncableEntity {
         scalingFactor: Double, todoItem: TodoItem, recipe: Recipe, mealType: MealType = .dinner,
         owner: User
     ) {
+        self.uid = UUID().uuidString
         self.scalingFactor = scalingFactor
         self.todoItem = todoItem
         self.recipe = recipe
@@ -61,18 +64,19 @@ class Meal: SyncableEntity {
         self.spaces = []
     }
 
-    func updateTodoItemDueDate(for mealType: MealType, on date: Date? = nil) {
+    func updateTodoItemDueDate(for mealType: MealType, on date: Date? = nil, currentUser: User) {
         let baseDate = date ?? todoItem?.dueDate ?? Date()
         let (hour, minute) = DateUtils.mealTime(for: mealType)
         if let newDueDate = DateUtils.setTime(hour: hour, minute: minute, for: baseDate) {
-            todoItem?.setDueDate(dueDate: newDueDate)
+            todoItem?.setDueDate(dueDate: newDueDate, currentUser: currentUser)
         }
         self.markAsDirty()
     }
 
-    func setDueDate(_ newDate: Date) {
+    func setDueDate(_ newDate: Date, currentUser: User) {
         todoItem?.setDueDate(
-            dueDate: DateUtils.preserveTime(from: todoItem?.dueDate, applying: newDate)
+            dueDate: DateUtils.preserveTime(from: todoItem?.dueDate, applying: newDate),
+            currentUser: currentUser
         )
         self.markAsDirty()
     }

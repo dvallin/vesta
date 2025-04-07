@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TodoItemDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var userManager: UserManager
     @Environment(\.dismiss) private var dismiss
 
     @StateObject private var viewModel: TodoItemDetailViewModel
@@ -99,7 +100,7 @@ struct TodoItemDetailView: View {
                 .navigationBarTitleDisplayMode(.inline)
             #endif
             .onAppear {
-                viewModel.configureEnvironment(modelContext, dismiss)
+                viewModel.configureEnvironment(modelContext, dismiss, userManager)
             }
         }
     }

@@ -75,20 +75,21 @@ struct TodoEventsView: View {
     do {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
+        let currentUser = Fixtures.createUser()
 
         // Create sample todo items
         let todoItem1 = TodoItem(
             title: "Buy groceries",
             details: "Milk, Bread, Eggs",
             dueDate: Date().addingTimeInterval(3600),
-            owner: Fixtures.createUser()
+            owner: currentUser
         )
 
         let todoItem2 = TodoItem(
             title: "Call John",
             details: "Discuss project details",
             dueDate: Date().addingTimeInterval(7200),
-            owner: Fixtures.createUser()
+            owner: currentUser
         )
 
         // Insert todo items
@@ -96,13 +97,13 @@ struct TodoEventsView: View {
         context.insert(todoItem2)
 
         // Create sample events for todoItem1
-        todoItem1.markAsDone()
-        todoItem1.setTitle(title: "Buy groceries and supplies")
-        todoItem1.setDetails(details: "Milk, Bread, Eggs, and Paper towels")
+        todoItem1.markAsDone(currentUser: currentUser)
+        todoItem1.setTitle(title: "Buy groceries and supplies", currentUser: currentUser)
+        todoItem1.setDetails(details: "Milk, Bread, Eggs, and Paper towels", currentUser: currentUser)
 
         // Create sample events for todoItem2
-        todoItem2.setDueDate(dueDate: Date().addingTimeInterval(14400))
-        todoItem2.markAsDone()
+        todoItem2.setDueDate(dueDate: Date().addingTimeInterval(14400), currentUser: currentUser)
+        todoItem2.markAsDone(currentUser: currentUser)
 
         return TodoEventsView()
             .modelContainer(container)

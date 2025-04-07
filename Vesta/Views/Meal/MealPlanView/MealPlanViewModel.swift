@@ -9,6 +9,7 @@ struct DayGroup: Identifiable {
 }
 
 class MealPlanViewModel: ObservableObject {
+    private var userManager: UserManager?
     private var modelContext: ModelContext?
 
     @Published var selectedMeal: Meal?
@@ -16,8 +17,9 @@ class MealPlanViewModel: ObservableObject {
     @Published var isPresentingRecipeListView = false
     @Published var isPresentingShoppingListGenerator = false
 
-    func configureContext(_ context: ModelContext) {
+    func configureContext(_ context: ModelContext, _ userManager: UserManager) {
         self.modelContext = context
+        self.userManager = userManager
     }
 
     func dayGroups(for meals: [Meal]) -> [DayGroup] {
@@ -103,7 +105,8 @@ class MealPlanViewModel: ObservableObject {
     }
 
     func markAsDone(_ todoItem: TodoItem) {
-        todoItem.markAsDone()
+        guard let currentUser = userManager?.currentUser else { return }
+        todoItem.markAsDone(currentUser: currentUser)
         if saveContext() {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
         }

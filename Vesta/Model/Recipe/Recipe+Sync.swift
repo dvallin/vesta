@@ -6,9 +6,9 @@ extension Recipe {
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
             "entityType": "TodoItem",
-            "id": id,
-            "lastModified": lastModified.timeIntervalSince1970,
-            "ownerId": owner?.id ?? "",
+            "uid": uid,
+            "lastModified": lastModified,
+            "ownerId": owner?.uid ?? "",
 
             "title": title,
             "details": details,
@@ -21,7 +21,7 @@ extension Recipe {
         dto["steps"] = steps.map { $0.toDTO() }
 
         // Include meal references
-        dto["mealIds"] = meals.compactMap { $0.id }
+        dto["mealIds"] = meals.compactMap { $0.uid }
 
         return dto
     }

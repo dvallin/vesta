@@ -6,15 +6,15 @@ extension TodoItemEvent {
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
             "entityType": "TodoItemEvent",
-            "id": id,
+            "uid": uid,
             "type": type.rawValue,
-            "date": date.timeIntervalSince1970,
-            "lastModified": lastModified.timeIntervalSince1970,
-            "ownerId": owner?.id ?? "",
+            "date": date,
+            "lastModified": lastModified,
+            "ownerId": owner?.uid ?? "",
         ]
 
         // Add parent todo item reference
-        if let todoItemId = todoItem?.id {
+        if let todoItemId = todoItem?.uid {
             dto["todoItemId"] = todoItemId
         }
 
@@ -28,7 +28,7 @@ extension TodoItemEvent {
         }
 
         if let previousDueDate = previousDueDate {
-            dto["previousDueDate"] = previousDueDate.timeIntervalSince1970
+            dto["previousDueDate"] = previousDueDate
         }
 
         if let previousIsCompleted = previousIsCompleted {

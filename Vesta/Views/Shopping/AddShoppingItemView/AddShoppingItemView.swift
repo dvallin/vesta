@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct AddShoppingItemView: View {
+    @EnvironmentObject private var userManager: UserManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -92,7 +93,7 @@ struct AddShoppingItemView: View {
         .presentationDetents([.medium, .large])
         .onAppear {
             focusedField = .name
-            viewModel.configureEnvironment(modelContext, dismiss)
+            viewModel.configureEnvironment(modelContext, dismiss, userManager)
         }
     }
 }

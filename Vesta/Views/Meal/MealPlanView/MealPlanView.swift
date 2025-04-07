@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct MealPlanView: View {
+    @EnvironmentObject private var userManager: UserManager
     @Environment(\.modelContext) private var modelContext
     @Query private var meals: [Meal]
 
@@ -84,7 +85,7 @@ struct MealPlanView: View {
                 ShoppingListGeneratorView(meals: meals)
             }
             .onAppear {
-                viewModel.configureContext(modelContext)
+                viewModel.configureContext(modelContext, userManager)
             }
         }
     }

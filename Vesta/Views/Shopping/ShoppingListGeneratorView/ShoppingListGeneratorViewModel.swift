@@ -2,6 +2,16 @@ import SwiftData
 import SwiftUI
 
 class ShoppingListGeneratorViewModel: ObservableObject {
+    private var userManager: UserManager?
+    private var modelContext: ModelContext?
+    private var categoryService: TodoItemCategoryService?
+    
+    func configureContext(_ context: ModelContext, _ userManager: UserManager) {
+        self.modelContext = context
+        self.userManager = userManager
+        self.categoryService = TodoItemCategoryService(modelContext: context)
+    }
+    
     struct IngredientSelection: Identifiable {
         let id = UUID()
         let ingredient: Ingredient
@@ -45,8 +55,11 @@ class ShoppingListGeneratorViewModel: ObservableObject {
         }.sorted { l, r in l.earliestDueDate < r.earliestDueDate }
     }
 
-    func generateShoppingList(modelContext: ModelContext) {
-        let categoryService = TodoItemCategoryService(modelContext: modelContext)
+    func generateShoppingList() {
+        guard let currentUser = userManager?.currentUser else { return }
+        guard let categoryService = categoryService else { return }
+        guard let modelContext = modelContext else { return }
+        
         let shoppingCategory = categoryService.fetchOrCreate(
             named: NSLocalizedString("Shopping", comment: "Shopping category name")
         )
@@ -65,7 +78,8 @@ class ShoppingListGeneratorViewModel: ObservableObject {
                 details: todoDetails,
                 dueDate: selection.earliestDueDate,
                 ignoreTimeComponent: false,
-                category: shoppingCategory
+                category: shoppingCategory,
+                owner: currentUser
             )
             modelContext.insert(todoItem)
 
@@ -74,7 +88,7 @@ class ShoppingListGeneratorViewModel: ObservableObject {
                 quantity: selection.quantity,
                 unit: selection.unit,
                 todoItem: todoItem,
-                owner: todoItem.owner!
+                owner: currentUser
             )
             shoppingListItem.meals = selection.meals
             

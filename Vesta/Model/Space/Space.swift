@@ -3,7 +3,8 @@ import SwiftData
 
 @Model
 final class Space: SyncableEntity {
-    var id: UUID = UUID()
+    @Attribute(.unique) var uid: String?
+
     var name: String
 
     @Relationship(deleteRule: .noAction, inverse: \User.spaces)
@@ -13,6 +14,7 @@ final class Space: SyncableEntity {
     var shareAllMeals: Bool = true
     var shareAllShoppingItems: Bool = true
 
+    @Relationship
     var sharedCategories: [TodoItemCategory] = []
 
     @Relationship(deleteRule: .noAction)
@@ -22,6 +24,7 @@ final class Space: SyncableEntity {
     var dirty: Bool = true
 
     init(name: String, owner: User) {
+        self.uid = UUID().uuidString
         self.name = name
         self.owner = owner
         self.lastModified = Date()

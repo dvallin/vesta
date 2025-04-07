@@ -5,7 +5,7 @@ import SwiftData
 class MockAPIClient: APIClient {
     private init() {}
 
-    func syncEntities(entityName: String, dtos: [[String: Any]]) -> AnyPublisher<Void, Error> {
+    func syncEntities(dtos: [[String: Any]]) -> AnyPublisher<Void, Error> {
         // In a real implementation, this would make actual API calls
         // For now, we'll simulate a network call with a delay
         return Future { promise in
@@ -21,7 +21,7 @@ class MockAPIClient: APIClient {
                     return
                 }
 
-                print("Successfully synced \(dtos.count) \(entityName) entities")
+                print("Successfully synced \(dtos.count) entities")
                 promise(.success(()))
             }
         }.eraseToAnyPublisher()
