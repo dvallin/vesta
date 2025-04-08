@@ -100,7 +100,7 @@ class TodoListViewModel: ObservableObject {
             modelContext!.delete(lastEvent)
         }
         if saveContext() {
-            NotificationManager.shared.scheduleNotification(for: self)
+            NotificationManager.shared.scheduleNotification(for: item)
 
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
 
