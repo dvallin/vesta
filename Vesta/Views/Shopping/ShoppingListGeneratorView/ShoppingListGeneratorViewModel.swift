@@ -2,16 +2,16 @@ import SwiftData
 import SwiftUI
 
 class ShoppingListGeneratorViewModel: ObservableObject {
-    private var userManager: UserManager?
+    private var userService: UserManager?
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
-    
-    func configureContext(_ context: ModelContext, _ userManager: UserManager) {
+
+    func configureContext(_ context: ModelContext, _ userService: UserManager) {
         self.modelContext = context
-        self.userManager = userManager
+        self.userService = userService
         self.categoryService = TodoItemCategoryService(modelContext: context)
     }
-    
+
     struct IngredientSelection: Identifiable {
         let id = UUID()
         let ingredient: Ingredient
@@ -56,10 +56,10 @@ class ShoppingListGeneratorViewModel: ObservableObject {
     }
 
     func generateShoppingList() {
-        guard let currentUser = userManager?.currentUser else { return }
+        guard let currentUser = userService?.currentUser else { return }
         guard let categoryService = categoryService else { return }
         guard let modelContext = modelContext else { return }
-        
+
         let shoppingCategory = categoryService.fetchOrCreate(
             named: NSLocalizedString("Shopping", comment: "Shopping category name")
         )
@@ -91,7 +91,7 @@ class ShoppingListGeneratorViewModel: ObservableObject {
                 owner: currentUser
             )
             shoppingListItem.meals = selection.meals
-            
+
             modelContext.insert(shoppingListItem)
         }
         do {

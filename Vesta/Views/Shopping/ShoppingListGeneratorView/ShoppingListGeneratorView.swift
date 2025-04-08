@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct ShoppingListGeneratorView: View {
-    @EnvironmentObject private var userManager: UserManager
+    @EnvironmentObject private var userService: UserManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -37,7 +37,7 @@ struct ShoppingListGeneratorView: View {
             }
         }
         .onAppear {
-            viewModel.configureContext(modelContext, userManager)
+            viewModel.configureContext(modelContext, userService)
             viewModel.prepareMealsForShoppingList(meals)
         }
     }
@@ -54,13 +54,21 @@ struct ShoppingListGeneratorView: View {
         let recipe2 = Fixtures.curry(owner: user)
 
         // Create todo items for meals
-        let todoItem1 = TodoItem(title: "Make Carbonara", details: "Dinner", dueDate: Date().addingTimeInterval(86400), owner: user)
-        let todoItem2 = TodoItem(title: "Make Stir Fry", details: "Lunch", dueDate: Date().addingTimeInterval(172800), owner: user)
+        let todoItem1 = TodoItem(
+            title: "Make Carbonara", details: "Dinner", dueDate: Date().addingTimeInterval(86400),
+            owner: user)
+        let todoItem2 = TodoItem(
+            title: "Make Stir Fry", details: "Lunch", dueDate: Date().addingTimeInterval(172800),
+            owner: user)
 
         // Create meals
         let meals = [
-            Meal(scalingFactor: 1.0, todoItem: todoItem1, recipe: recipe1, mealType: .dinner, owner: user),
-            Meal(scalingFactor: 1.5, todoItem: todoItem2, recipe: recipe2, mealType: .lunch, owner: user),
+            Meal(
+                scalingFactor: 1.0, todoItem: todoItem1, recipe: recipe1, mealType: .dinner,
+                owner: user),
+            Meal(
+                scalingFactor: 1.5, todoItem: todoItem2, recipe: recipe2, mealType: .lunch,
+                owner: user),
         ]
 
         // Insert everything into context

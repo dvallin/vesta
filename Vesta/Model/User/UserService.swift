@@ -4,11 +4,11 @@ import Foundation
 import OSLog
 import SwiftData
 
-class UserManager: ObservableObject {
+class UserService: ObservableObject {
     // MARK: - Logging
     private let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier ?? "com.vesta",
-        category: "UserManager"
+        category: "UserService"
     )
 
     @Published private(set) var currentUser: User?
@@ -20,7 +20,7 @@ class UserManager: ObservableObject {
 
     public init(modelContext: ModelContext) {
         self.modelContext = modelContext
-        logger.info("UserManager configured with ModelContext")
+        logger.info("UserService configured with ModelContext")
 
         // Listen for Firebase auth state changes
         authStateHandler = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
@@ -38,7 +38,7 @@ class UserManager: ObservableObject {
 
     private func handleAuthStateChange(firebaseUser: FirebaseAuth.User?) {
         guard let modelContext = modelContext else {
-            logger.error("Model context not configured in UserManager")
+            logger.error("Model context not configured in UserService")
             return
         }
 
@@ -102,9 +102,9 @@ class UserManager: ObservableObject {
         return Future { [weak self] promise in
             guard let self = self else {
                 let error = NSError(
-                    domain: "UserManager", code: 0,
-                    userInfo: [NSLocalizedDescriptionKey: "UserManager instance is nil"])
-                self?.logger.error("Sign in failed: UserManager instance is nil")
+                    domain: "UserService", code: 0,
+                    userInfo: [NSLocalizedDescriptionKey: "UserService instance is nil"])
+                self?.logger.error("Sign in failed: UserService instance is nil")
                 promise(.failure(error))
                 return
             }
@@ -123,7 +123,7 @@ class UserManager: ObservableObject {
 
                 guard let firebaseUser = authResult?.user else {
                     let error = NSError(
-                        domain: "UserManager", code: 1,
+                        domain: "UserService", code: 1,
                         userInfo: [NSLocalizedDescriptionKey: "User not found after authentication"]
                     )
                     self.logger.error("Sign in succeeded but user is nil")
@@ -136,7 +136,7 @@ class UserManager: ObservableObject {
                 // Directly handle the auth change to ensure the user is set
                 guard let user = self.currentUser else {
                     let error = NSError(
-                        domain: "UserManager", code: 1,
+                        domain: "UserService", code: 1,
                         userInfo: [
                             NSLocalizedDescriptionKey: "User not found after authentication"
                         ])
@@ -155,9 +155,9 @@ class UserManager: ObservableObject {
         return Future { [weak self] promise in
             guard let self = self else {
                 let error = NSError(
-                    domain: "UserManager", code: 0,
-                    userInfo: [NSLocalizedDescriptionKey: "UserManager instance is nil"])
-                self?.logger.error("Sign up failed: UserManager instance is nil")
+                    domain: "UserService", code: 0,
+                    userInfo: [NSLocalizedDescriptionKey: "UserService instance is nil"])
+                self?.logger.error("Sign up failed: UserService instance is nil")
                 promise(.failure(error))
                 return
             }
@@ -180,7 +180,7 @@ class UserManager: ObservableObject {
                     self.logger.error("authResult?.user is nil after successful createUser")
                     self.isAuthenticating = false
                     let error = NSError(
-                        domain: "UserManager", code: 1,
+                        domain: "UserService", code: 1,
                         userInfo: [NSLocalizedDescriptionKey: "User not created"])
                     promise(.failure(error))
                     return
@@ -221,7 +221,7 @@ class UserManager: ObservableObject {
                             guard let user = self.currentUser else {
                                 self.logger.error("User not found after creation and reload")
                                 let error = NSError(
-                                    domain: "UserManager", code: 2,
+                                    domain: "UserService", code: 2,
                                     userInfo: [
                                         NSLocalizedDescriptionKey: "User not found after creation"
                                     ])
@@ -229,7 +229,8 @@ class UserManager: ObservableObject {
                                 return
                             }
                             self.isAuthenticating = false
-                            self.logger.info("Sign up completed successfully for user: \(user.uid ?? "-")")
+                            self.logger.info(
+                                "Sign up completed successfully for user: \(user.uid ?? "-")")
                             promise(.success(user))
                         }
                     }

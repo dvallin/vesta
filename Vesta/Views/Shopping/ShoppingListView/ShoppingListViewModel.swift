@@ -3,7 +3,7 @@ import SwiftUI
 
 class ShoppingListViewModel: ObservableObject {
     private var modelContext: ModelContext?
-    private var userManager: UserManager?
+    private var userService: UserManager?
 
     @Published var toastMessages: [ToastMessage] = []
 
@@ -19,9 +19,9 @@ class ShoppingListViewModel: ObservableObject {
         self.showPurchased = showPurchased
     }
 
-    func configureContext(_ context: ModelContext, _ userManager: UserManager) {
+    func configureContext(_ context: ModelContext, _ userService: UserManager) {
         self.modelContext = context
-        self.userManager = userManager
+        self.userService = userService
     }
 
     func saveContext() -> Bool {
@@ -36,7 +36,7 @@ class ShoppingListViewModel: ObservableObject {
     func togglePurchased(
         _ item: ShoppingListItem, undoAction: @escaping (ShoppingListItem, UUID) -> Void
     ) {
-        guard let currentUser = userManager?.currentUser else { return }
+        guard let currentUser = userService?.currentUser else { return }
         item.todoItem?.markAsDone(currentUser: currentUser)
 
         if saveContext() {

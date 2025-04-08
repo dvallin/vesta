@@ -12,29 +12,29 @@ enum SyncError: Error {
 /// Service responsible for synchronizing entities marked as dirty to the backend
 class SyncService: ObservableObject {
     private var modelContext: ModelContext
-    private var userManager: UserManager
+    private var userService: UserService
 
     private var cancellables = Set<AnyCancellable>()
     private var syncTimer: Timer?
     private var isSyncing = false
 
-    private let syncInterval: TimeInterval = 60  // Sync every minute
+    private let syncInterval: TimeInterval = 10  // seconds
 
     // API client would be injected here
     private let apiClient: APIClient
 
     public init(
-        apiClient: APIClient = FirebaseAPIClient(), userManager: UserManager,
+        apiClient: APIClient = FirebaseAPIClient(), userService: UserService,
         modelContext: ModelContext
     ) {
         self.apiClient = apiClient
         self.modelContext = modelContext
-        self.userManager = userManager
+        self.userService = userService
     }
 
     /// Start periodic sync operations
     func startSync() {
-        stopSync()  // Ensure we don't have multiple timers
+        stopSync()
 
         // Immediately perform an initial sync
         performSync()
@@ -80,7 +80,7 @@ class SyncService: ObservableObject {
         }
 
         // Check if user is authenticated
-        guard userManager.currentUser != nil else {
+        guard userService.currentUser != nil else {
             completion?(.failure(.notAuthenticated))
             return
         }

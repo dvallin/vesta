@@ -3,7 +3,7 @@ import SwiftUI
 
 struct ShoppingListView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var userManager: UserManager
+    @EnvironmentObject private var userService: UserManager
     @Query(sort: \ShoppingListItem.todoItem?.dueDate) var shoppingItems: [ShoppingListItem]
 
     @StateObject var viewModel: ShoppingListViewModel
@@ -59,7 +59,7 @@ struct ShoppingListView: View {
         }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
-            viewModel.configureContext(modelContext, userManager)
+            viewModel.configureContext(modelContext, userService)
         }
     }
 }

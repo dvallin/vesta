@@ -31,7 +31,7 @@ enum FilterMode: String, CaseIterable {
 class TodoListViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
-    private var userManager: UserManager?
+    private var userService: UserManager?
 
     @Published var currentDay: Date = Date()
     @Published var toastMessages: [ToastMessage] = []
@@ -47,10 +47,10 @@ class TodoListViewModel: ObservableObject {
     @Published var isPresentingAddTodoItemView = false
     @Published var isPresentingTodoEventsView = false
 
-    func configureContext(_ context: ModelContext, _ userManager: UserManager) {
+    func configureContext(_ context: ModelContext, _ userService: UserManager) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
-        self.userManager = userManager
+        self.userService = userService
     }
 
     func fetchCategories() -> [TodoItemCategory] {
@@ -75,7 +75,7 @@ class TodoListViewModel: ObservableObject {
     }
 
     func markAsDone(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
-        guard let currentUser = userManager?.currentUser else { return }
+        guard let currentUser = userService?.currentUser else { return }
         item.markAsDone(currentUser: currentUser)
 
         if saveContext() {
@@ -136,7 +136,7 @@ class TodoListViewModel: ObservableObject {
     }
 
     func rescheduleOverdueTasks(todoItems: [TodoItem]) {
-        guard let currentUser = userManager?.currentUser else { return }
+        guard let currentUser = userService?.currentUser else { return }
         let today = DateUtils.calendar.startOfDay(for: Date())
 
         for item in todoItems {

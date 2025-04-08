@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct MealDetailView: View {
-    @EnvironmentObject private var userManager: UserManager
+    @EnvironmentObject private var userService: UserManager
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: MealDetailViewModel
 
@@ -65,7 +65,7 @@ struct MealDetailView: View {
                     selection: Binding(
                         get: { viewModel.meal.todoItem?.dueDate ?? Date() },
                         set: { newValue in
-                            guard let currentUser = userManager.currentUser else { return }
+                            guard let currentUser = userService.currentUser else { return }
                             viewModel.meal.setDueDate(newValue, currentUser: currentUser)
                         }
                     ),
@@ -85,7 +85,7 @@ struct MealDetailView: View {
             #endif
         }
         .onAppear {
-            viewModel.configureEnvironment(modelContext, userManager)
+            viewModel.configureEnvironment(modelContext, userService)
         }
     }
 }
@@ -96,11 +96,10 @@ struct MealDetailView: View {
         let context = container.mainContext
 
         let user = Fixtures.createUser()
-        
+
         // Create sample recipe with ingredients
         let recipe = Fixtures.bolognese(owner: user)
 
-        
         // Create todo item
         let todoItem = TodoItem(
             title: "Cook Spaghetti Bolognese",

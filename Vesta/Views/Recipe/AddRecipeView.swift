@@ -15,8 +15,8 @@ struct TempStep: Identifiable {
 }
 
 struct AddRecipeView: View {
-    @EnvironmentObject private var userManager: UserManager
-    
+    @EnvironmentObject private var userService: UserManager
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -250,7 +250,7 @@ struct AddRecipeView: View {
     private func saveRecipe() {
         isSaving = true
         do {
-            guard let currentUser = userManager.currentUser else { return }
+            guard let currentUser = userService.currentUser else { return }
 
             let newRecipe = Recipe(title: title, details: details, owner: currentUser)
 

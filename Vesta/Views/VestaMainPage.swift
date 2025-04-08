@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct VestaMainPage: View {
-    @EnvironmentObject var userManager: UserManager
+    @EnvironmentObject var userService: UserService
     @EnvironmentObject var syncService: SyncService
 
     var body: some View {
-        if userManager.currentUser != nil {
+        if userService.currentUser != nil {
             TabView {
                 TodayView().tabItem {
                     Label("Today", systemImage: "list.bullet")

@@ -2,7 +2,7 @@ import Combine
 import SwiftUI
 
 struct LoginView: View {
-    @EnvironmentObject var userManager: UserManager
+    @EnvironmentObject var userService: UserManager
 
     @State private var email = ""
     @State private var password = ""
@@ -42,9 +42,9 @@ struct LoginView: View {
                             signIn()
                         }
                     }
-                    .disabled(userManager.isAuthenticating)
+                    .disabled(userService.isAuthenticating)
 
-                    if userManager.isAuthenticating {
+                    if userService.isAuthenticating {
                         HStack {
                             Spacer()
                             ProgressView()
@@ -69,7 +69,7 @@ struct LoginView: View {
     private func signIn() {
         errorMessage = nil
 
-        userManager.signIn(email: email, password: password)
+        userService.signIn(email: email, password: password)
             .sink(
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
@@ -84,7 +84,7 @@ struct LoginView: View {
     private func signUp() {
         errorMessage = nil
 
-        userManager.signUp(email: email, password: password, displayName: displayName)
+        userService.signUp(email: email, password: password, displayName: displayName)
             .sink(
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {

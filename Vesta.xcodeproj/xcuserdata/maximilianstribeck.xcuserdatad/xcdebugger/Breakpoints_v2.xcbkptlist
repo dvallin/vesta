@@ -32,7 +32,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "8"
             endingLineNumber = "8"
-            landmarkName = "migrateToSyncableEntities(in:userManager:)"
+            landmarkName = "migrateToSyncableEntities(in:userService:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

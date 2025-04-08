@@ -5,7 +5,7 @@ class TodoItemDetailViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
-    private var userManager: UserManager?
+    private var userService: UserManager?
 
     @Published var item: TodoItem
 
@@ -41,11 +41,13 @@ class TodoItemDetailViewModel: ObservableObject {
         self.tempCategory = item.category?.name ?? ""
     }
 
-    func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction, _ userManager: UserManager) {
+    func configureEnvironment(
+        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserManager
+    ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
-        self.userManager = userManager
+        self.userService = userService
     }
 
     var isDirty: Bool {
@@ -60,7 +62,7 @@ class TodoItemDetailViewModel: ObservableObject {
     }
 
     func markAsDone() {
-        guard let currentUser = userManager?.currentUser else { return }
+        guard let currentUser = userService?.currentUser else { return }
         withAnimation {
             item.markAsDone(currentUser: currentUser)
             saveContext()
@@ -69,7 +71,7 @@ class TodoItemDetailViewModel: ObservableObject {
     }
 
     func save() {
-        guard let currentUser = userManager?.currentUser else { return }
+        guard let currentUser = userService?.currentUser else { return }
         guard !tempTitle.isEmpty else {
             validationMessage = NSLocalizedString(
                 "Please enter a todo title", comment: "Validation error for empty todo title")
@@ -94,16 +96,19 @@ class TodoItemDetailViewModel: ObservableObject {
             item.setDueDate(dueDate: tempDueDate, currentUser: currentUser)
         }
         if tempRecurrenceFrequency != item.recurrenceFrequency {
-            item.setRecurrenceFrequency(recurrenceFrequency: tempRecurrenceFrequency, currentUser: currentUser)
+            item.setRecurrenceFrequency(
+                recurrenceFrequency: tempRecurrenceFrequency, currentUser: currentUser)
         }
         if tempRecurrenceInterval != item.recurrenceInterval {
-            item.setRecurrenceInterval(recurrenceInterval: tempRecurrenceInterval, currentUser: currentUser)
+            item.setRecurrenceInterval(
+                recurrenceInterval: tempRecurrenceInterval, currentUser: currentUser)
         }
         if tempRecurrenceType != item.recurrenceType {
             item.setRecurrenceType(recurrenceType: tempRecurrenceType, currentUser: currentUser)
         }
         if tempIgnoreTimeComponent != item.ignoreTimeComponent {
-            item.setIgnoreTimeComponent(ignoreTimeComponent: tempIgnoreTimeComponent, currentUser: currentUser)
+            item.setIgnoreTimeComponent(
+                ignoreTimeComponent: tempIgnoreTimeComponent, currentUser: currentUser)
         }
         if tempIsCompleted != item.isCompleted {
             item.setIsCompleted(isCompleted: tempIsCompleted, currentUser: currentUser)

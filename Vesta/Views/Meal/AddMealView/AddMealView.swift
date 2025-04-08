@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct AddMealView: View {
-    @EnvironmentObject private var userManager: UserManager
+    @EnvironmentObject private var userService: UserManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var recipes: [Recipe]
@@ -77,7 +77,7 @@ struct AddMealView: View {
             }
         }
         .onAppear {
-            viewModel.configureEnvironment(modelContext, dismiss, userManager)
+            viewModel.configureEnvironment(modelContext, dismiss, userService)
         }
     }
 }

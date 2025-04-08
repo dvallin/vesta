@@ -3,9 +3,9 @@ import SwiftUI
 
 struct MigrationManager {
 
-    static func migrateToSyncableEntities(in context: ModelContext, userManager: UserManager) {
+    static func migrateToSyncableEntities(in context: ModelContext, userService: UserService) {
         // Get the dummy user for offline development
-        guard let dummyUser = userManager.currentUser else { return }
+        guard let dummyUser = userService.currentUser else { return }
 
         // Assign owners to all entities that implement SyncableEntity
         migrateTodoItemEvents(in: context, defaultOwner: dummyUser)

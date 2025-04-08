@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 class AddShoppingItemViewModel: ObservableObject {
-    private var userManager: UserManager?
+    private var userService: UserManager?
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
@@ -12,11 +12,13 @@ class AddShoppingItemViewModel: ObservableObject {
     @Published var quantity: String = ""
     @Published var selectedUnit: Unit? = nil
 
-    func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction, _ userManager: UserManager) {
+    func configureEnvironment(
+        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserManager
+    ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
-        self.userManager = userManager
+        self.userService = userService
     }
 
     var isAddButtonDisabled: Bool {
@@ -31,7 +33,7 @@ class AddShoppingItemViewModel: ObservableObject {
     @MainActor
     func addItem() {
         guard let modelContext = modelContext else { return }
-        guard let currentUser = userManager?.currentUser else { return }
+        guard let currentUser = userService?.currentUser else { return }
 
         let shoppingCategory = categoryService?.fetchOrCreate(
             named: NSLocalizedString("Shopping", comment: "Shopping category name")

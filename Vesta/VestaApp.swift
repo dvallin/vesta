@@ -9,7 +9,7 @@ struct VestaApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     let sharedModelContainer: ModelContainer
-    let userManager: UserManager
+    let userService: UserService
     let syncService: SyncService
 
     init() {
@@ -23,8 +23,10 @@ struct VestaApp: App {
         }
 
         let modelContext = sharedModelContainer.mainContext
-        userManager = UserManager(modelContext: modelContext)
-        syncService = SyncService(userManager: userManager, modelContext: modelContext)
+        userService = UserService(modelContext: modelContext)
+        syncService = SyncService(userService: userService, modelContext: modelContext)
+
+        MigrationManager.migrateToSyncableEntities(in: ModelContext, userService: UserService)
 
         NotificationManager.shared.requestAuthorization()
     }
@@ -34,7 +36,7 @@ struct VestaApp: App {
             VestaMainPage()
         }
         .modelContainer(sharedModelContainer)
-        .environmentObject(userManager)
+        .environmentObject(userService)
         .environmentObject(syncService)
     }
 }
