@@ -17,10 +17,11 @@ class NotificationManager {
     }
 
     func scheduleNotification(for item: TodoItem) {
-        guard let dueDate = item.dueDate, !item.isCompleted else { return }
-
         // Cancel any existing notification for this item
         cancelNotification(for: item)
+
+        // Now guard if there should be any notifications
+        guard let dueDate = item.dueDate, !item.isCompleted else { return }
 
         let content = UNMutableNotificationContent()
         content.title = "Upcoming Task"
