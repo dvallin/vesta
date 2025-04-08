@@ -147,6 +147,8 @@ class TodoItem {
         } else {
             isCompleted.toggle()
         }
+
+        NotificationManager.shared.scheduleNotification(for: self)
     }
 
     func setDetails(details: String) {
@@ -163,22 +165,14 @@ class TodoItem {
         let _ = createEvent(type: .editDueDate, previousDueDate: self.dueDate)
         self.dueDate = dueDate
 
-        if dueDate != nil {
-            NotificationManager.shared.scheduleNotification(for: self)
-        } else {
-            NotificationManager.shared.cancelNotification(for: self)
-        }
+        NotificationManager.shared.scheduleNotification(for: self)
     }
 
     func setIsCompleted(isCompleted: Bool) {
         let _ = createEvent(type: .editIsCompleted, previousIsCompleted: self.isCompleted)
         self.isCompleted = isCompleted
 
-        if isCompleted {
-            NotificationManager.shared.cancelNotification(for: self)
-        } else {
-            NotificationManager.shared.scheduleNotification(for: self)
-        }
+        NotificationManager.shared.scheduleNotification(for: self)
     }
 
     func setRecurrenceFrequency(

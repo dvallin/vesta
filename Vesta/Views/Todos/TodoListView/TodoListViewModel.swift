@@ -76,8 +76,6 @@ class TodoListViewModel: ObservableObject {
         item.markAsDone()
 
         if saveContext() {
-            NotificationManager.shared.cancelNotification(for: item)
-
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
 
             let id = UUID()
@@ -102,9 +100,7 @@ class TodoListViewModel: ObservableObject {
             modelContext!.delete(lastEvent)
         }
         if saveContext() {
-            if item.dueDate != nil {
-                NotificationManager.shared.scheduleNotification(for: item)
-            }
+            NotificationManager.shared.scheduleNotification(for: self)
 
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
 
@@ -114,7 +110,9 @@ class TodoListViewModel: ObservableObject {
 
     func deleteItem(_ item: TodoItem) {
         NotificationManager.shared.cancelNotification(for: item)
+
         if saveContext() {
+
             if item.meal != nil {
                 modelContext!.delete(item.meal!)
             } else if item.shoppingListItem != nil {
