@@ -2,7 +2,7 @@ import SwiftUI
 
 struct TodoItemDetailView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var userService: UserManager
+    @EnvironmentObject private var userService: UserService
     @Environment(\.dismiss) private var dismiss
 
     @StateObject private var viewModel: TodoItemDetailViewModel

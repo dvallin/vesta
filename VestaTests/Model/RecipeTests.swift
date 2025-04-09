@@ -13,9 +13,9 @@ final class RecipeTests: XCTestCase {
         container = try! ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         context = ModelContext(container)
 
-        // Set up the UserManager to return our test user
+        // Set up the UserService to return our test user
         user = Fixtures.createUser()
-        UserManager.shared.setCurrentUser(user: user)
+        UserService.shared.setCurrentUser(user: user)
     }
 
     override func tearDown() {
@@ -53,7 +53,8 @@ final class RecipeTests: XCTestCase {
         ]
 
         let steps = [
-            RecipeStep(order: 1, instruction: "Mix dry ingredients", type: .preparation, duration: 300),
+            RecipeStep(
+                order: 1, instruction: "Mix dry ingredients", type: .preparation, duration: 300),
             RecipeStep(order: 2, instruction: "Bake in oven", type: .cooking, duration: 1800),
         ]
 
@@ -303,10 +304,6 @@ final class RecipeTests: XCTestCase {
 
         // Assert
         XCTAssertFalse(recipe.dirty, "Recipe should not be dirty after marked as synced")
-        XCTAssertGreaterThanOrEqual(
-            recipe.lastModified, Date().addingTimeInterval(-5),
-            "Last modified should be updated"
-        )
 
         // Act - modify recipe
         recipe.setTitle("Updated Sync Test")

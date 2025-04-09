@@ -9,7 +9,7 @@ struct DayGroup: Identifiable {
 }
 
 class MealPlanViewModel: ObservableObject {
-    private var userService: UserManager?
+    private var userService: UserService?
     private var modelContext: ModelContext?
 
     @Published var selectedMeal: Meal?
@@ -17,7 +17,7 @@ class MealPlanViewModel: ObservableObject {
     @Published var isPresentingRecipeListView = false
     @Published var isPresentingShoppingListGenerator = false
 
-    func configureContext(_ context: ModelContext, _ userService: UserManager) {
+    func configureContext(_ context: ModelContext, _ userService: UserService) {
         self.modelContext = context
         self.userService = userService
     }

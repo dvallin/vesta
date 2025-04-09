@@ -33,7 +33,6 @@ struct MigrationManager {
                 }
                 if item.owner == nil {
                     item.owner = defaultOwner
-                    item.lastModified = Date()
                     item.dirty = true
                 }
             }
@@ -52,7 +51,6 @@ struct MigrationManager {
                 }
                 if item.owner == nil {
                     item.owner = defaultOwner
-                    item.lastModified = Date()
                     item.dirty = true
                 }
             }
@@ -71,7 +69,6 @@ struct MigrationManager {
                 }
                 if recipe.owner == nil {
                     recipe.owner = defaultOwner
-                    recipe.lastModified = Date()
                     recipe.dirty = true
                 }
             }
@@ -90,7 +87,6 @@ struct MigrationManager {
                 }
                 if meal.owner == nil {
                     meal.owner = defaultOwner
-                    meal.lastModified = Date()
                     meal.dirty = true
                 }
             }
@@ -109,7 +105,6 @@ struct MigrationManager {
                 }
                 if item.owner == nil {
                     item.owner = defaultOwner
-                    item.lastModified = Date()
                     item.dirty = true
                 }
             }
@@ -128,7 +123,6 @@ struct MigrationManager {
                 }
                 if space.owner == nil {
                     space.owner = defaultOwner
-                    space.lastModified = Date()
                     space.dirty = true
                 }
             }

@@ -13,9 +13,9 @@ final class ShoppingListItemTests: XCTestCase {
         container = try! ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         context = ModelContext(container)
 
-        // Set up the UserManager to return our test user
+        // Set up the UserService to return our test user
         user = Fixtures.createUser()
-        UserManager.shared.setCurrentUser(user: user)
+        UserService.shared.setCurrentUser(user: user)
     }
 
     override func tearDown() {
@@ -366,10 +366,6 @@ final class ShoppingListItemTests: XCTestCase {
 
         // Assert
         XCTAssertFalse(shoppingListItem.dirty, "Item should not be dirty after marked as synced")
-        XCTAssertGreaterThanOrEqual(
-            shoppingListItem.lastModified, Date().addingTimeInterval(-5),
-            "Last modified should be updated"
-        )
 
         // Act - modify item
         shoppingListItem.setQuantity(newQuantity: 300)

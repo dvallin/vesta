@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct TodoListView: View {
-    @EnvironmentObject private var userService: UserManager
+    @EnvironmentObject private var userService: UserService
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
 

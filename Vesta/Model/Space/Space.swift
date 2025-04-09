@@ -4,6 +4,9 @@ import SwiftData
 @Model
 final class Space: SyncableEntity {
     @Attribute(.unique) var uid: String?
+    
+    @Relationship(deleteRule: .noAction)
+    var lastModifiedBy: User?
 
     var name: String
 
@@ -20,14 +23,12 @@ final class Space: SyncableEntity {
     @Relationship(deleteRule: .noAction)
     var owner: User?
 
-    var lastModified: Date = Date()
     var dirty: Bool = true
 
     init(name: String, owner: User) {
         self.uid = UUID().uuidString
         self.name = name
         self.owner = owner
-        self.lastModified = Date()
         self.dirty = true
     }
 }

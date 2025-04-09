@@ -15,9 +15,9 @@ final class MealTests: XCTestCase {
         container = try! ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         context = ModelContext(container)
 
-        // Set up the UserManager to return our test user
+        // Set up the UserService to return our test user
         user = Fixtures.createUser()
-        UserManager.shared.setCurrentUser(user: user)
+        UserService.shared.setCurrentUser(user: user)
 
         // Set up test recipe and todoItem
         recipe = Fixtures.bolognese(owner: user)
@@ -315,10 +315,6 @@ final class MealTests: XCTestCase {
 
         // Assert
         XCTAssertFalse(meal.dirty, "Meal should not be dirty after marked as synced")
-        XCTAssertGreaterThanOrEqual(
-            meal.lastModified, Date().addingTimeInterval(-5),
-            "Last modified should be updated"
-        )
 
         // Act
         meal.setScalingFactor(1.5)

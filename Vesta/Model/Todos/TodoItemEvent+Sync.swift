@@ -7,10 +7,11 @@ extension TodoItemEvent {
         var dto: [String: Any] = [
             "entityType": "TodoItemEvent",
             "uid": uid,
+            "ownerId": owner?.uid ?? "",
+            "lastModifiedBy": lastModifiedBy?.uid,
+
             "type": type.rawValue,
             "date": date,
-            "lastModified": lastModified,
-            "ownerId": owner?.uid ?? "",
         ]
 
         // Add parent todo item reference

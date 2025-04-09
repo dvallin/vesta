@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct MealDetailView: View {
-    @EnvironmentObject private var userService: UserManager
+    @EnvironmentObject private var userService: UserService
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: MealDetailViewModel
 
@@ -24,7 +24,8 @@ struct MealDetailView: View {
                     value: Binding(
                         get: { viewModel.meal.scalingFactor },
                         set: { newValue in
-                            viewModel.meal.setScalingFactor(newValue)
+                            guard let currentUser = userService.currentUser else { return }
+                            viewModel.meal.setScalingFactor(newValue, currentUser: currentUser)
                         }
                     ),
                     formatter: NumberFormatter()
@@ -43,7 +44,8 @@ struct MealDetailView: View {
                     selection: Binding(
                         get: { viewModel.meal.mealType },
                         set: { newValue in
-                            viewModel.meal.setMealType(newValue)
+                            guard let currentUser = userService.currentUser else { return }
+                            viewModel.meal.setMealType(newValue, currentUser: currentUser)
                         }
                     )
                 ) {

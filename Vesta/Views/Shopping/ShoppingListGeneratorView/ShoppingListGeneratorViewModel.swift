@@ -2,11 +2,11 @@ import SwiftData
 import SwiftUI
 
 class ShoppingListGeneratorViewModel: ObservableObject {
-    private var userService: UserManager?
+    private var userService: UserService?
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
 
-    func configureContext(_ context: ModelContext, _ userService: UserManager) {
+    func configureContext(_ context: ModelContext, _ userService: UserService) {
         self.modelContext = context
         self.userService = userService
         self.categoryService = TodoItemCategoryService(modelContext: context)

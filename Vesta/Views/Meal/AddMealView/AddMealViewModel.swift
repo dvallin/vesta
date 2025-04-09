@@ -4,7 +4,7 @@ import SwiftUI
 class AddMealViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
-    private var userService: UserManager?
+    private var userService: UserService?
     private var categoryService: TodoItemCategoryService?
 
     @Published var selectedRecipe: Recipe?
@@ -20,7 +20,7 @@ class AddMealViewModel: ObservableObject {
     }
 
     func configureEnvironment(
-        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserManager
+        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserService
     ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)

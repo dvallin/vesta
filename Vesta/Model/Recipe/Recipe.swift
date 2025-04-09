@@ -10,8 +10,10 @@ class Recipe: SyncableEntity {
 
     @Relationship(deleteRule: .noAction)
     var owner: User?
+    
+    @Relationship(deleteRule: .noAction)
+    var lastModifiedBy: User?
 
-    var lastModified: Date = Date()
     var dirty: Bool = true
 
     @Relationship(deleteRule: .cascade, inverse: \Ingredient.recipe)
@@ -37,7 +39,6 @@ class Recipe: SyncableEntity {
         self.steps = []
         self.meals = []
         self.owner = owner
-        self.lastModified = Date()
         self.dirty = true
         self.spaces = []
 
@@ -75,21 +76,21 @@ class Recipe: SyncableEntity {
 
     // Mutation methods
 
-    func addIngredient(name: String, quantity: Double?, unit: Unit?) {
+    func addIngredient(name: String, quantity: Double?, unit: Unit?, currentUser: User) {
         let newIngredient = Ingredient(
             name: name, order: ingredients.count + 1, quantity: quantity, unit: unit, recipe: self)
         ingredients.append(newIngredient)
-        markAsDirty()
+        markAsDirty(currentUser)
     }
 
-    func removeIngredient(_ ingredient: Ingredient) {
+    func removeIngredient(_ ingredient: Ingredient, currentUser: User) {
         if let index = ingredients.firstIndex(where: { $0 === ingredient }) {
             ingredients.remove(at: index)
-            markAsDirty()
+            markAsDirty(currentUser)
         }
     }
 
-    func moveIngredient(from source: IndexSet, to destination: Int) {
+    func moveIngredient(from source: IndexSet, to destination: Int, currentUser: User) {
         var sortedIngredients = self.sortedIngredients
 
         sortedIngredients.move(fromOffsets: source, toOffset: destination)
@@ -97,10 +98,10 @@ class Recipe: SyncableEntity {
             ingredient.order = index + 1
         }
         ingredients = sortedIngredients
-        markAsDirty()
+        markAsDirty(currentUser)
     }
 
-    func addStep(instruction: String, type: StepType, duration: TimeInterval?) {
+    func addStep(instruction: String, type: StepType, duration: TimeInterval?, currentUser: User) {
         let newStep = RecipeStep(
             order: steps.count + 1,
             instruction: instruction,
@@ -109,17 +110,17 @@ class Recipe: SyncableEntity {
             recipe: self
         )
         steps.append(newStep)
-        markAsDirty()
+        markAsDirty(currentUser)
     }
 
-    func removeStep(_ step: RecipeStep) {
+    func removeStep(_ step: RecipeStep, currentUser: User) {
         if let index = steps.firstIndex(where: { $0 === step }) {
             steps.remove(at: index)
-            markAsDirty()
+            markAsDirty(currentUser)
         }
     }
 
-    func moveStep(from source: IndexSet, to destination: Int) {
+    func moveStep(from source: IndexSet, to destination: Int, currentUser: User) {
         var sortedSteps = self.sortedSteps
 
         sortedSteps.move(fromOffsets: source, toOffset: destination)
@@ -127,17 +128,17 @@ class Recipe: SyncableEntity {
             step.order = index + 1
         }
         steps = sortedSteps
-        markAsDirty()
+        markAsDirty(currentUser)
     }
 
-    func setTitle(_ newTitle: String) {
+    func setTitle(_ newTitle: String, currentUser: User) {
         title = newTitle
-        markAsDirty()
+        markAsDirty(currentUser)
     }
 
-    func setDetails(_ newDetails: String) {
+    func setDetails(_ newDetails: String, currentUser: User) {
         details = newDetails
-        markAsDirty()
+        markAsDirty(currentUser)
     }
 }
 

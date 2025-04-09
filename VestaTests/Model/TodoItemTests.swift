@@ -13,9 +13,9 @@ final class TodoItemTests: XCTestCase {
         container = try! ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         context = ModelContext(container)
 
-        // Set up the UserManager to return our test user
+        // Set up the UserService to return our test user
         user = Fixtures.createUser()
-        UserManager.shared.setCurrentUser(user: user)
+        UserService.shared.setCurrentUser(user: user)
     }
 
     override func tearDown() {
@@ -591,8 +591,6 @@ final class TodoItemTests: XCTestCase {
 
         // Assert
         XCTAssertFalse(todoItem.dirty, "Item should not be dirty after marked as synced")
-        XCTAssertGreaterThanOrEqual(
-            todoItem.lastModified, Date().addingTimeInterval(-5), "Last modified should be updated")
 
         // Act
         todoItem.setPriority(priority: 1)

@@ -5,7 +5,7 @@ class AddTodoItemViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
-    private var userService: UserManager?
+    private var userService: UserService?
 
     @Published var title: String = ""
     @Published var details: String = ""
@@ -34,7 +34,7 @@ class AddTodoItemViewModel: ObservableObject {
     }
 
     func configureEnvironment(
-        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserManager
+        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserService
     ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)

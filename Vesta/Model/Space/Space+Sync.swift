@@ -7,8 +7,8 @@ extension Space {
         var dto: [String: Any] = [
             "entityType": "Space",
             "uid": uid,
-            "lastModified": lastModified,
             "ownerId": owner?.uid ?? "",
+            "lastModifiedBy": lastModifiedBy?.uid,
 
             "name": name,
             "shareAllRecipes": shareAllRecipes,

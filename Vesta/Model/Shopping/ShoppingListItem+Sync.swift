@@ -7,8 +7,8 @@ extension ShoppingListItem {
         var dto: [String: Any] = [
             "entityType": "ShoppingListItem",
             "uid": uid,
-            "lastModified": lastModified,
             "ownerId": owner?.uid ?? "",
+            "lastModifiedBy": lastModifiedBy?.uid,
 
             "name": name,
             "isPurchased": isPurchased,

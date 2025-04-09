@@ -3,9 +3,11 @@ import SwiftData
 
 class SpaceRelationshipService {
     private let modelContext: ModelContext
+    private let userService: UserService
 
-    init(modelContext: ModelContext) {
+    init(modelContext: ModelContext, userService: UserService) {
         self.modelContext = modelContext
+        self.userService = userService
     }
 
     // MARK: - Single Entity Update Methods
@@ -95,6 +97,7 @@ class SpaceRelationshipService {
     // MARK: - Relationship Update Methods
 
     private func updateSpaces(for recipe: Recipe, spaces: [Space]) {
+        guard let currentUser = userService.currentUser else { return }
         guard let owner = recipe.owner else { return }
 
         var newSpaces: [Space] = []
@@ -110,11 +113,12 @@ class SpaceRelationshipService {
         // Check if spaces have changed
         if !areSpaceArraysEqual(recipe.spaces, newSpaces) {
             recipe.spaces = newSpaces
-            recipe.markAsDirty()
+            recipe.markAsDirty(currentUser)
         }
     }
 
     private func updateSpaces(for meal: Meal, spaces: [Space]) {
+        guard let currentUser = userService.currentUser else { return }
         guard let owner = meal.owner else { return }
 
         var newSpaces: [Space] = []
@@ -130,11 +134,12 @@ class SpaceRelationshipService {
         // Check if spaces have changed
         if !areSpaceArraysEqual(meal.spaces, newSpaces) {
             meal.spaces = newSpaces
-            meal.markAsDirty()
+            meal.markAsDirty(currentUser)
         }
     }
 
     private func updateSpaces(for shoppingItem: ShoppingListItem, spaces: [Space]) {
+        guard let currentUser = userService.currentUser else { return }
         guard let owner = shoppingItem.owner else { return }
 
         var newSpaces: [Space] = []
@@ -150,11 +155,12 @@ class SpaceRelationshipService {
         // Check if spaces have changed
         if !areSpaceArraysEqual(shoppingItem.spaces, newSpaces) {
             shoppingItem.spaces = newSpaces
-            shoppingItem.markAsDirty()
+            shoppingItem.markAsDirty(currentUser)
         }
     }
 
     private func updateSpaces(for todoItem: TodoItem, spaces: [Space]) {
+        guard let currentUser = userService.currentUser else { return }
         guard let owner = todoItem.owner else { return }
 
         var newSpaces: [Space] = []
@@ -175,12 +181,12 @@ class SpaceRelationshipService {
         // Check if spaces have changed
         if !areSpaceArraysEqual(todoItem.spaces, newSpaces) {
             todoItem.spaces = newSpaces
-            todoItem.markAsDirty()
+            todoItem.markAsDirty(currentUser)
 
             // Update spaces for todoItem events
             for event in todoItem.events {
                 event.spaces = newSpaces
-                event.markAsDirty()
+                event.markAsDirty(currentUser)
             }
         }
     }

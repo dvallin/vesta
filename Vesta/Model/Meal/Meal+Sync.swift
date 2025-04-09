@@ -7,8 +7,8 @@ extension Meal {
         var dto: [String: Any] = [
             "entityType": "Meal",
             "uid": uid,
-            "lastModified": lastModified,
             "ownerId": owner?.uid ?? "",
+            "lastModifiedBy": lastModifiedBy?.uid,
 
             "scalingFactor": scalingFactor,
             "mealType": mealType.rawValue,

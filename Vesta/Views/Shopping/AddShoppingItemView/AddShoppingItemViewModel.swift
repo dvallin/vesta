@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 class AddShoppingItemViewModel: ObservableObject {
-    private var userService: UserManager?
+    private var userService: UserService?
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
@@ -13,7 +13,7 @@ class AddShoppingItemViewModel: ObservableObject {
     @Published var selectedUnit: Unit? = nil
 
     func configureEnvironment(
-        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserManager
+        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserService
     ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)

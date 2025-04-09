@@ -7,8 +7,8 @@ extension TodoItem {
         var dto: [String: Any] = [
             "entityType": "TodoItem",
             "uid": uid,
-            "lastModified": lastModified,
             "ownerId": owner?.uid ?? "",
+            "lastModifiedBy": lastModifiedBy?.uid,
 
             "title": title,
             "details": details,

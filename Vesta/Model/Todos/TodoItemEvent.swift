@@ -71,11 +71,13 @@ class TodoItemEvent: SyncableEntity {
 
     @Relationship(deleteRule: .noAction)
     var owner: User?
+    
+    @Relationship(deleteRule: .noAction)
+    var lastModifiedBy: User?
 
     @Relationship
     var spaces: [Space]
 
-    var lastModified: Date = Date()
     var dirty: Bool = true
 
     @Relationship

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ShoppingItemDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var userService: UserService
     @Environment(\.dismiss) private var dismiss
 
     @State var item: ShoppingListItem
@@ -173,12 +174,13 @@ struct ShoppingItemDetailView: View {
     }
 
     private func saveChanges() {
+        guard let currentUser = userService.currentUser else { return }
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
         let quantityDouble = numberFormatter.number(from: quantity)?.doubleValue
 
-        item.setQuantity(newQuantity: quantityDouble)
-        item.setUnit(newUnit: selectedUnit)
+        item.setQuantity(newQuantity: quantityDouble, currentUser: currentUser)
+        item.setUnit(newUnit: selectedUnit, currentUser: currentUser)
 
         do {
             try modelContext.save()

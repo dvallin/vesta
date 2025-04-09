@@ -31,7 +31,7 @@ enum FilterMode: String, CaseIterable {
 class TodoListViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
-    private var userService: UserManager?
+    private var userService: UserService?
 
     @Published var currentDay: Date = Date()
     @Published var toastMessages: [ToastMessage] = []
@@ -47,7 +47,7 @@ class TodoListViewModel: ObservableObject {
     @Published var isPresentingAddTodoItemView = false
     @Published var isPresentingTodoEventsView = false
 
-    func configureContext(_ context: ModelContext, _ userService: UserManager) {
+    func configureContext(_ context: ModelContext, _ userService: UserService) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.userService = userService
@@ -99,7 +99,8 @@ class TodoListViewModel: ObservableObject {
     }
 
     func undoMarkAsDone(_ item: TodoItem, id: UUID) {
-        if let lastEvent = item.undoLastEvent() {
+        guard let currentUser = userService?.currentUser else { return }
+        if let lastEvent = item.undoLastEvent(currentUser: currentUser) {
             modelContext!.delete(lastEvent)
         }
         if saveContext() {

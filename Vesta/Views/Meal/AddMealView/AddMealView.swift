@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct AddMealView: View {
-    @EnvironmentObject private var userService: UserManager
+    @EnvironmentObject private var userService: UserService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var recipes: [Recipe]

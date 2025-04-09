@@ -7,7 +7,8 @@ extension User {
         var dto: [String: Any] = [
             "entityType": "User",
             "uid": uid,
-            "lastModified": lastModified,
+            "ownerId": uid,
+            "lastModifiedBy": uid,
 
             "isEmailVerified": isEmailVerified,
             "createdAt": createdAt,

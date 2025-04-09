@@ -35,12 +35,13 @@ class FirebaseAPIClient: APIClient {
                     )
                     continue  // Skip if missing required fields
                 }
-
                 // Create a reference to the document based on the entity type and id
                 let docRef = self.db.collection(entityType.lowercased()).document(uid)
 
                 // Add write operation to the current batch
                 let sanitizedDTO = self.sanitizeDTO(dto)
+                sanitizedDTO["lastModified"] = serverTimestamp()
+
                 currentBatch.setData(sanitizedDTO, forDocument: docRef, merge: true)
 
                 validOperations += 1

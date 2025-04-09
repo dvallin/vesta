@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 class MealDetailViewModel: ObservableObject {
-    private var userService: UserManager?
+    private var userService: UserService?
     private var modelContext: ModelContext?
 
     @Published var meal: Meal
@@ -11,7 +11,7 @@ class MealDetailViewModel: ObservableObject {
         self.meal = meal
     }
 
-    func configureEnvironment(_ context: ModelContext, _ userService: UserManager) {
+    func configureEnvironment(_ context: ModelContext, _ userService: UserService) {
         self.modelContext = context
         self.userService = userService
     }

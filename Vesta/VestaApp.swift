@@ -26,7 +26,7 @@ struct VestaApp: App {
         userService = UserService(modelContext: modelContext)
         syncService = SyncService(userService: userService, modelContext: modelContext)
 
-        MigrationManager.migrateToSyncableEntities(in: ModelContext, userService: UserService)
+        MigrationManager.migrateToSyncableEntities(in: modelContext, userService: userService)
 
         NotificationManager.shared.requestAuthorization()
     }

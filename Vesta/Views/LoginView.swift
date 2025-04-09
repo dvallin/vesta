@@ -2,7 +2,7 @@ import Combine
 import SwiftUI
 
 struct LoginView: View {
-    @EnvironmentObject var userService: UserManager
+    @EnvironmentObject var userService: UserService
 
     @State private var email = ""
     @State private var password = ""

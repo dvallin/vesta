@@ -11,8 +11,10 @@ class ShoppingListItem: SyncableEntity {
 
     @Relationship(deleteRule: .noAction)
     var owner: User?
+    
+    @Relationship(deleteRule: .noAction)
+    var lastModifiedBy: User?
 
-    var lastModified: Date = Date()
     var dirty: Bool = true
 
     @Relationship(deleteRule: .cascade, inverse: \TodoItem.shoppingListItem)
@@ -40,18 +42,17 @@ class ShoppingListItem: SyncableEntity {
         self.todoItem = todoItem
         self.meals = []
         self.owner = owner
-        self.lastModified = Date()
         self.dirty = true
         self.spaces = []
     }
 
-    func setQuantity(newQuantity: Double?) {
+    func setQuantity(newQuantity: Double?, currentUser: User) {
         self.quantity = newQuantity
-        self.markAsDirty()
+        self.markAsDirty(currentUser)
     }
 
-    func setUnit(newUnit: Unit?) {
+    func setUnit(newUnit: Unit?, currentUser: User) {
         self.unit = newUnit
-        self.markAsDirty()
+        self.markAsDirty(currentUser)
     }
 }
