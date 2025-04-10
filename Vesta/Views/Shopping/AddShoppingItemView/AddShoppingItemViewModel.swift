@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 class AddShoppingItemViewModel: ObservableObject {
-    private var userService: UserService?
+    private var auth: UserAuthService?
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
@@ -13,12 +13,12 @@ class AddShoppingItemViewModel: ObservableObject {
     @Published var selectedUnit: Unit? = nil
 
     func configureEnvironment(
-        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserService
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
     ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
-        self.userService = userService
+        self.auth = auth
     }
 
     var isAddButtonDisabled: Bool {
@@ -33,7 +33,7 @@ class AddShoppingItemViewModel: ObservableObject {
     @MainActor
     func addItem() {
         guard let modelContext = modelContext else { return }
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
 
         let shoppingCategory = categoryService?.fetchOrCreate(
             named: NSLocalizedString("Shopping", comment: "Shopping category name")

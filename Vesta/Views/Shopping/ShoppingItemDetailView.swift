@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ShoppingItemDetailView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var userService: UserService
+    @EnvironmentObject private var auth: UserAuthService
     @Environment(\.dismiss) private var dismiss
 
     @State var item: ShoppingListItem
@@ -174,7 +174,7 @@ struct ShoppingItemDetailView: View {
     }
 
     private func saveChanges() {
-        guard let currentUser = userService.currentUser else { return }
+        guard let currentUser = auth.currentUser else { return }
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
         let quantityDouble = numberFormatter.number(from: quantity)?.doubleValue

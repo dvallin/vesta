@@ -24,4 +24,23 @@ extension Space {
 
         return dto
     }
+
+    /// Update properties from server data
+    func update(from data: [String: Any]) {
+        if let name = data["name"] as? String {
+            self.name = name
+        }
+
+        if let shareAllRecipes = data["shareAllRecipes"] as? Bool {
+            self.shareAllRecipes = shareAllRecipes
+        }
+
+        if let shareAllMeals = data["shareAllMeals"] as? Bool {
+            self.shareAllMeals = shareAllMeals
+        }
+
+        if let shareAllShoppingItems = data["shareAllShoppingItems"] as? Bool {
+            self.shareAllShoppingItems = shareAllShoppingItems
+        }
+    }
 }

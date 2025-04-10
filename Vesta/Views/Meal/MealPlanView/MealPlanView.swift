@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct MealPlanView: View {
-    @EnvironmentObject private var userService: UserService
+    @EnvironmentObject private var auth: UserAuthService
     @Environment(\.modelContext) private var modelContext
     @Query private var meals: [Meal]
 
@@ -85,7 +85,7 @@ struct MealPlanView: View {
                 ShoppingListGeneratorView(meals: meals)
             }
             .onAppear {
-                viewModel.configureContext(modelContext, userService)
+                viewModel.configureContext(modelContext, auth)
             }
         }
     }

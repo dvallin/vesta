@@ -31,4 +31,29 @@ extension User {
         return dto
     }
 
+    func update(from data: [String: Any]) {
+        if let isEmailVerified = data["isEmailVerified"] as? Bool {
+            self.isEmailVerified = isEmailVerified
+        }
+
+        if let createdAt = data["createdAt"] as? Date {
+            self.createdAt = createdAt
+        }
+
+        if let lastSignInAt = data["lastSignInAt"] as? Date {
+            self.lastSignInAt = lastSignInAt
+        }
+
+        if let email = data["email"] as? String {
+            self.email = email
+        }
+
+        if let displayName = data["displayName"] as? String {
+            self.displayName = displayName
+        }
+
+        if let photoURL = data["photoURL"] as? String {
+            self.photoURL = photoURL
+        }
+    }
 }

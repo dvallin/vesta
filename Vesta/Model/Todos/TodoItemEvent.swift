@@ -71,7 +71,7 @@ class TodoItemEvent: SyncableEntity {
 
     @Relationship(deleteRule: .noAction)
     var owner: User?
-    
+
     @Relationship(deleteRule: .noAction)
     var lastModifiedBy: User?
 
@@ -84,7 +84,7 @@ class TodoItemEvent: SyncableEntity {
     var todoItem: TodoItem?
 
     init(
-        type: TodoItemEventType, date: Date, owner: User, todoItem: TodoItem,
+        type: TodoItemEventType, date: Date, owner: User?, todoItem: TodoItem?,
         previousTitle: String? = nil, previousDetails: String? = nil, previousDueDate: Date? = nil,
         previousIsCompleted: Bool? = nil, previousRecurrenceFrequency: RecurrenceFrequency? = nil,
         previousRecurrenceType: RecurrenceType? = nil, previousRecurrenceInterval: Int? = nil,

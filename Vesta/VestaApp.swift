@@ -9,8 +9,16 @@ struct VestaApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     let sharedModelContainer: ModelContainer
-    let userService: UserService
+    let auth: UserAuthService
+    let users: UserService
+    let spaces: SpaceService
+    let meals: MealService
+    let todoItemCategories: TodoItemCategoryService
+    let todoItems: TodoItemService
+    let recipes: RecipeService
+    let shoppingItems: ShoppingListItemService
     let syncService: SyncService
+    let todoItemEvents: TodoItemEventService
 
     init() {
         FirebaseApp.configure()
@@ -23,10 +31,21 @@ struct VestaApp: App {
         }
 
         let modelContext = sharedModelContainer.mainContext
-        userService = UserService(modelContext: modelContext)
-        syncService = SyncService(userService: userService, modelContext: modelContext)
+        auth = UserAuthService(modelContext: modelContext)
+        users = UserService(modelContext: modelContext)
+        spaces = SpaceService(modelContext: modelContext)
+        todoItemCategories = TodoItemCategoryService(modelContext: modelContext)
+        meals = MealService(modelContext: modelContext)
+        todoItems = TodoItemService(modelContext: modelContext)
+        recipes = RecipeService(modelContext: modelContext)
+        shoppingItems = ShoppingListItemService(modelContext: modelContext)
+        todoItemEvents = TodoItemEventService(modelContext: modelContext)
+        
+        syncService = SyncService(auth: auth, users: users, spaces: spaces, todoItemCategories: todoItemCategories,
+                                  meals: meals, todoItems: todoItems, recipes: recipes, shoppingItems: shoppingItems,
+                                  todoItemEvents: todoItemEvents, modelContext: modelContext)
 
-        MigrationManager.migrateToSyncableEntities(in: modelContext, userService: userService)
+        MigrationManager.migrateToSyncableEntities(in: modelContext, auth: auth)
 
         NotificationManager.shared.requestAuthorization()
     }
@@ -36,7 +55,7 @@ struct VestaApp: App {
             VestaMainPage()
         }
         .modelContainer(sharedModelContainer)
-        .environmentObject(userService)
+        .environmentObject(auth)
         .environmentObject(syncService)
     }
 }

@@ -13,9 +13,9 @@ final class TodoItemTests: XCTestCase {
         container = try! ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         context = ModelContext(container)
 
-        // Set up the UserService to return our test user
+        // Set up the UserAuthService to return our test user
         user = Fixtures.createUser()
-        UserService.shared.setCurrentUser(user: user)
+        UserAuthService.shared.setCurrentUser(user: user)
     }
 
     override func tearDown() {

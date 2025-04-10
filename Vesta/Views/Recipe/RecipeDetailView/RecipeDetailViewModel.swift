@@ -3,7 +3,7 @@ import SwiftUI
 
 class RecipeDetailViewModel: ObservableObject {
     private var modelContext: ModelContext?
-    private var userService: UserService?
+    private var auth: UserAuthService?
     private var dismiss: DismissAction?
 
     @Published var recipe: Recipe
@@ -15,10 +15,12 @@ class RecipeDetailViewModel: ObservableObject {
         self.recipe = recipe
     }
 
-    func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction, _ userService: UserService) {
+    func configureEnvironment(
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
+    ) {
         self.modelContext = context
         self.dismiss = dismiss
-        self.userService = userService
+        self.auth = auth
     }
 
     func save() {
@@ -43,15 +45,16 @@ class RecipeDetailViewModel: ObservableObject {
     }
 
     func addIngredient(name: String, quantity: Double?, unit: Unit?) {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         withAnimation {
-            recipe.addIngredient(name: name, quantity: quantity, unit: unit, currentUser: currentUser)
+            recipe.addIngredient(
+                name: name, quantity: quantity, unit: unit, currentUser: currentUser)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 
     func removeIngredient(_ ingredient: Ingredient) {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         withAnimation {
             recipe.removeIngredient(ingredient, currentUser: currentUser)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
@@ -59,20 +62,21 @@ class RecipeDetailViewModel: ObservableObject {
     }
 
     func moveIngredient(from source: IndexSet, to destination: Int) {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         recipe.moveIngredient(from: source, to: destination, currentUser: currentUser)
     }
 
     func addStep(instruction: String, type: StepType, duration: TimeInterval?) {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         withAnimation {
-            recipe.addStep(instruction: instruction, type: type, duration: duration, currentUser: currentUser)
+            recipe.addStep(
+                instruction: instruction, type: type, duration: duration, currentUser: currentUser)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 
     func removeStep(_ step: RecipeStep) {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         withAnimation {
             recipe.removeStep(step, currentUser: currentUser)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
@@ -80,7 +84,7 @@ class RecipeDetailViewModel: ObservableObject {
     }
 
     func moveStep(from source: IndexSet, to destination: Int) {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         recipe.moveStep(from: source, to: destination, currentUser: currentUser)
     }
 }

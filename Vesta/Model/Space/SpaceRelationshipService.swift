@@ -3,11 +3,11 @@ import SwiftData
 
 class SpaceRelationshipService {
     private let modelContext: ModelContext
-    private let userService: UserService
+    private let auth: UserAuthService
 
-    init(modelContext: ModelContext, userService: UserService) {
+    init(modelContext: ModelContext, auth: UserAuthService) {
         self.modelContext = modelContext
-        self.userService = userService
+        self.auth = auth
     }
 
     // MARK: - Single Entity Update Methods
@@ -97,7 +97,7 @@ class SpaceRelationshipService {
     // MARK: - Relationship Update Methods
 
     private func updateSpaces(for recipe: Recipe, spaces: [Space]) {
-        guard let currentUser = userService.currentUser else { return }
+        guard let currentUser = auth.currentUser else { return }
         guard let owner = recipe.owner else { return }
 
         var newSpaces: [Space] = []
@@ -118,7 +118,7 @@ class SpaceRelationshipService {
     }
 
     private func updateSpaces(for meal: Meal, spaces: [Space]) {
-        guard let currentUser = userService.currentUser else { return }
+        guard let currentUser = auth.currentUser else { return }
         guard let owner = meal.owner else { return }
 
         var newSpaces: [Space] = []
@@ -139,7 +139,7 @@ class SpaceRelationshipService {
     }
 
     private func updateSpaces(for shoppingItem: ShoppingListItem, spaces: [Space]) {
-        guard let currentUser = userService.currentUser else { return }
+        guard let currentUser = auth.currentUser else { return }
         guard let owner = shoppingItem.owner else { return }
 
         var newSpaces: [Space] = []
@@ -160,7 +160,7 @@ class SpaceRelationshipService {
     }
 
     private func updateSpaces(for todoItem: TodoItem, spaces: [Space]) {
-        guard let currentUser = userService.currentUser else { return }
+        guard let currentUser = auth.currentUser else { return }
         guard let owner = todoItem.owner else { return }
 
         var newSpaces: [Space] = []

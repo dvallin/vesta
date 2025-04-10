@@ -11,7 +11,7 @@ class ShoppingListItem: SyncableEntity {
 
     @Relationship(deleteRule: .noAction)
     var owner: User?
-    
+
     @Relationship(deleteRule: .noAction)
     var lastModifiedBy: User?
 
@@ -33,7 +33,7 @@ class ShoppingListItem: SyncableEntity {
 
     init(
         name: String, quantity: Double? = nil, unit: Unit? = nil,
-        todoItem: TodoItem?, owner: User
+        todoItem: TodoItem?, owner: User?
     ) {
         self.uid = UUID().uuidString
         self.name = name

@@ -31,4 +31,16 @@ extension Meal {
 
         return dto
     }
+
+    func update(from data: [String: Any]) {
+        if let scalingFactor = data["scalingFactor"] as? Double {
+            self.scalingFactor = scalingFactor
+        }
+
+        if let mealTypeRaw = data["mealType"] as? String,
+            let mealType = MealType(rawValue: mealTypeRaw)
+        {
+            self.mealType = mealType
+        }
+    }
 }

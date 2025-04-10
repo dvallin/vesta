@@ -4,7 +4,7 @@ import SwiftUI
 class AddMealViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
-    private var userService: UserService?
+    private var auth: UserAuthService?
     private var categoryService: TodoItemCategoryService?
 
     @Published var selectedRecipe: Recipe?
@@ -20,17 +20,17 @@ class AddMealViewModel: ObservableObject {
     }
 
     func configureEnvironment(
-        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserService
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
     ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
-        self.userService = userService
+        self.auth = auth
         self.dismiss = dismiss
     }
 
     @MainActor
     func save() {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         guard let recipe = selectedRecipe else {
             validationMessage = NSLocalizedString(
                 "Please select a recipe", comment: "Recipe selection validation message")

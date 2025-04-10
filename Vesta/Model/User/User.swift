@@ -14,14 +14,14 @@ class User: SyncableEntity {
 
     @Relationship
     var spaces: [Space]
-    
+
     @Relationship(deleteRule: .noAction)
     var lastModifiedBy: User? = nil
-    
+
     @Relationship(deleteRule: .noAction)
     var owner: User? = nil
-    
-    var dirty: Bool = false
+
+    var dirty: Bool = true
 
     init(
         uid: String, email: String? = nil, displayName: String? = nil,

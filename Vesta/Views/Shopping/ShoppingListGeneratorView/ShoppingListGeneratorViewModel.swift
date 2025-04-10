@@ -2,13 +2,13 @@ import SwiftData
 import SwiftUI
 
 class ShoppingListGeneratorViewModel: ObservableObject {
-    private var userService: UserService?
+    private var auth: UserAuthService?
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
 
-    func configureContext(_ context: ModelContext, _ userService: UserService) {
+    func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
         self.modelContext = context
-        self.userService = userService
+        self.auth = auth
         self.categoryService = TodoItemCategoryService(modelContext: context)
     }
 
@@ -56,7 +56,7 @@ class ShoppingListGeneratorViewModel: ObservableObject {
     }
 
     func generateShoppingList() {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         guard let categoryService = categoryService else { return }
         guard let modelContext = modelContext else { return }
 

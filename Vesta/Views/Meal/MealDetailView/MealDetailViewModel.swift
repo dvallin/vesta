@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 class MealDetailViewModel: ObservableObject {
-    private var userService: UserService?
+    private var auth: UserAuthService?
     private var modelContext: ModelContext?
 
     @Published var meal: Meal
@@ -11,9 +11,9 @@ class MealDetailViewModel: ObservableObject {
         self.meal = meal
     }
 
-    func configureEnvironment(_ context: ModelContext, _ userService: UserService) {
+    func configureEnvironment(_ context: ModelContext, _ auth: UserAuthService) {
         self.modelContext = context
-        self.userService = userService
+        self.auth = auth
     }
 
     func save() {
@@ -26,7 +26,7 @@ class MealDetailViewModel: ObservableObject {
     }
 
     func updateTodoItemDueDate(for mealType: MealType) {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         meal.updateTodoItemDueDate(for: mealType, currentUser: currentUser)
     }
 }

@@ -4,7 +4,7 @@ import SwiftUI
 struct RecipeDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var userService: UserService
+    @EnvironmentObject private var auth: UserAuthService
     @StateObject private var viewModel: RecipeDetailViewModel
 
     @State private var ingredientName: String = ""
@@ -127,7 +127,7 @@ struct RecipeDetailView: View {
             Text(viewModel.validationMessage)
         }
         .onAppear {
-            viewModel.configureEnvironment(modelContext, dismiss, userService)
+            viewModel.configureEnvironment(modelContext, dismiss, auth)
         }
     }
 

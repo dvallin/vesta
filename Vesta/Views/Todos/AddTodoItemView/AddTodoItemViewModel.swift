@@ -5,7 +5,7 @@ class AddTodoItemViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
-    private var userService: UserService?
+    private var auth: UserAuthService?
 
     @Published var title: String = ""
     @Published var details: String = ""
@@ -34,12 +34,12 @@ class AddTodoItemViewModel: ObservableObject {
     }
 
     func configureEnvironment(
-        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserService
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
     ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
-        self.userService = userService
+        self.auth = auth
     }
 
     @MainActor
@@ -57,7 +57,7 @@ class AddTodoItemViewModel: ObservableObject {
             showingValidationAlert = true
             return
         }
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
 
         isSaving = true
         do {

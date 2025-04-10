@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct MealDetailView: View {
-    @EnvironmentObject private var userService: UserService
+    @EnvironmentObject private var auth: UserAuthService
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: MealDetailViewModel
 
@@ -24,7 +24,7 @@ struct MealDetailView: View {
                     value: Binding(
                         get: { viewModel.meal.scalingFactor },
                         set: { newValue in
-                            guard let currentUser = userService.currentUser else { return }
+                            guard let currentUser = auth.currentUser else { return }
                             viewModel.meal.setScalingFactor(newValue, currentUser: currentUser)
                         }
                     ),
@@ -44,7 +44,7 @@ struct MealDetailView: View {
                     selection: Binding(
                         get: { viewModel.meal.mealType },
                         set: { newValue in
-                            guard let currentUser = userService.currentUser else { return }
+                            guard let currentUser = auth.currentUser else { return }
                             viewModel.meal.setMealType(newValue, currentUser: currentUser)
                         }
                     )
@@ -67,7 +67,7 @@ struct MealDetailView: View {
                     selection: Binding(
                         get: { viewModel.meal.todoItem?.dueDate ?? Date() },
                         set: { newValue in
-                            guard let currentUser = userService.currentUser else { return }
+                            guard let currentUser = auth.currentUser else { return }
                             viewModel.meal.setDueDate(newValue, currentUser: currentUser)
                         }
                     ),
@@ -87,7 +87,7 @@ struct MealDetailView: View {
             #endif
         }
         .onAppear {
-            viewModel.configureEnvironment(modelContext, userService)
+            viewModel.configureEnvironment(modelContext, auth)
         }
     }
 }

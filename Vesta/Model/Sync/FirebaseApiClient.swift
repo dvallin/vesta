@@ -12,6 +12,167 @@ class FirebaseAPIClient: APIClient {
         category: "Synchronization"
     )
 
+    /// Fetches updated entities from Firebase based on last sync time
+    /// - Parameters:
+    ///   - entityTypes: List of entity types to fetch (e.g., "TodoItem", "Recipe")
+    ///   - userId: Current user's ID
+    ///   - lastSyncTime: Timestamp of the last successful sync
+    /// - Returns: Publisher that emits fetched entities or an error
+    func fetchUpdatedEntities(
+        entityTypes: [String],
+        userId: String
+    ) -> AnyPublisher<[String: [[String: Any]]], Error> {
+        logger.info("Starting fetch of updated entities for user: \(userId)")
+
+        return Future<[String: [[String: Any]]], Error> { [weak self] promise in
+            guard let self = self else {
+                promise(.failure(FirebaseError.unknown))
+                return
+            }
+
+            // Get last sync time from UserDefaults or use epoch if not available
+            let lastSyncKey = "lastSync_\(userId)"
+            let lastSyncDate =
+                UserDefaults.standard.object(forKey: lastSyncKey) as? Date
+                ?? Date(timeIntervalSince1970: 0)
+            let lastSyncTimestamp = Timestamp(date: lastSyncDate)
+
+            self.logger.debug("Using last sync time: \(lastSyncDate.description)")
+
+            // First, get all spaces the current user is a member of
+            let spacesQuery = self.db.collection("space")
+                .whereField("memberIds", arrayContains: userId)
+
+            spacesQuery.getDocuments { (spaceSnapshot, spaceError) in
+                if let error = spaceError {
+                    self.logger.error(
+                        "Error fetching user spaces: \(error.localizedDescription, privacy: .public)"
+                    )
+                    promise(.failure(error))
+                    return
+                }
+
+                // Extract space IDs
+                let spaceIds = spaceSnapshot?.documents.compactMap { $0.documentID } ?? []
+                self.logger.debug("Found \(spaceIds.count) spaces for user")
+
+                // Create a dispatch group to track completion of all queries
+                let group = DispatchGroup()
+                var allResults: [String: [[String: Any]]] = [:]
+                var fetchError: Error?
+
+                // Process each entity type
+                for entityType in entityTypes {
+                    allResults[entityType] = []
+                    let entityCollection = self.db.collection(entityType.lowercased())
+
+                    // Query 1: Fetch entities owned by the user and modified after last sync
+                    group.enter()
+                    let ownedQuery =
+                        entityCollection
+                        .whereField("ownerId", isEqualTo: userId)
+                        .whereField("lastModified", isGreaterThan: lastSyncTimestamp)
+
+                    ownedQuery.getDocuments { (ownedSnapshot, ownedError) in
+                        if let error = ownedError {
+                            self.logger.error(
+                                "Error fetching owned \(entityType): \(error.localizedDescription, privacy: .public)"
+                            )
+                            fetchError = error
+                            group.leave()
+                            return
+                        }
+
+                        if let docs = ownedSnapshot?.documents {
+                            let results = docs.map {
+                                self.processDocument($0, entityType: entityType)
+                            }
+                            allResults[entityType]?.append(contentsOf: results)
+                            self.logger.debug("Fetched \(docs.count) owned \(entityType) documents")
+                        }
+                        group.leave()
+                    }
+
+                    // Only proceed with spaces query if we have spaces
+                    if !spaceIds.isEmpty {
+                        // Query 2: Fetch entities shared in the user's spaces and modified after last sync
+                        group.enter()
+                        let sharedQuery =
+                            entityCollection
+                            .whereField("spaces", arrayContainsAny: spaceIds)
+                            .whereField("lastModified", isGreaterThan: lastSyncTimestamp)
+
+                        sharedQuery.getDocuments { (sharedSnapshot, sharedError) in
+                            if let error = sharedError {
+                                self.logger.error(
+                                    "Error fetching shared \(entityType): \(error.localizedDescription, privacy: .public)"
+                                )
+                                fetchError = error
+                                group.leave()
+                                return
+                            }
+
+                            if let docs = sharedSnapshot?.documents {
+                                // Filter out entities that were modified by the current user to avoid duplicates with owned query
+                                let results =
+                                    docs
+                                    .filter { $0.data()["lastModifiedBy"] as? String != userId }
+                                    .map { self.processDocument($0, entityType: entityType) }
+                                allResults[entityType]?.append(contentsOf: results)
+                                self.logger.debug(
+                                    "Fetched \(results.count) shared \(entityType) documents")
+                            }
+                            group.leave()
+                        }
+                    } else {
+                        self.logger.debug("User has no spaces, skipping shared entities query")
+                    }
+                }
+
+                // When all queries complete, process results
+                group.notify(queue: .main) {
+                    if let error = fetchError {
+                        promise(.failure(error))
+                        return
+                    }
+
+                    // Find the latest modified timestamp to update the last sync time
+                    var latestTimestamp: Date?
+
+                    for entityDocs in allResults.values {
+                        for doc in entityDocs {
+                            if let timestamp = doc["lastModified"] as? Timestamp {
+                                let date = timestamp.dateValue()
+                                if latestTimestamp == nil || date > latestTimestamp! {
+                                    latestTimestamp = date
+                                }
+                            }
+                        }
+                    }
+
+                    // Update lastSync time if we found a newer timestamp
+                    if let latestDate = latestTimestamp {
+                        UserDefaults.standard.set(latestDate, forKey: lastSyncKey)
+                        self.logger.debug("Updated last sync time to: \(latestDate.description)")
+                    }
+
+                    let totalFetched = allResults.values.flatMap { $0 }.count
+                    self.logger.info("Successfully fetched \(totalFetched) updated entities")
+                    promise(.success(allResults))
+                }
+            }
+        }.eraseToAnyPublisher()
+    }
+
+    private func processDocument(_ document: DocumentSnapshot, entityType: String) -> [String: Any]
+    {
+        var data = document.data() ?? [:]
+        data["uid"] = document.documentID
+        data["entityType"] = entityType
+
+        return data
+    }
+
     func syncEntities(dtos: [[String: Any]]) -> AnyPublisher<Void, Error> {
         logger.info("Starting synchronization of \(dtos.count) entities to Firebase")
 
@@ -39,8 +200,8 @@ class FirebaseAPIClient: APIClient {
                 let docRef = self.db.collection(entityType.lowercased()).document(uid)
 
                 // Add write operation to the current batch
-                let sanitizedDTO = self.sanitizeDTO(dto)
-                sanitizedDTO["lastModified"] = serverTimestamp()
+                var sanitizedDTO = self.sanitizeDTO(dto)
+                sanitizedDTO["lastModified"] = FieldValue.serverTimestamp()
 
                 currentBatch.setData(sanitizedDTO, forDocument: docRef, merge: true)
 
@@ -160,5 +321,6 @@ extension FirebaseAPIClient {
     enum FirebaseError: Error {
         case batchWriteFailure
         case invalidEntityData
+        case unknown
     }
 }

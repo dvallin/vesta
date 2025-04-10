@@ -9,7 +9,7 @@ struct DayGroup: Identifiable {
 }
 
 class MealPlanViewModel: ObservableObject {
-    private var userService: UserService?
+    private var auth: UserAuthService?
     private var modelContext: ModelContext?
 
     @Published var selectedMeal: Meal?
@@ -17,9 +17,9 @@ class MealPlanViewModel: ObservableObject {
     @Published var isPresentingRecipeListView = false
     @Published var isPresentingShoppingListGenerator = false
 
-    func configureContext(_ context: ModelContext, _ userService: UserService) {
+    func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
         self.modelContext = context
-        self.userService = userService
+        self.auth = auth
     }
 
     func dayGroups(for meals: [Meal]) -> [DayGroup] {
@@ -105,7 +105,7 @@ class MealPlanViewModel: ObservableObject {
     }
 
     func markAsDone(_ todoItem: TodoItem) {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         todoItem.markAsDone(currentUser: currentUser)
         if saveContext() {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)

@@ -5,7 +5,7 @@ class TodoItemDetailViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
-    private var userService: UserService?
+    private var auth: UserAuthService?
 
     @Published var item: TodoItem
 
@@ -42,12 +42,12 @@ class TodoItemDetailViewModel: ObservableObject {
     }
 
     func configureEnvironment(
-        _ context: ModelContext, _ dismiss: DismissAction, _ userService: UserService
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
     ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
-        self.userService = userService
+        self.auth = auth
     }
 
     var isDirty: Bool {
@@ -62,7 +62,7 @@ class TodoItemDetailViewModel: ObservableObject {
     }
 
     func markAsDone() {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         withAnimation {
             item.markAsDone(currentUser: currentUser)
             saveContext()
@@ -71,7 +71,7 @@ class TodoItemDetailViewModel: ObservableObject {
     }
 
     func save() {
-        guard let currentUser = userService?.currentUser else { return }
+        guard let currentUser = auth?.currentUser else { return }
         guard !tempTitle.isEmpty else {
             validationMessage = NSLocalizedString(
                 "Please enter a todo title", comment: "Validation error for empty todo title")

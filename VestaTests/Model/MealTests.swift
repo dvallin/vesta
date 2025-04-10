@@ -15,9 +15,9 @@ final class MealTests: XCTestCase {
         container = try! ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         context = ModelContext(container)
 
-        // Set up the UserService to return our test user
+        // Set up the UserAuthService to return our test user
         user = Fixtures.createUser()
-        UserService.shared.setCurrentUser(user: user)
+        UserAuthService.shared.setCurrentUser(user: user)
 
         // Set up test recipe and todoItem
         recipe = Fixtures.bolognese(owner: user)

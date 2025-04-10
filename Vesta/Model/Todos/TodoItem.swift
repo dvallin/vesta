@@ -50,7 +50,7 @@ class TodoItem: SyncableEntity {
 
     @Relationship(deleteRule: .noAction)
     var owner: User?
-    
+
     @Relationship(deleteRule: .noAction)
     var lastModifiedBy: User?
 
@@ -83,7 +83,7 @@ class TodoItem: SyncableEntity {
         meal: Meal? = nil,
         shoppingListItem: ShoppingListItem? = nil,
         category: TodoItemCategory? = nil,
-        owner: User
+        owner: User?
     ) {
         self.uid = UUID().uuidString
         self.title = title
@@ -157,7 +157,8 @@ class TodoItem: SyncableEntity {
         if let frequency = recurrenceFrequency {
             let baseDate = recurrenceType == .fixed ? (dueDate ?? event.date) : event.date
             let baseDateWithTime = DateUtils.preserveTime(from: dueDate, applying: baseDate)
-            updateDueDate(for: frequency, basedOn: baseDateWithTime ?? baseDate, currentUser: currentUser)
+            updateDueDate(
+                for: frequency, basedOn: baseDateWithTime ?? baseDate, currentUser: currentUser)
         } else {
             isCompleted.toggle()
         }
@@ -290,7 +291,9 @@ class TodoItem: SyncableEntity {
         return lastEvent
     }
 
-    private func updateDueDate(for frequency: RecurrenceFrequency, basedOn baseDate: Date, currentUser: User) {
+    private func updateDueDate(
+        for frequency: RecurrenceFrequency, basedOn baseDate: Date, currentUser: User
+    ) {
         let calendar = Calendar.current
         let interval = recurrenceInterval ?? 1
 

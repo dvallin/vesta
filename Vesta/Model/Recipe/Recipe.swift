@@ -10,7 +10,7 @@ class Recipe: SyncableEntity {
 
     @Relationship(deleteRule: .noAction)
     var owner: User?
-    
+
     @Relationship(deleteRule: .noAction)
     var lastModifiedBy: User?
 
@@ -30,7 +30,7 @@ class Recipe: SyncableEntity {
 
     init(
         title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = [],
-        owner: User
+        owner: User?
     ) {
         self.uid = UUID().uuidString
         self.title = title
@@ -139,6 +139,17 @@ class Recipe: SyncableEntity {
     func setDetails(_ newDetails: String, currentUser: User) {
         details = newDetails
         markAsDirty(currentUser)
+    }
+    
+    /// Updates the entity's properties from a dictionary of values
+    func update(from data: [String: Any]) {
+        if let title = data["title"] as? String {
+            self.title = title
+        }
+        
+        if let details = data["details"] as? String {
+            self.details = details
+        }
     }
 }
 

@@ -35,4 +35,19 @@ extension ShoppingListItem {
 
         return dto
     }
+
+    /// Updates the entity's properties from a dictionary of values
+    func update(from data: [String: Any]) {
+        if let name = data["name"] as? String {
+            self.name = name
+        }
+
+        if let quantity = data["quantity"] as? Double {
+            self.quantity = quantity
+        }
+
+        if let unitRaw = data["unit"] as? String, let unit = Unit(rawValue: unitRaw) {
+            self.unit = unit
+        }
+    }
 }

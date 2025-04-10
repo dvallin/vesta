@@ -20,7 +20,7 @@ enum MealType: String, Codable, CaseIterable {
 
 @Model
 class Meal: SyncableEntity {
-    
+
     @Attribute(.unique) var uid: String?
 
     var scalingFactor: Double
@@ -28,7 +28,7 @@ class Meal: SyncableEntity {
 
     @Relationship(deleteRule: .noAction)
     var owner: User?
-    
+
     @Relationship(deleteRule: .noAction)
     var lastModifiedBy: User?
 
@@ -52,8 +52,8 @@ class Meal: SyncableEntity {
     }
 
     init(
-        scalingFactor: Double, todoItem: TodoItem, recipe: Recipe, mealType: MealType = .dinner,
-        owner: User
+        scalingFactor: Double, todoItem: TodoItem?, recipe: Recipe?, mealType: MealType = .dinner,
+        owner: User?
     ) {
         self.uid = UUID().uuidString
         self.scalingFactor = scalingFactor
