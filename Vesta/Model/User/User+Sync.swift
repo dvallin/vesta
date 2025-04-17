@@ -28,6 +28,9 @@ extension User {
             dto["photoURL"] = photoURL
         }
 
+        // Add space references
+        dto["spaceIds"] = spaces.compactMap { $0.uid }
+
         return dto
     }
 

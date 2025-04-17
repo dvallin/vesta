@@ -40,12 +40,11 @@ struct VestaApp: App {
         recipes = RecipeService(modelContext: modelContext)
         shoppingItems = ShoppingListItemService(modelContext: modelContext)
         todoItemEvents = TodoItemEventService(modelContext: modelContext)
-        
-        syncService = SyncService(auth: auth, users: users, spaces: spaces, todoItemCategories: todoItemCategories,
-                                  meals: meals, todoItems: todoItems, recipes: recipes, shoppingItems: shoppingItems,
-                                  todoItemEvents: todoItemEvents, modelContext: modelContext)
 
-        MigrationManager.migrateToSyncableEntities(in: modelContext, auth: auth)
+        syncService = SyncService(
+            auth: auth, users: users, spaces: spaces, todoItemCategories: todoItemCategories,
+            meals: meals, todoItems: todoItems, recipes: recipes, shoppingItems: shoppingItems,
+            todoItemEvents: todoItemEvents, modelContext: modelContext)
 
         NotificationManager.shared.requestAuthorization()
     }

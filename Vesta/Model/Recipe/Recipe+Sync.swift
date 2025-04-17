@@ -23,6 +23,9 @@ extension Recipe {
         // Include meal references
         dto["mealIds"] = meals.compactMap { $0.uid }
 
+        // Add space references
+        dto["spaceIds"] = spaces.compactMap { $0.uid }
+
         return dto
     }
 }
@@ -32,7 +35,6 @@ extension Ingredient {
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
             "entityType": "Ingredient",
-            "id": id,
 
             "name": name,
             "order": order,
@@ -47,11 +49,6 @@ extension Ingredient {
             dto["unit"] = unit.rawValue
         }
 
-        // Add reference to parent recipe if available
-        if let recipeId = recipe?.id {
-            dto["recipeId"] = recipeId
-        }
-
         return dto
     }
 }
@@ -61,7 +58,6 @@ extension RecipeStep {
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
             "entityType": "RecipeStep",
-            "id": id,
 
             "order": order,
             "instruction": instruction,
@@ -71,11 +67,6 @@ extension RecipeStep {
         // Add optional duration
         if let duration = duration {
             dto["duration"] = duration
-        }
-
-        // Add reference to parent recipe if available
-        if let recipeId = recipe?.id {
-            dto["recipeId"] = recipeId
         }
 
         return dto

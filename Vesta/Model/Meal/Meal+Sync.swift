@@ -6,7 +6,7 @@ extension Meal {
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
             "entityType": "Meal",
-            "uid": uid,
+            "uid": uid ?? "",
             "ownerId": owner?.uid ?? "",
             "lastModifiedBy": lastModifiedBy?.uid,
 
@@ -16,11 +16,11 @@ extension Meal {
         ]
 
         // Add related entity IDs for references
-        if let todoItemId = todoItem?.id {
+        if let todoItemId = todoItem?.uid {
             dto["todoItemId"] = todoItemId
         }
 
-        if let recipeId = recipe?.id {
+        if let recipeId = recipe?.uid {
             dto["recipeId"] = recipeId
         }
 
@@ -28,6 +28,9 @@ extension Meal {
         dto["shoppingListItemIds"] = shoppingListItems.compactMap {
             $0.uid
         }
+
+        // Add space references
+        dto["spaceIds"] = spaces.compactMap { $0.uid }
 
         return dto
     }

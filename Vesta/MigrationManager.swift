@@ -3,17 +3,16 @@ import SwiftUI
 
 struct MigrationManager {
 
-    static func migrateToSyncableEntities(in context: ModelContext, auth: UserAuthService) {
-        // Get the dummy user for offline development
-        guard let dummyUser = auth.currentUser else { return }
+    static func migrateToSyncableEntities(in context: ModelContext, currentUser: User) {
 
         // Assign owners to all entities that implement SyncableEntity
-        migrateTodoItemEvents(in: context, defaultOwner: dummyUser)
-        migrateTodoItems(in: context, defaultOwner: dummyUser)
-        migrateRecipes(in: context, defaultOwner: dummyUser)
-        migrateMeals(in: context, defaultOwner: dummyUser)
-        migrateShoppingListItems(in: context, defaultOwner: dummyUser)
-        migrateSpaces(in: context, defaultOwner: dummyUser)
+        migrateTodoItemEvents(in: context, owner: currentUser)
+        migrateTodoItems(in: context, owner: currentUser)
+        migrateRecipes(in: context, owner: currentUser)
+        migrateMeals(in: context, owner: currentUser)
+        migrateShoppingListItems(in: context, owner: currentUser)
+        migrateSpaces(in: context, owner: currentUser)
+        migrateUsers(in: context, owner: currentUser)
 
         // Save changes
         do {
@@ -23,16 +22,34 @@ struct MigrationManager {
         }
     }
 
-    private static func migrateTodoItemEvents(in context: ModelContext, defaultOwner: User) {
+    private static func migrateUsers(in context: ModelContext, owner: User) {
+        let descriptor = FetchDescriptor<User>()
+        do {
+            let users = try context.fetch(descriptor)
+            for user in users {
+                if user.uid == nil {
+                    print("Error \(user) does not contain uuid")
+                }
+                if user.owner == nil {
+                    user.owner = owner
+                }
+            }
+        } catch {
+            print("Error migrating TodoItems: \(error)")
+        }
+    }
+
+    private static func migrateTodoItemEvents(in context: ModelContext, owner: User) {
         let descriptor = FetchDescriptor<TodoItemEvent>()
         do {
             let items = try context.fetch(descriptor)
             for item in items {
                 if item.uid == nil {
                     item.uid = UUID().uuidString
+                    item.dirty = true
                 }
                 if item.owner == nil {
-                    item.owner = defaultOwner
+                    item.owner = owner
                     item.dirty = true
                 }
             }
@@ -41,16 +58,17 @@ struct MigrationManager {
         }
     }
 
-    private static func migrateTodoItems(in context: ModelContext, defaultOwner: User) {
+    private static func migrateTodoItems(in context: ModelContext, owner: User) {
         let descriptor = FetchDescriptor<TodoItem>()
         do {
             let items = try context.fetch(descriptor)
             for item in items {
                 if item.uid == nil {
                     item.uid = UUID().uuidString
+                    item.dirty = true
                 }
                 if item.owner == nil {
-                    item.owner = defaultOwner
+                    item.owner = owner
                     item.dirty = true
                 }
             }
@@ -59,16 +77,17 @@ struct MigrationManager {
         }
     }
 
-    private static func migrateRecipes(in context: ModelContext, defaultOwner: User) {
+    private static func migrateRecipes(in context: ModelContext, owner: User) {
         let descriptor = FetchDescriptor<Recipe>()
         do {
             let recipes = try context.fetch(descriptor)
             for recipe in recipes {
                 if recipe.uid == nil {
                     recipe.uid = UUID().uuidString
+                    recipe.dirty = true
                 }
                 if recipe.owner == nil {
-                    recipe.owner = defaultOwner
+                    recipe.owner = owner
                     recipe.dirty = true
                 }
             }
@@ -77,16 +96,17 @@ struct MigrationManager {
         }
     }
 
-    private static func migrateMeals(in context: ModelContext, defaultOwner: User) {
+    private static func migrateMeals(in context: ModelContext, owner: User) {
         let descriptor = FetchDescriptor<Meal>()
         do {
             let meals = try context.fetch(descriptor)
             for meal in meals {
                 if meal.uid == nil {
                     meal.uid = UUID().uuidString
+                    meal.dirty = true
                 }
                 if meal.owner == nil {
-                    meal.owner = defaultOwner
+                    meal.owner = owner
                     meal.dirty = true
                 }
             }
@@ -95,16 +115,17 @@ struct MigrationManager {
         }
     }
 
-    private static func migrateShoppingListItems(in context: ModelContext, defaultOwner: User) {
+    private static func migrateShoppingListItems(in context: ModelContext, owner: User) {
         let descriptor = FetchDescriptor<ShoppingListItem>()
         do {
             let items = try context.fetch(descriptor)
             for item in items {
                 if item.uid == nil {
                     item.uid = UUID().uuidString
+                    item.dirty = true
                 }
                 if item.owner == nil {
-                    item.owner = defaultOwner
+                    item.owner = owner
                     item.dirty = true
                 }
             }
@@ -113,16 +134,17 @@ struct MigrationManager {
         }
     }
 
-    private static func migrateSpaces(in context: ModelContext, defaultOwner: User) {
+    private static func migrateSpaces(in context: ModelContext, owner: User) {
         let descriptor = FetchDescriptor<Space>()
         do {
             let spaces = try context.fetch(descriptor)
             for space in spaces {
                 if space.uid == nil {
                     space.uid = UUID().uuidString
+                    space.dirty = true
                 }
                 if space.owner == nil {
-                    space.owner = defaultOwner
+                    space.owner = owner
                     space.dirty = true
                 }
             }

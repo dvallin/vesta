@@ -29,9 +29,10 @@ extension ShoppingListItem {
         }
 
         // Add meal references
-        dto["mealIds"] = meals.compactMap {
-            $0.uid
-        }
+        dto["mealIds"] = meals.compactMap { $0.uid }
+
+        // Add space references
+        dto["spaceIds"] = spaces.compactMap { $0.uid }
 
         return dto
     }

@@ -47,6 +47,9 @@ extension TodoItem {
             dto["shoppingListItemId"] = shoppingListItemId
         }
 
+        // Add space references
+        dto["spaceIds"] = spaces.compactMap { $0.uid }
+
         return dto
     }
 
