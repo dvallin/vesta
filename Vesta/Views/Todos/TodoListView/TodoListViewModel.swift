@@ -31,6 +31,7 @@ enum FilterMode: String, CaseIterable {
 class TodoListViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
+    private var auth: UserAuthService?
 
     @Published var currentDay: Date = Date()
     @Published var toastMessages: [ToastMessage] = []
@@ -46,9 +47,10 @@ class TodoListViewModel: ObservableObject {
     @Published var isPresentingAddTodoItemView = false
     @Published var isPresentingTodoEventsView = false
 
-    func configureContext(_ context: ModelContext) {
+    func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
+        self.auth = auth
     }
 
     func fetchCategories() -> [TodoItemCategory] {
@@ -73,7 +75,8 @@ class TodoListViewModel: ObservableObject {
     }
 
     func markAsDone(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
-        item.markAsDone()
+        guard let currentUser = auth?.currentUser else { return }
+        item.markAsDone(currentUser: currentUser)
 
         if saveContext() {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
@@ -96,7 +99,8 @@ class TodoListViewModel: ObservableObject {
     }
 
     func undoMarkAsDone(_ item: TodoItem, id: UUID) {
-        if let lastEvent = item.undoLastEvent() {
+        guard let currentUser = auth?.currentUser else { return }
+        if let lastEvent = item.undoLastEvent(currentUser: currentUser) {
             modelContext!.delete(lastEvent)
         }
         if saveContext() {
@@ -133,13 +137,14 @@ class TodoListViewModel: ObservableObject {
     }
 
     func rescheduleOverdueTasks(todoItems: [TodoItem]) {
+        guard let currentUser = auth?.currentUser else { return }
         let today = DateUtils.calendar.startOfDay(for: Date())
 
         for item in todoItems {
             if item.isOverdue && !item.isCompleted {
                 if let dueDate = item.dueDate {
                     let newDueDate = DateUtils.preserveTime(from: dueDate, applying: today)
-                    item.setDueDate(dueDate: newDueDate)
+                    item.setDueDate(dueDate: newDueDate, currentUser: currentUser)
                 }
             }
         }

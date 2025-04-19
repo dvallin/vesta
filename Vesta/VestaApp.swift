@@ -1,3 +1,6 @@
+import FirebaseAuth
+import FirebaseCore
+import FirebaseFirestore
 import SwiftData
 import SwiftUI
 
@@ -5,43 +8,53 @@ import SwiftUI
 struct VestaApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
-    var sharedModelContainer: ModelContainer = {
+    let sharedModelContainer: ModelContainer
+    let auth: UserAuthService
+    let users: UserService
+    let spaces: SpaceService
+    let meals: MealService
+    let todoItemCategories: TodoItemCategoryService
+    let todoItems: TodoItemService
+    let recipes: RecipeService
+    let shoppingItems: ShoppingListItemService
+    let syncService: SyncService
+    let todoItemEvents: TodoItemEventService
+
+    init() {
+        FirebaseApp.configure()
+
         do {
-            let container = try ModelContainerHelper.createModelContainer(
+            self.sharedModelContainer = try ModelContainerHelper.createModelContainer(
                 isStoredInMemoryOnly: false)
-            return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
-    }()
 
-    init() {
+        let modelContext = sharedModelContainer.mainContext
+        auth = UserAuthService(modelContext: modelContext)
+        users = UserService(modelContext: modelContext)
+        spaces = SpaceService(modelContext: modelContext)
+        todoItemCategories = TodoItemCategoryService(modelContext: modelContext)
+        meals = MealService(modelContext: modelContext)
+        todoItems = TodoItemService(modelContext: modelContext)
+        recipes = RecipeService(modelContext: modelContext)
+        shoppingItems = ShoppingListItemService(modelContext: modelContext)
+        todoItemEvents = TodoItemEventService(modelContext: modelContext)
+
+        syncService = SyncService(
+            auth: auth, users: users, spaces: spaces, todoItemCategories: todoItemCategories,
+            meals: meals, todoItems: todoItems, recipes: recipes, shoppingItems: shoppingItems,
+            todoItemEvents: todoItemEvents, modelContext: modelContext)
+
         NotificationManager.shared.requestAuthorization()
     }
 
     var body: some Scene {
         WindowGroup {
-            TabView {
-                TodayView().tabItem {
-                    Label("Today", systemImage: "list.bullet")
-                }
-                .onAppear {
-                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
-                }
-                MealsView().tabItem {
-                    Label("Meals", systemImage: "fork.knife")
-                }
-                .onAppear {
-                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
-                }
-                ShoppingView().tabItem {
-                    Label("Shopping", systemImage: "cart")
-                }
-                .onAppear {
-                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
-                }
-            }
+            VestaMainPage()
         }
         .modelContainer(sharedModelContainer)
+        .environmentObject(auth)
+        .environmentObject(syncService)
     }
 }
