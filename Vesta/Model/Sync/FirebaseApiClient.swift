@@ -91,8 +91,15 @@ class FirebaseAPIClient: APIClient {
 
     private func getLastSyncTimestamp(for userId: String) -> Timestamp {
         let lastSyncKey = "lastSync_\(userId)"
-        let lastSyncDate =
-            UserDefaults.standard.object(forKey: lastSyncKey) as? Date
+        
+        // Try to get the stored timestamp components
+        if let seconds = UserDefaults.standard.object(forKey: "\(lastSyncKey)_seconds") as? Int64,
+           let nanoseconds = UserDefaults.standard.object(forKey: "\(lastSyncKey)_nanoseconds") as? Int32 {
+            return Timestamp(seconds: seconds, nanoseconds: nanoseconds)
+        }
+        
+        // Fallback to the old way or default
+        let lastSyncDate = UserDefaults.standard.object(forKey: lastSyncKey) as? Date
             ?? Date(timeIntervalSince1970: 0)
         return Timestamp(date: lastSyncDate)
     }
@@ -181,6 +188,8 @@ class FirebaseAPIClient: APIClient {
                     }
                     group.leave()
                 }
+            } else {
+                self.logger.debug("User has no spaces, skipping shared entities query")
             }
         }
 
@@ -278,25 +287,34 @@ class FirebaseAPIClient: APIClient {
     }
 
     private func updateLastSyncTime(for userId: String, with entities: [String: [[String: Any]]]) {
-        var latestTimestamp: Date?
+        var latestTimestamp: Timestamp?
 
         // Find the latest modified timestamp
         for entityDocs in entities.values {
             for doc in entityDocs {
                 if let timestamp = doc["lastModified"] as? Timestamp {
-                    let date = timestamp.dateValue()
-                    if latestTimestamp == nil || date > latestTimestamp! {
-                        latestTimestamp = date
+                    if latestTimestamp == nil || 
+                       timestamp.seconds > latestTimestamp!.seconds || 
+                       (timestamp.seconds == latestTimestamp!.seconds && 
+                        timestamp.nanoseconds > latestTimestamp!.nanoseconds) {
+                        latestTimestamp = timestamp
                     }
                 }
             }
         }
 
         // Update last sync time if we found a newer timestamp
-        if let latestDate = latestTimestamp {
+        if let latestTimestamp = latestTimestamp {
             let lastSyncKey = "lastSync_\(userId)"
-            UserDefaults.standard.set(latestDate, forKey: lastSyncKey)
-            logger.debug("Updated last sync time to: \(latestDate.description)")
+            
+            // Store the raw timestamp components
+            UserDefaults.standard.set(latestTimestamp.seconds, forKey: "\(lastSyncKey)_seconds")
+            UserDefaults.standard.set(latestTimestamp.nanoseconds, forKey: "\(lastSyncKey)_nanoseconds")
+            
+            // Also store as Date for backward compatibility
+            UserDefaults.standard.set(latestTimestamp.dateValue(), forKey: lastSyncKey)
+            
+            logger.debug("Updated last sync time to: \(latestTimestamp.dateValue().description), seconds: \(latestTimestamp.seconds), nanoseconds: \(latestTimestamp.nanoseconds)")
         }
     }
 

@@ -32,6 +32,7 @@ struct MigrationManager {
                 }
                 if user.owner == nil {
                     user.owner = owner
+                    print("User \(user.id) marked as dirty: owner assigned")
                 }
             }
         } catch {
@@ -47,10 +48,12 @@ struct MigrationManager {
                 if item.uid == nil {
                     item.uid = UUID().uuidString
                     item.dirty = true
+                    print("TodoItemEvent \(item.id) marked as dirty: missing UID generated")
                 }
                 if item.owner == nil {
                     item.owner = owner
                     item.dirty = true
+                    print("TodoItemEvent \(item.toDTO()) marked as dirty: owner assigned")
                 }
             }
         } catch {
@@ -66,10 +69,12 @@ struct MigrationManager {
                 if item.uid == nil {
                     item.uid = UUID().uuidString
                     item.dirty = true
+                    print("TodoItem \(item.id) marked as dirty: missing UID generated")
                 }
                 if item.owner == nil {
                     item.owner = owner
                     item.dirty = true
+                    print("TodoItem \(item.id) marked as dirty: owner assigned")
                 }
             }
         } catch {
@@ -85,10 +90,12 @@ struct MigrationManager {
                 if recipe.uid == nil {
                     recipe.uid = UUID().uuidString
                     recipe.dirty = true
+                    print("Recipe \(recipe.id) marked as dirty: missing UID generated")
                 }
                 if recipe.owner == nil {
                     recipe.owner = owner
                     recipe.dirty = true
+                    print("Recipe \(recipe.id) marked as dirty: owner assigned")
                 }
             }
         } catch {
@@ -104,10 +111,12 @@ struct MigrationManager {
                 if meal.uid == nil {
                     meal.uid = UUID().uuidString
                     meal.dirty = true
+                    print("Meal \(meal.id) marked as dirty: missing UID generated")
                 }
                 if meal.owner == nil {
                     meal.owner = owner
                     meal.dirty = true
+                    print("Meal \(meal.id) marked as dirty: owner assigned")
                 }
             }
         } catch {
@@ -123,10 +132,12 @@ struct MigrationManager {
                 if item.uid == nil {
                     item.uid = UUID().uuidString
                     item.dirty = true
+                    print("ShoppingListItem \(item.id) marked as dirty: missing UID generated")
                 }
                 if item.owner == nil {
                     item.owner = owner
                     item.dirty = true
+                    print("ShoppingListItem \(item.id) marked as dirty: owner assigned")
                 }
             }
         } catch {
@@ -142,10 +153,12 @@ struct MigrationManager {
                 if space.uid == nil {
                     space.uid = UUID().uuidString
                     space.dirty = true
+                    print("Space \(space.id) marked as dirty: missing UID generated")
                 }
                 if space.owner == nil {
                     space.owner = owner
                     space.dirty = true
+                    print("Space \(space.id) marked as dirty: owner assigned")
                 }
             }
         } catch {

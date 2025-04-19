@@ -99,12 +99,14 @@ class SyncService: ObservableObject {
             }
             .sink(
                 receiveCompletion: { [weak self] completionState in
-                    self?.isSyncing = false
-                    switch completionState {
-                    case .finished:
-                        completion?(.success(()))
-                    case .failure(let error):
-                        completion?(.failure(error))
+                    Task { @MainActor in
+                        self?.isSyncing = false
+                        switch completionState {
+                        case .finished:
+                            completion?(.success(()))
+                        case .failure(let error):
+                            completion?(.failure(error))
+                        }
                     }
                 },
                 receiveValue: { _ in }
@@ -235,18 +237,21 @@ class SyncService: ObservableObject {
                     receiveCompletion: { completion in
                         switch completion {
                         case .finished:
-                            // Mark entities as synced
-                            entities.forEach { entity in
-                                entity.markAsSynced()
-                            }
+                            // Dispatch to main actor to update entities
+                            Task { @MainActor in
+                                // Mark entities as synced
+                                entities.forEach { entity in
+                                    entity.markAsSynced()
+                                }
 
-                            // Save context
-                            do {
-                                try self.modelContext.save()
-                                promise(.success(()))
-                            } catch {
-                                print("Error saving context after sync: \(error)")
-                                promise(.failure(.unknown))
+                                // Save context
+                                do {
+                                    try self.modelContext.save()
+                                    promise(.success(()))
+                                } catch {
+                                    print("Error saving context after sync: \(error)")
+                                    promise(.failure(.unknown))
+                                }
                             }
 
                         case .failure(let error):
@@ -334,40 +339,48 @@ class SyncService: ObservableObject {
             // Create a task context for processing entities
             Task {
                 do {
-                    // Process each entity type
-                    for (entityType, entities) in entityData {
-                        switch entityType {
-                        case "User":
-                            try await self.processUserEntities(entities, currentUser: currentUser)
-                        case "Space":
-                            try await self.processSpaceEntities(entities, currentUser: currentUser)
-                        case "TodoItem":
-                            try await self.processTodoItemEntities(
-                                entities, currentUser: currentUser)
-                        case "TodoItemEvent":
-                            try await self.processTodoItemEventEntities(
-                                entities, currentUser: currentUser)
-                        case "Recipe":
-                            try await self.processRecipeEntities(entities, currentUser: currentUser)
-                        case "Meal":
-                            try await self.processMealEntities(entities, currentUser: currentUser)
-                        case "ShoppingListItem":
-                            try await self.processShoppingListItemEntities(
-                                entities, currentUser: currentUser)
-                        default:
-                            print("Unknown entity type: \(entityType)")
+                    // Process each entity type on the MainActor
+                    await MainActor.run {
+                        Task {
+                            do {
+                                // Process each entity type
+                                for (entityType, entities) in entityData {
+                                    switch entityType {
+                                    case "User":
+                                        try await self.processUserEntities(entities, currentUser: currentUser)
+                                    case "Space":
+                                        try await self.processSpaceEntities(entities, currentUser: currentUser)
+                                    case "TodoItem":
+                                        try await self.processTodoItemEntities(
+                                            entities, currentUser: currentUser)
+                                    case "TodoItemEvent":
+                                        try await self.processTodoItemEventEntities(
+                                            entities, currentUser: currentUser)
+                                    case "Recipe":
+                                        try await self.processRecipeEntities(entities, currentUser: currentUser)
+                                    case "Meal":
+                                        try await self.processMealEntities(entities, currentUser: currentUser)
+                                    case "ShoppingListItem":
+                                        try await self.processShoppingListItemEntities(
+                                            entities, currentUser: currentUser)
+                                    default:
+                                        print("Unknown entity type: \(entityType)")
+                                    }
+                                }
+
+                                // Save all changes
+                                try self.modelContext.save()
+                                
+                                // Complete successfully
+                                promise(.success(()))
+                            } catch {
+                                print("Error processing entities: \(error)")
+                                promise(.failure(.unknown))
+                            }
                         }
                     }
-
-                    // Save all changes
-                    try self.modelContext.save()
-
-                    // Complete successfully
-                    await MainActor.run {
-                        promise(.success(()))
-                    }
                 } catch {
-                    print("Error processing entities: \(error)")
+                    print("Error in MainActor scheduling: \(error)")
                     await MainActor.run {
                         promise(.failure(.unknown))
                     }
@@ -376,6 +389,7 @@ class SyncService: ObservableObject {
         }
     }
 
+    @MainActor
     private func processUserEntities(_ entities: [[String: Any]], currentUser: User) async throws {
         for data in entities {
             guard let uid = data["uid"] as? String else { continue }
@@ -393,7 +407,7 @@ class SyncService: ObservableObject {
             // Update properties and members
             user.update(from: data)
 
-            if let ownerId = data["owner"] as? String {
+            if let ownerId = data["ownerId"] as? String {
                 if ownerId != user.owner?.uid {
                     if ownerId == uid {
                         user.owner = user
@@ -423,6 +437,7 @@ class SyncService: ObservableObject {
         }
     }
 
+    @MainActor
     private func processSpaceEntities(_ entities: [[String: Any]], currentUser: User) async throws {
         for data in entities {
             guard let uid = data["uid"] as? String else { continue }
@@ -442,7 +457,7 @@ class SyncService: ObservableObject {
             space.update(from: data)
 
             // Update owner if available
-            if let ownerId = data["owner"] as? String {
+            if let ownerId = data["ownerId"] as? String {
                 if ownerId != space.owner?.uid {
                     if let owner = try? users.fetchUnique(withUID: ownerId) {
                         space.owner = owner
@@ -489,6 +504,7 @@ class SyncService: ObservableObject {
         }
     }
 
+    @MainActor
     private func processTodoItemEntities(_ entities: [[String: Any]], currentUser: User)
         async throws
     {
@@ -501,9 +517,7 @@ class SyncService: ObservableObject {
                 todoItem = existingTodoItem
             } else {
                 guard let title = data["title"] as? String,
-                    let details = data["details"] as? String,
-                    let ownerUID = data["ownerId"] as? String,
-                    let owner = try? users.fetchUnique(withUID: ownerUID)
+                    let details = data["details"] as? String
                 else { continue }
 
                 todoItem = TodoItem(title: title, details: details, owner: nil)
@@ -515,7 +529,7 @@ class SyncService: ObservableObject {
             todoItem.update(from: data)
 
             // Update owner if available
-            if let ownerId = data["owner"] as? String {
+            if let ownerId = data["ownerId"] as? String {
                 if ownerId != todoItem.owner?.uid {
                     if let owner = try? users.fetchUnique(withUID: ownerId) {
                         todoItem.owner = owner
@@ -611,9 +625,11 @@ class SyncService: ObservableObject {
         }
     }
 
+    @MainActor
     private func processTodoItemEventEntities(_ entities: [[String: Any]], currentUser: User)
         async throws
     {
+        print("received todo events \(entities)")
         for data in entities {
             guard let uid = data["uid"] as? String else { continue }
             guard let ownerId = data["ownerId"] as? String else { continue }
@@ -654,7 +670,7 @@ class SyncService: ObservableObject {
             }
 
             // Update owner if available
-            if let ownerId = data["owner"] as? String {
+            if let ownerId = data["ownerId"] as? String {
                 if ownerId != todoItemEvent.owner?.uid {
                     if let owner = try? users.fetchUnique(withUID: ownerId) {
                         todoItemEvent.owner = owner
@@ -696,6 +712,7 @@ class SyncService: ObservableObject {
         }
     }
 
+    @MainActor
     private func processRecipeEntities(_ entities: [[String: Any]], currentUser: User) async throws
     {
         for data in entities {
@@ -709,14 +726,14 @@ class SyncService: ObservableObject {
                 guard let title = data["title"] as? String,
                     let details = data["details"] as? String
                 else { continue }
-                
+
                 recipe = Recipe(
                     title: title,
                     details: details,
-                    owner: nil // Will be updated based on references
+                    owner: nil  // Will be updated based on references
                 )
                 recipe.uid = uid
-                recipe.dirty = false // Fresh from server
+                recipe.dirty = false  // Fresh from server
                 modelContext.insert(recipe)
             }
 
@@ -724,7 +741,7 @@ class SyncService: ObservableObject {
             recipe.update(from: data)
 
             // Update owner if available
-            if let ownerId = data["owner"] as? String {
+            if let ownerId = data["ownerId"] as? String {
                 if ownerId != recipe.owner?.uid {
                     if let owner = try? users.fetchUnique(withUID: ownerId) {
                         recipe.owner = owner
@@ -744,24 +761,24 @@ class SyncService: ObservableObject {
             } else if recipe.lastModifiedBy != nil {
                 recipe.lastModifiedBy = nil
             }
-            
+
             // For non-syncable related entities (ingredients and steps), we always recreate them
             // Process ingredients - first remove all existing ingredients
             recipe.ingredients.removeAll()
-            
+
             // Then add new ingredients from data
             if let ingredients = data["ingredients"] as? [[String: Any]] {
                 for ingredientData in ingredients {
                     guard let name = ingredientData["name"] as? String,
-                          let order = ingredientData["order"] as? Int 
+                        let order = ingredientData["order"] as? Int
                     else { continue }
-                    
+
                     let quantity = ingredientData["quantity"] as? Double
                     var unit: Unit? = nil
                     if let unitRaw = ingredientData["unit"] as? String {
                         unit = Unit(rawValue: unitRaw)
                     }
-                    
+
                     let ingredient = Ingredient(
                         name: name,
                         order: order,
@@ -772,21 +789,21 @@ class SyncService: ObservableObject {
                     recipe.ingredients.append(ingredient)
                 }
             }
-            
+
             // Process steps - first remove all existing steps
             recipe.steps.removeAll()
-            
+
             // Then add new steps from data
             if let steps = data["steps"] as? [[String: Any]] {
                 for stepData in steps {
                     guard let order = stepData["order"] as? Int,
-                          let instruction = stepData["instruction"] as? String,
-                          let typeRaw = stepData["type"] as? String,
-                          let type = StepType(rawValue: typeRaw)
+                        let instruction = stepData["instruction"] as? String,
+                        let typeRaw = stepData["type"] as? String,
+                        let type = StepType(rawValue: typeRaw)
                     else { continue }
-                    
+
                     let duration = stepData["duration"] as? TimeInterval
-                    
+
                     let step = RecipeStep(
                         order: order,
                         instruction: instruction,
@@ -836,6 +853,7 @@ class SyncService: ObservableObject {
         }
     }
 
+    @MainActor
     private func processMealEntities(_ entities: [[String: Any]], currentUser: User) async throws {
         for data in entities {
             guard let uid = data["uid"] as? String else { continue }
@@ -876,7 +894,7 @@ class SyncService: ObservableObject {
             }
 
             // Update owner if available
-            if let ownerId = data["owner"] as? String {
+            if let ownerId = data["ownerId"] as? String {
                 if ownerId != meal.owner?.uid {
                     if let owner = try? users.fetchUnique(withUID: ownerId) {
                         meal.owner = owner
@@ -948,6 +966,7 @@ class SyncService: ObservableObject {
         }
     }
 
+    @MainActor
     private func processShoppingListItemEntities(_ entities: [[String: Any]], currentUser: User)
         async throws
     {
@@ -976,7 +995,7 @@ class SyncService: ObservableObject {
             shoppingListItem.update(from: data)
 
             // Update owner if available
-            if let ownerId = data["owner"] as? String {
+            if let ownerId = data["ownerId"] as? String {
                 if ownerId != shoppingListItem.owner?.uid {
                     if let owner = try? users.fetchUnique(withUID: ownerId) {
                         shoppingListItem.owner = owner
