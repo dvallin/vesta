@@ -6,12 +6,10 @@ struct MigrationManager {
     static func migrateToSyncableEntities(in context: ModelContext, currentUser: User) {
 
         // Assign owners to all entities that implement SyncableEntity
-        migrateTodoItemEvents(in: context, owner: currentUser)
         migrateTodoItems(in: context, owner: currentUser)
         migrateRecipes(in: context, owner: currentUser)
         migrateMeals(in: context, owner: currentUser)
         migrateShoppingListItems(in: context, owner: currentUser)
-        migrateSpaces(in: context, owner: currentUser)
         migrateUsers(in: context, owner: currentUser)
 
         // Save changes
@@ -33,27 +31,6 @@ struct MigrationManager {
                 if user.owner == nil {
                     user.owner = owner
                     print("User \(user.id) marked as dirty: owner assigned")
-                }
-            }
-        } catch {
-            print("Error migrating TodoItems: \(error)")
-        }
-    }
-
-    private static func migrateTodoItemEvents(in context: ModelContext, owner: User) {
-        let descriptor = FetchDescriptor<TodoItemEvent>()
-        do {
-            let items = try context.fetch(descriptor)
-            for item in items {
-                if item.uid == nil {
-                    item.uid = UUID().uuidString
-                    item.dirty = true
-                    print("TodoItemEvent \(item.id) marked as dirty: missing UID generated")
-                }
-                if item.owner == nil {
-                    item.owner = owner
-                    item.dirty = true
-                    print("TodoItemEvent \(item.toDTO()) marked as dirty: owner assigned")
                 }
             }
         } catch {
@@ -142,27 +119,6 @@ struct MigrationManager {
             }
         } catch {
             print("Error migrating ShoppingListItems: \(error)")
-        }
-    }
-
-    private static func migrateSpaces(in context: ModelContext, owner: User) {
-        let descriptor = FetchDescriptor<Space>()
-        do {
-            let spaces = try context.fetch(descriptor)
-            for space in spaces {
-                if space.uid == nil {
-                    space.uid = UUID().uuidString
-                    space.dirty = true
-                    print("Space \(space.id) marked as dirty: missing UID generated")
-                }
-                if space.owner == nil {
-                    space.owner = owner
-                    space.dirty = true
-                    print("Space \(space.id) marked as dirty: owner assigned")
-                }
-            }
-        } catch {
-            print("Error migrating Spaces: \(error)")
         }
     }
 }

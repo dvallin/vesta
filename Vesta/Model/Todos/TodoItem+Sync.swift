@@ -8,6 +8,7 @@ extension TodoItem {
             "entityType": "TodoItem",
             "uid": uid,
             "ownerId": owner?.uid ?? "",
+            "isShared": isShared,
             "lastModifiedBy": lastModifiedBy?.uid,
 
             "title": title,
@@ -47,14 +48,13 @@ extension TodoItem {
             dto["shoppingListItemId"] = shoppingListItemId
         }
 
-        // Add space references
-        dto["spaceIds"] = spaces.compactMap { $0.uid }
-
         return dto
     }
 
     // Method to update properties directly from a DTO during sync operations without triggering events
     func update(from dto: [String: Any]) {
+        self.isShared = dto["isShared"] as? Bool ?? false
+
         if let title = dto["title"] as? String {
             self.title = title
         }

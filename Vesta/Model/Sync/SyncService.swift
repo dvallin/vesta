@@ -14,11 +14,9 @@ class SyncService: ObservableObject {
     private var modelContext: ModelContext
     private var users: UserService
     private var auth: UserAuthService
-    private var spaces: SpaceService
     private var meals: MealService
     private var todoItems: TodoItemService
     private var todoItemCategories: TodoItemCategoryService
-    private var todoItemEvents: TodoItemEventService
     private var recipes: RecipeService
     private var shoppingItems: ShoppingListItemService
 
@@ -33,23 +31,20 @@ class SyncService: ObservableObject {
 
     public init(
         apiClient: APIClient = FirebaseAPIClient(),
-        auth: UserAuthService, users: UserService, spaces: SpaceService,
+        auth: UserAuthService, users: UserService,
         todoItemCategories: TodoItemCategoryService, meals: MealService, todoItems: TodoItemService,
         recipes: RecipeService, shoppingItems: ShoppingListItemService,
-        todoItemEvents: TodoItemEventService,
         modelContext: ModelContext
     ) {
         self.apiClient = apiClient
         self.modelContext = modelContext
         self.auth = auth
         self.users = users
-        self.spaces = spaces
         self.todoItemCategories = todoItemCategories
         self.meals = meals
         self.todoItems = todoItems
         self.recipes = recipes
         self.shoppingItems = shoppingItems
-        self.todoItemEvents = todoItemEvents
     }
 
     /// Start periodic sync operations
@@ -124,9 +119,7 @@ class SyncService: ObservableObject {
 
             let pushOperations = [
                 self.syncEntities(of: User.self),
-                self.syncEntities(of: Space.self),
                 self.syncEntities(of: TodoItem.self),
-                self.syncEntities(of: TodoItemEvent.self),
                 self.syncEntities(of: Recipe.self),
                 self.syncEntities(of: Meal.self),
                 self.syncEntities(of: ShoppingListItem.self),
@@ -283,9 +276,7 @@ class SyncService: ObservableObject {
             // Define entity types to sync
             let entityTypes = [
                 "User",
-                "Space",
                 "TodoItem",
-                "TodoItemEvent",
                 "Recipe",
                 "Meal",
                 "ShoppingListItem",
@@ -347,19 +338,17 @@ class SyncService: ObservableObject {
                                 for (entityType, entities) in entityData {
                                     switch entityType {
                                     case "User":
-                                        try await self.processUserEntities(entities, currentUser: currentUser)
-                                    case "Space":
-                                        try await self.processSpaceEntities(entities, currentUser: currentUser)
+                                        try await self.processUserEntities(
+                                            entities, currentUser: currentUser)
                                     case "TodoItem":
                                         try await self.processTodoItemEntities(
                                             entities, currentUser: currentUser)
-                                    case "TodoItemEvent":
-                                        try await self.processTodoItemEventEntities(
-                                            entities, currentUser: currentUser)
                                     case "Recipe":
-                                        try await self.processRecipeEntities(entities, currentUser: currentUser)
+                                        try await self.processRecipeEntities(
+                                            entities, currentUser: currentUser)
                                     case "Meal":
-                                        try await self.processMealEntities(entities, currentUser: currentUser)
+                                        try await self.processMealEntities(
+                                            entities, currentUser: currentUser)
                                     case "ShoppingListItem":
                                         try await self.processShoppingListItemEntities(
                                             entities, currentUser: currentUser)
@@ -370,7 +359,7 @@ class SyncService: ObservableObject {
 
                                 // Save all changes
                                 try self.modelContext.save()
-                                
+
                                 // Complete successfully
                                 promise(.success(()))
                             } catch {
@@ -434,73 +423,6 @@ class SyncService: ObservableObject {
             }
 
             user.markAsSynced()
-        }
-    }
-
-    @MainActor
-    private func processSpaceEntities(_ entities: [[String: Any]], currentUser: User) async throws {
-        for data in entities {
-            guard let uid = data["uid"] as? String else { continue }
-
-            // Check if entity exists or create a new one
-            let space: Space
-            if let existingSpace = try spaces.fetchUnique(withUID: uid) {
-                space = existingSpace
-            } else {
-                guard let name = data["name"] as? String else { continue }
-                space = Space(name: name, owner: nil)
-                space.uid = uid
-                modelContext.insert(space)
-            }
-
-            // Update properties and members
-            space.update(from: data)
-
-            // Update owner if available
-            if let ownerId = data["ownerId"] as? String {
-                if ownerId != space.owner?.uid {
-                    if let owner = try? users.fetchUnique(withUID: ownerId) {
-                        space.owner = owner
-                    }
-                }
-            } else if space.owner != nil {
-                space.owner = nil
-            }
-
-            // Update lastModifiedBy if available
-            if let lastModifiedById = data["lastModifiedBy"] as? String {
-                if lastModifiedById != space.lastModifiedBy?.uid {
-                    if let lastModifiedBy = try? users.fetchUnique(withUID: lastModifiedById) {
-                        space.lastModifiedBy = lastModifiedBy
-                    }
-                }
-            } else if space.lastModifiedBy != nil {
-                space.lastModifiedBy = nil
-            }
-
-            // Process member references if available
-            if let memberIds = data["memberIds"] as? [String], !memberIds.isEmpty {
-                // Get current member IDs
-                let currentMemberIds = Set(space.members.compactMap { $0.uid })
-
-                // Find new member IDs to add
-                let newMemberIds = Set(memberIds).subtracting(currentMemberIds)
-
-                if !newMemberIds.isEmpty {
-                    // Fetch all new members in one batch
-                    if let newMembers = try? users.fetchMany(withUIDs: Array(newMemberIds)) {
-                        space.members.append(contentsOf: newMembers)
-                    }
-                }
-
-                // Remove members that are no longer in the list
-                space.members.removeAll { member in
-                    guard let memberUid = member.uid else { return false }
-                    return !memberIds.contains(memberUid)
-                }
-            }
-
-            space.markAsSynced()
         }
     }
 
@@ -583,132 +505,7 @@ class SyncService: ObservableObject {
                 todoItem.category = nil
             }
 
-            // Process space references
-            if let spaceIds = data["spaceIds"] as? [String], !spaceIds.isEmpty {
-                let currentSpaceIds = Set(todoItem.spaces.compactMap { $0.uid })
-                let newSpaceIds = Set(spaceIds).subtracting(currentSpaceIds)
-
-                if !newSpaceIds.isEmpty {
-                    if let newSpaces = try? spaces.fetchMany(withUIDs: Array(newSpaceIds)) {
-                        todoItem.spaces.append(contentsOf: newSpaces)
-                    }
-                }
-
-                todoItem.spaces.removeAll { space in
-                    guard let spaceUid = space.uid else { return false }
-                    return !spaceIds.contains(spaceUid)
-                }
-            }
-
-            // Process events
-            if let events = data["events"] as? [String], !events.isEmpty {
-                let currentEventIds = Set(todoItem.events.compactMap { $0.uid })
-
-                let newEventIds = Set(events).subtracting(currentEventIds)
-
-                // Add new events
-                if !newEventIds.isEmpty {
-                    // Fetch all new members in one batch
-                    if let newEvents = try? todoItemEvents.fetchMany(withUIDs: Array(newEventIds)) {
-                        todoItem.events.append(contentsOf: newEvents)
-                    }
-                }
-
-                // Remove events that no longer exist
-                todoItem.events.removeAll { event in
-                    guard let eventUid = event.uid else { return false }
-                    return !events.contains(eventUid)
-                }
-            }
-
             todoItem.markAsSynced()
-        }
-    }
-
-    @MainActor
-    private func processTodoItemEventEntities(_ entities: [[String: Any]], currentUser: User)
-        async throws
-    {
-        print("received todo events \(entities)")
-        for data in entities {
-            guard let uid = data["uid"] as? String else { continue }
-            guard let ownerId = data["ownerId"] as? String else { continue }
-            guard let owner = try users.fetchUnique(withUID: ownerId) else { continue }
-
-            // Check if entity exists or create a new one
-            let todoItemEvent: TodoItemEvent
-            if let existingEvent = try todoItemEvents.fetchUnique(withUID: uid) {
-                todoItemEvent = existingEvent
-            } else {
-                guard let typeRaw = data["type"] as? String,
-                    let type = TodoItemEventType(rawValue: typeRaw),
-                    let date = data["date"] as? Date
-                else { continue }
-
-                todoItemEvent = TodoItemEvent(
-                    type: type,
-                    date: date,
-                    owner: nil,
-                    todoItem: nil
-                )
-                todoItemEvent.uid = uid
-                modelContext.insert(todoItemEvent)
-            }
-
-            // Update properties
-            todoItemEvent.update(from: data)
-
-            // Update todo item reference if available
-            if let todoItemId = data["todoItemId"] as? String {
-                if todoItemId != todoItemEvent.todoItem?.uid {
-                    if let todoItem = try? todoItems.fetchUnique(withUID: todoItemId) {
-                        todoItemEvent.todoItem = todoItem
-                    }
-                }
-            } else if todoItemEvent.todoItem != nil {
-                todoItemEvent.todoItem = nil
-            }
-
-            // Update owner if available
-            if let ownerId = data["ownerId"] as? String {
-                if ownerId != todoItemEvent.owner?.uid {
-                    if let owner = try? users.fetchUnique(withUID: ownerId) {
-                        todoItemEvent.owner = owner
-                    }
-                }
-            } else if todoItemEvent.owner != nil {
-                todoItemEvent.owner = nil
-            }
-
-            // Update lastModifiedBy if available
-            if let lastModifiedById = data["lastModifiedBy"] as? String {
-                if lastModifiedById != todoItemEvent.lastModifiedBy?.uid {
-                    if let lastModifiedBy = try? users.fetchUnique(withUID: lastModifiedById) {
-                        todoItemEvent.lastModifiedBy = lastModifiedBy
-                    }
-                }
-            } else if todoItemEvent.lastModifiedBy != nil {
-                todoItemEvent.lastModifiedBy = nil
-            }
-
-            // Process space references
-            if let spaceIds = data["spaceIds"] as? [String], !spaceIds.isEmpty {
-                let currentSpaceIds = Set(todoItemEvent.spaces.compactMap { $0.uid })
-                let newSpaceIds = Set(spaceIds).subtracting(currentSpaceIds)
-
-                if !newSpaceIds.isEmpty {
-                    if let newSpaces = try? spaces.fetchMany(withUIDs: Array(newSpaceIds)) {
-                        todoItemEvent.spaces.append(contentsOf: newSpaces)
-                    }
-                }
-
-                todoItemEvent.spaces.removeAll { space in
-                    guard let spaceUid = space.uid else { return false }
-                    return !spaceIds.contains(spaceUid)
-                }
-            }
-
-            todoItemEvent.markAsSynced()
         }
     }
 
@@ -832,23 +629,6 @@ class SyncService: ObservableObject {
                 }
             }
 
-            // Process space references
-            if let spaceIds = data["spaceIds"] as? [String], !spaceIds.isEmpty {
-                let currentSpaceIds = Set(recipe.spaces.compactMap { $0.uid })
-                let newSpaceIds = Set(spaceIds).subtracting(currentSpaceIds)
-
-                if !newSpaceIds.isEmpty {
-                    if let newSpaces = try? spaces.fetchMany(withUIDs: Array(newSpaceIds)) {
-                        recipe.spaces.append(contentsOf: newSpaces)
-                    }
-                }
-
-                recipe.spaces.removeAll { space in
-                    guard let spaceUid = space.uid else { return false }
-                    return !spaceIds.contains(spaceUid)
-                }
-            }
-
             recipe.markAsSynced()
         }
     }
@@ -924,23 +704,6 @@ class SyncService: ObservableObject {
                 }
             } else if meal.todoItem != nil {
                 meal.todoItem = nil
-            }
-
-            // Process spaces
-            if let spaceIds = data["spaceIds"] as? [String], !spaceIds.isEmpty {
-                let currentSpaceIds = Set(meal.spaces.compactMap { $0.uid })
-                let newSpaceIds = Set(spaceIds).subtracting(currentSpaceIds)
-
-                if !newSpaceIds.isEmpty {
-                    if let newSpaces = try? spaces.fetchMany(withUIDs: Array(newSpaceIds)) {
-                        meal.spaces.append(contentsOf: newSpaces)
-                    }
-                }
-
-                meal.spaces.removeAll { space in
-                    guard let spaceUid = space.uid else { return false }
-                    return !spaceIds.contains(spaceUid)
-                }
             }
 
             // Process shopping list items
@@ -1041,23 +804,6 @@ class SyncService: ObservableObject {
                 shoppingListItem.meals.removeAll { meal in
                     guard let mealUid = meal.uid else { return false }
                     return !mealIds.contains(mealUid)
-                }
-            }
-
-            // Process space references
-            if let spaceIds = data["spaceIds"] as? [String], !spaceIds.isEmpty {
-                let currentSpaceIds = Set(shoppingListItem.spaces.compactMap { $0.uid })
-                let newSpaceIds = Set(spaceIds).subtracting(currentSpaceIds)
-
-                if !newSpaceIds.isEmpty {
-                    if let newSpaces = try? spaces.fetchMany(withUIDs: Array(newSpaceIds)) {
-                        shoppingListItem.spaces.append(contentsOf: newSpaces)
-                    }
-                }
-
-                shoppingListItem.spaces.removeAll { space in
-                    guard let spaceUid = space.uid else { return false }
-                    return !spaceIds.contains(spaceUid)
                 }
             }
 

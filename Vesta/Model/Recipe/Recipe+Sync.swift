@@ -8,6 +8,7 @@ extension Recipe {
             "entityType": "TodoItem",
             "uid": uid,
             "ownerId": owner?.uid ?? "",
+            "isShared": isShared,
             "lastModifiedBy": lastModifiedBy?.uid,
 
             "title": title,
@@ -23,10 +24,20 @@ extension Recipe {
         // Include meal references
         dto["mealIds"] = meals.compactMap { $0.uid }
 
-        // Add space references
-        dto["spaceIds"] = spaces.compactMap { $0.uid }
-
         return dto
+    }
+
+    /// Updates the entity's properties from a dictionary of values
+    func update(from data: [String: Any]) {
+        self.isShared = data["isShared"] as? Bool ?? false
+
+        if let title = data["title"] as? String {
+            self.title = title
+        }
+
+        if let details = data["details"] as? String {
+            self.details = details
+        }
     }
 }
 

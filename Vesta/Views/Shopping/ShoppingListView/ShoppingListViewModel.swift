@@ -65,9 +65,7 @@ class ShoppingListViewModel: ObservableObject {
 
     func undoTogglePurchased(_ item: ShoppingListItem, id: UUID) {
         guard let currentUser = auth?.currentUser else { return }
-        if let lastEvent = item.todoItem?.undoLastEvent(currentUser: currentUser) {
-            modelContext!.delete(lastEvent)
-        }
+        item.todoItem?.setIsCompleted(isCompleted: false, currentUser: currentUser)
         if saveContext() {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
             toastMessages.removeAll { $0.id == id }

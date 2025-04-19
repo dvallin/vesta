@@ -14,6 +14,7 @@ class Recipe: SyncableEntity {
     @Relationship(deleteRule: .noAction)
     var lastModifiedBy: User?
 
+    var isShared: Bool = false
     var dirty: Bool = true
 
     @Relationship(deleteRule: .cascade, inverse: \Ingredient.recipe)
@@ -24,9 +25,6 @@ class Recipe: SyncableEntity {
 
     @Relationship(deleteRule: .cascade)
     var meals: [Meal]
-
-    @Relationship
-    var spaces: [Space]
 
     init(
         title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = [],
@@ -40,7 +38,6 @@ class Recipe: SyncableEntity {
         self.meals = []
         self.owner = owner
         self.dirty = true
-        self.spaces = []
 
         for ingredient in ingredients {
             ingredient.recipe = self
@@ -139,17 +136,6 @@ class Recipe: SyncableEntity {
     func setDetails(_ newDetails: String, currentUser: User) {
         details = newDetails
         markAsDirty(currentUser)
-    }
-    
-    /// Updates the entity's properties from a dictionary of values
-    func update(from data: [String: Any]) {
-        if let title = data["title"] as? String {
-            self.title = title
-        }
-        
-        if let details = data["details"] as? String {
-            self.details = details
-        }
     }
 }
 

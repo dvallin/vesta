@@ -8,6 +8,7 @@ extension User {
             "entityType": "User",
             "uid": uid,
             "ownerId": uid,
+            "isShared": isShared,
             "lastModifiedBy": uid,
 
             "isEmailVerified": isEmailVerified,
@@ -28,13 +29,12 @@ extension User {
             dto["photoURL"] = photoURL
         }
 
-        // Add space references
-        dto["spaceIds"] = spaces.compactMap { $0.uid }
-
         return dto
     }
 
     func update(from data: [String: Any]) {
+        self.isShared = data["isShared"] as? Bool ?? false
+
         if let isEmailVerified = data["isEmailVerified"] as? Bool {
             self.isEmailVerified = isEmailVerified
         }

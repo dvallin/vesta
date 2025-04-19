@@ -12,15 +12,16 @@ class User: SyncableEntity {
     var createdAt: Date
     var lastSignInAt: Date
 
-    @Relationship
-    var spaces: [Space]
-
     @Relationship(deleteRule: .noAction)
     var lastModifiedBy: User? = nil
 
     @Relationship(deleteRule: .noAction)
+    var friends: [User] = []
+
+    @Relationship(deleteRule: .noAction)
     var owner: User? = nil
 
+    var isShared: Bool = false
     var dirty: Bool = true
 
     init(
@@ -35,6 +36,5 @@ class User: SyncableEntity {
         self.isEmailVerified = isEmailVerified
         self.createdAt = createdAt
         self.lastSignInAt = lastSignInAt
-        self.spaces = []
     }
 }

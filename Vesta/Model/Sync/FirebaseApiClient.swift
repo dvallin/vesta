@@ -91,15 +91,18 @@ class FirebaseAPIClient: APIClient {
 
     private func getLastSyncTimestamp(for userId: String) -> Timestamp {
         let lastSyncKey = "lastSync_\(userId)"
-        
+
         // Try to get the stored timestamp components
         if let seconds = UserDefaults.standard.object(forKey: "\(lastSyncKey)_seconds") as? Int64,
-           let nanoseconds = UserDefaults.standard.object(forKey: "\(lastSyncKey)_nanoseconds") as? Int32 {
+            let nanoseconds = UserDefaults.standard.object(forKey: "\(lastSyncKey)_nanoseconds")
+                as? Int32
+        {
             return Timestamp(seconds: seconds, nanoseconds: nanoseconds)
         }
-        
+
         // Fallback to the old way or default
-        let lastSyncDate = UserDefaults.standard.object(forKey: lastSyncKey) as? Date
+        let lastSyncDate =
+            UserDefaults.standard.object(forKey: lastSyncKey) as? Date
             ?? Date(timeIntervalSince1970: 0)
         return Timestamp(date: lastSyncDate)
     }
@@ -293,10 +296,10 @@ class FirebaseAPIClient: APIClient {
         for entityDocs in entities.values {
             for doc in entityDocs {
                 if let timestamp = doc["lastModified"] as? Timestamp {
-                    if latestTimestamp == nil || 
-                       timestamp.seconds > latestTimestamp!.seconds || 
-                       (timestamp.seconds == latestTimestamp!.seconds && 
-                        timestamp.nanoseconds > latestTimestamp!.nanoseconds) {
+                    if latestTimestamp == nil || timestamp.seconds > latestTimestamp!.seconds
+                        || (timestamp.seconds == latestTimestamp!.seconds
+                            && timestamp.nanoseconds > latestTimestamp!.nanoseconds)
+                    {
                         latestTimestamp = timestamp
                     }
                 }
@@ -306,15 +309,18 @@ class FirebaseAPIClient: APIClient {
         // Update last sync time if we found a newer timestamp
         if let latestTimestamp = latestTimestamp {
             let lastSyncKey = "lastSync_\(userId)"
-            
+
             // Store the raw timestamp components
             UserDefaults.standard.set(latestTimestamp.seconds, forKey: "\(lastSyncKey)_seconds")
-            UserDefaults.standard.set(latestTimestamp.nanoseconds, forKey: "\(lastSyncKey)_nanoseconds")
-            
+            UserDefaults.standard.set(
+                latestTimestamp.nanoseconds, forKey: "\(lastSyncKey)_nanoseconds")
+
             // Also store as Date for backward compatibility
             UserDefaults.standard.set(latestTimestamp.dateValue(), forKey: lastSyncKey)
-            
-            logger.debug("Updated last sync time to: \(latestTimestamp.dateValue().description), seconds: \(latestTimestamp.seconds), nanoseconds: \(latestTimestamp.nanoseconds)")
+
+            logger.debug(
+                "Updated last sync time to: \(latestTimestamp.dateValue().description), seconds: \(latestTimestamp.seconds), nanoseconds: \(latestTimestamp.nanoseconds)"
+            )
         }
     }
 

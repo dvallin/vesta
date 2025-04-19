@@ -6,10 +6,8 @@ class ModelContainerHelper {
             Meal.self,
             Recipe.self,
             ShoppingListItem.self,
-            Space.self,
             TodoItem.self,
             TodoItemCategory.self,
-            TodoItemEvent.self,
             User.self,
         ])
         let modelConfiguration = ModelConfiguration(

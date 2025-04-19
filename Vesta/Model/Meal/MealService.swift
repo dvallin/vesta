@@ -15,7 +15,7 @@ class MealService {
         return meals.first
     }
 
-    /// Fetch a space by its unique identifier
+    /// Fetch a meal by its unique identifier
     func fetchMany(withUIDs uids: [String]) throws -> [Meal] {
         let descriptor = FetchDescriptor<Meal>(
             predicate: #Predicate<Meal> {

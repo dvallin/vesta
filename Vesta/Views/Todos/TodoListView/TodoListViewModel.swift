@@ -45,7 +45,6 @@ class TodoListViewModel: ObservableObject {
     @Published var selectedTodoItem: TodoItem? = nil
 
     @Published var isPresentingAddTodoItemView = false
-    @Published var isPresentingTodoEventsView = false
 
     func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
         self.modelContext = context
@@ -100,9 +99,8 @@ class TodoListViewModel: ObservableObject {
 
     func undoMarkAsDone(_ item: TodoItem, id: UUID) {
         guard let currentUser = auth?.currentUser else { return }
-        if let lastEvent = item.undoLastEvent(currentUser: currentUser) {
-            modelContext!.delete(lastEvent)
-        }
+        item.setIsCompleted(isCompleted: false, currentUser: currentUser)
+    
         if saveContext() {
             NotificationManager.shared.scheduleNotification(for: item)
 

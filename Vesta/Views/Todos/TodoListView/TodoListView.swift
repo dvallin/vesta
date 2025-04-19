@@ -27,9 +27,6 @@ struct TodoListView: View {
                     ? DateUtils.calendar.startOfDay(for: Date()) : nil
             )
         }
-        .sheet(isPresented: $viewModel.isPresentingTodoEventsView) {
-            TodoEventsView()
-        }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
             viewModel.configureContext(modelContext, auth)

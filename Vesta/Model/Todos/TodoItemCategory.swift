@@ -8,9 +8,6 @@ class TodoItemCategory {
     @Relationship(inverse: \TodoItem.category)
     var todoItems: [TodoItem]
 
-    @Relationship(inverse: \Space.sharedCategories)
-    var spaces: [Space] = []
-
     init(name: String) {
         self.name = name
         self.todoItems = []

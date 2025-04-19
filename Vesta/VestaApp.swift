@@ -11,14 +11,12 @@ struct VestaApp: App {
     let sharedModelContainer: ModelContainer
     let auth: UserAuthService
     let users: UserService
-    let spaces: SpaceService
     let meals: MealService
     let todoItemCategories: TodoItemCategoryService
     let todoItems: TodoItemService
     let recipes: RecipeService
     let shoppingItems: ShoppingListItemService
     let syncService: SyncService
-    let todoItemEvents: TodoItemEventService
 
     init() {
         FirebaseApp.configure()
@@ -33,18 +31,16 @@ struct VestaApp: App {
         let modelContext = sharedModelContainer.mainContext
         auth = UserAuthService(modelContext: modelContext)
         users = UserService(modelContext: modelContext)
-        spaces = SpaceService(modelContext: modelContext)
         todoItemCategories = TodoItemCategoryService(modelContext: modelContext)
         meals = MealService(modelContext: modelContext)
         todoItems = TodoItemService(modelContext: modelContext)
         recipes = RecipeService(modelContext: modelContext)
         shoppingItems = ShoppingListItemService(modelContext: modelContext)
-        todoItemEvents = TodoItemEventService(modelContext: modelContext)
 
         syncService = SyncService(
-            auth: auth, users: users, spaces: spaces, todoItemCategories: todoItemCategories,
+            auth: auth, users: users, todoItemCategories: todoItemCategories,
             meals: meals, todoItems: todoItems, recipes: recipes, shoppingItems: shoppingItems,
-            todoItemEvents: todoItemEvents, modelContext: modelContext)
+            modelContext: modelContext)
 
         NotificationManager.shared.requestAuthorization()
     }

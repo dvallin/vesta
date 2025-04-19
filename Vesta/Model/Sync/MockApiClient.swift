@@ -110,24 +110,6 @@ class MockAPIClient: APIClient {
                         // Use the user fixture and its toDTO method
                         entities = [mockUser.toDTO()]
 
-                    case "Space":
-                        // Create a mock space
-                        // Since we can't directly create a Space without a model context,
-                        // we'll create a mock DTO
-                        let mockSpace: [String: Any] = [
-                            "entityType": "Space",
-                            "uid": UUID().uuidString,
-                            "name": "Home",
-                            "ownerId": userId,
-                            "lastModified": Date(),
-                            "lastModifiedBy": userId,
-                            "shareAllRecipes": true,
-                            "shareAllMeals": true,
-                            "shareAllShoppingItems": true,
-                            "memberIds": [userId],
-                        ]
-                        entities = [mockSpace]
-
                     case "Meal":
                         // Create mock meal DTOs
                         for i in 0..<Int(arc4random_uniform(3) + 1) {

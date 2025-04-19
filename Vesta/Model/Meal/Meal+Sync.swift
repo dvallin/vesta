@@ -8,6 +8,7 @@ extension Meal {
             "entityType": "Meal",
             "uid": uid ?? "",
             "ownerId": owner?.uid ?? "",
+            "isShared": isShared,
             "lastModifiedBy": lastModifiedBy?.uid,
 
             "scalingFactor": scalingFactor,
@@ -29,18 +30,17 @@ extension Meal {
             $0.uid
         }
 
-        // Add space references
-        dto["spaceIds"] = spaces.compactMap { $0.uid }
-
         return dto
     }
 
-    func update(from data: [String: Any]) {
-        if let scalingFactor = data["scalingFactor"] as? Double {
+    func update(from dto: [String: Any]) {
+        self.isShared = dto["isShared"] as? Bool ?? false
+
+        if let scalingFactor = dto["scalingFactor"] as? Double {
             self.scalingFactor = scalingFactor
         }
 
-        if let mealTypeRaw = data["mealType"] as? String,
+        if let mealTypeRaw = dto["mealType"] as? String,
             let mealType = MealType(rawValue: mealTypeRaw)
         {
             self.mealType = mealType

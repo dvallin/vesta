@@ -32,6 +32,7 @@ class Meal: SyncableEntity {
     @Relationship(deleteRule: .noAction)
     var lastModifiedBy: User?
 
+    var isShared: Bool = false
     var dirty: Bool = true
 
     @Relationship(deleteRule: .cascade, inverse: \TodoItem.meal)
@@ -42,9 +43,6 @@ class Meal: SyncableEntity {
 
     @Relationship(inverse: \ShoppingListItem.meals)
     var shoppingListItems: [ShoppingListItem]
-
-    @Relationship
-    var spaces: [Space]
 
     var isDone: Bool {
         guard let todoItem = todoItem else { return true }
@@ -63,7 +61,6 @@ class Meal: SyncableEntity {
         self.shoppingListItems = []
         self.owner = owner
         self.dirty = true
-        self.spaces = []
     }
 
     func updateTodoItemDueDate(for mealType: MealType, on date: Date? = nil, currentUser: User) {
