@@ -6,6 +6,10 @@ class MockAPIClient: APIClient {
 
     private init() {}
 
+    // Dictionary to store mock subscription handlers
+    private var activeSubscriptions:
+        [String: PassthroughSubject<[String: [[String: Any]]], Never>] = [:]
+
     func syncEntities(dtos: [[String: Any]]) -> AnyPublisher<Void, Error> {
         // In a real implementation, this would make actual API calls
         // For now, we'll simulate a network call with a delay
@@ -28,8 +32,8 @@ class MockAPIClient: APIClient {
         }.eraseToAnyPublisher()
     }
 
-    func fetchUpdatedEntities(entityTypes: [String], userId: String) -> AnyPublisher<
-        [String: [[String: Any]]], any Error
+    func fetchUpdatedEntities(userId: String) -> AnyPublisher<
+        [String: [[String: Any]]], Error
     > {
         // Simulate fetching updated entities from a remote API
         return Future<[String: [[String: Any]]], Error> { promise in
@@ -49,6 +53,10 @@ class MockAPIClient: APIClient {
                 var result: [String: [[String: Any]]] = [:]
                 let mockUser = Fixtures.createUser()
 
+                // Define entity types to generate - this used to be passed as a parameter
+                let entityTypes = ["User", "TodoItem", "Recipe", "Meal", "ShoppingListItem"]
+
+                // Generate mock data for each entity type
                 for entityType in entityTypes {
                     var entities: [[String: Any]] = []
 
@@ -102,12 +110,12 @@ class MockAPIClient: APIClient {
                                 "unit": item["unit"] as! String,
                                 "ownerId": userId,
                                 "lastModified": Date(),
-                                "lastModifiedBy": userId,
                             ]
                         }
 
                     case "User":
                         // Use the user fixture and its toDTO method
+                        // Note: User is now stored differently but still represented the same way in the response
                         entities = [mockUser.toDTO()]
 
                     case "Meal":
@@ -117,7 +125,6 @@ class MockAPIClient: APIClient {
                                 "entityType": "Meal",
                                 "uid": UUID().uuidString,
                                 "ownerId": userId,
-                                "lastModifiedBy": userId,
                                 "scalingFactor": Double(arc4random_uniform(4) + 1) / 2.0,  // 0.5, 1.0, 1.5, or 2.0
                                 "mealType": ["breakfast", "lunch", "dinner", "snack"][
                                     Int(arc4random_uniform(4))],
@@ -136,7 +143,6 @@ class MockAPIClient: APIClient {
                                 "description": "Mock \(entityType) entity",
                                 "ownerId": userId,
                                 "lastModified": Date(),
-                                "lastModifiedBy": userId,
                             ])
                         }
                     }
@@ -151,5 +157,108 @@ class MockAPIClient: APIClient {
                 promise(.success(result))
             }
         }.eraseToAnyPublisher()
+    }
+
+    /// Subscribes to real-time updates for a user's entities
+    /// - Parameters:
+    ///   - userId: The ID of the user whose entities to subscribe to
+    ///   - onUpdate: Callback function triggered when entities are updated
+    /// - Returns: A cancellable object that, when cancelled, will unsubscribe from updates
+    func subscribeToEntityUpdates(
+        for userId: String,
+        onUpdate: @escaping (_ entityData: [String: [[String: Any]]]) -> Void
+    ) -> AnyCancellable {
+        print("Setting up mock real-time subscription for user: \(userId)")
+
+        // Create a subject for this subscription if it doesn't exist
+        let subject =
+            activeSubscriptions[userId] ?? PassthroughSubject<[String: [[String: Any]]], Never>()
+        activeSubscriptions[userId] = subject
+
+        // Set up a timer to simulate periodic updates
+        let timer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+
+            // 30% chance of sending an update on each timer fire
+            if arc4random_uniform(100) < 30 {
+                // Generate a random entity update
+                self.generateRandomUpdate(for: userId) { update in
+                    // Dispatch to main thread as the real implementation would
+                    DispatchQueue.main.async {
+                        onUpdate(update)
+                        subject.send(update)
+                    }
+                }
+            }
+        }
+
+        // Return a cancellable that cleans up when cancelled
+        return AnyCancellable {
+            print("Cancelling mock real-time subscription for user: \(userId)")
+            timer.invalidate()
+            // We keep the subject in case it's used by other subscribers,
+            // but we could also remove it if this is the only subscriber
+        }
+    }
+
+    // Helper method to generate random entity updates
+    private func generateRandomUpdate(
+        for userId: String, completion: @escaping ([String: [[String: Any]]]) -> Void
+    ) {
+        DispatchQueue.global().async {
+            // Generate a random entity type to update
+            let entityTypes = ["User", "TodoItem", "Recipe", "Meal", "ShoppingListItem"]
+            let randomType = entityTypes[Int(arc4random_uniform(UInt32(entityTypes.count)))]
+
+            var result: [String: [[String: Any]]] = [:]
+
+            if randomType == "User" {
+                // Update user information
+                let mockUser = Fixtures.createUser()
+                result["User"] = [mockUser.toDTO()]
+            } else {
+                // Create a random entity of the selected type
+                var entity: [String: Any] = [
+                    "entityType": randomType,
+                    "uid": UUID().uuidString,
+                    "ownerId": userId,
+                    "lastModified": Date(),
+                    "isShared": Bool.random(),
+                ]
+
+                // Add type-specific fields
+                switch randomType {
+                case "TodoItem":
+                    entity["title"] = "Updated task \(Int(arc4random_uniform(100)))"
+                    entity["details"] = "This task was updated via real-time sync"
+                    entity["isCompleted"] = Bool.random()
+                    entity["priority"] = Int(arc4random_uniform(3))
+
+                case "Recipe":
+                    entity["title"] = "Updated recipe \(Int(arc4random_uniform(100)))"
+                    entity["details"] = "This recipe was updated via real-time sync"
+
+                case "Meal":
+                    entity["scalingFactor"] = Double(arc4random_uniform(4) + 1) / 2.0
+                    entity["mealType"] =
+                        ["breakfast", "lunch", "dinner", "snack"][Int(arc4random_uniform(4))]
+                    entity["isDone"] = Bool.random()
+
+                case "ShoppingListItem":
+                    entity["name"] = "Updated item \(Int(arc4random_uniform(100)))"
+                    entity["isPurchased"] = Bool.random()
+                    entity["quantity"] = Int(arc4random_uniform(10) + 1)
+
+                default:
+                    entity["name"] = "Updated \(randomType) \(Int(arc4random_uniform(100)))"
+                    entity["description"] = "This entity was updated via real-time sync"
+                }
+
+                result[randomType] = [entity]
+            }
+
+            print("Generated mock real-time update for \(randomType)")
+            completion(result)
+        }
     }
 }

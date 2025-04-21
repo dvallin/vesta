@@ -9,7 +9,6 @@ extension User {
             "uid": uid,
             "ownerId": uid,
             "isShared": isShared,
-            "lastModifiedBy": uid,
 
             "isEmailVerified": isEmailVerified,
             "createdAt": createdAt,
@@ -28,6 +27,8 @@ extension User {
         if let photoURL = photoURL {
             dto["photoURL"] = photoURL
         }
+
+        dto["friendIds"] = friends.compactMap { $0.uid }
 
         return dto
     }

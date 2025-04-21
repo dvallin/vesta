@@ -9,7 +9,6 @@ extension Meal {
             "uid": uid ?? "",
             "ownerId": owner?.uid ?? "",
             "isShared": isShared,
-            "lastModifiedBy": lastModifiedBy?.uid,
 
             "scalingFactor": scalingFactor,
             "mealType": mealType.rawValue,

@@ -13,10 +13,11 @@ class User: SyncableEntity {
     var lastSignInAt: Date
 
     @Relationship(deleteRule: .noAction)
-    var lastModifiedBy: User? = nil
-
-    @Relationship(deleteRule: .noAction)
     var friends: [User] = []
+
+    var shareMeals: Bool? = false
+    var shareShoppingItems: Bool? = false
+    var shareTodoItemCategories: [TodoItemCategory] = []
 
     @Relationship(deleteRule: .noAction)
     var owner: User? = nil

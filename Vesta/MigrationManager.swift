@@ -25,6 +25,9 @@ struct MigrationManager {
         do {
             let users = try context.fetch(descriptor)
             for user in users {
+                if user.isShared == nil {
+                    user.isShared = false
+                }
                 if user.uid == nil {
                     print("Error \(user) does not contain uuid")
                 }
@@ -32,6 +35,7 @@ struct MigrationManager {
                     user.owner = owner
                     print("User \(user.id) marked as dirty: owner assigned")
                 }
+                user.dirty = true
             }
         } catch {
             print("Error migrating TodoItems: \(error)")
@@ -43,6 +47,10 @@ struct MigrationManager {
         do {
             let items = try context.fetch(descriptor)
             for item in items {
+                if item.isShared == nil {
+                    item.isShared = false
+                    item.dirty = true
+                }
                 if item.uid == nil {
                     item.uid = UUID().uuidString
                     item.dirty = true
@@ -53,6 +61,7 @@ struct MigrationManager {
                     item.dirty = true
                     print("TodoItem \(item.id) marked as dirty: owner assigned")
                 }
+                item.dirty = true
             }
         } catch {
             print("Error migrating TodoItems: \(error)")
@@ -64,6 +73,10 @@ struct MigrationManager {
         do {
             let recipes = try context.fetch(descriptor)
             for recipe in recipes {
+                if recipe.isShared == nil {
+                    recipe.isShared = false
+                    recipe.dirty = true
+                }
                 if recipe.uid == nil {
                     recipe.uid = UUID().uuidString
                     recipe.dirty = true
@@ -74,6 +87,7 @@ struct MigrationManager {
                     recipe.dirty = true
                     print("Recipe \(recipe.id) marked as dirty: owner assigned")
                 }
+                recipe.dirty = true
             }
         } catch {
             print("Error migrating Recipes: \(error)")
@@ -85,6 +99,10 @@ struct MigrationManager {
         do {
             let meals = try context.fetch(descriptor)
             for meal in meals {
+                if meal.isShared == nil {
+                    meal.isShared = false
+                    meal.dirty = true
+                }
                 if meal.uid == nil {
                     meal.uid = UUID().uuidString
                     meal.dirty = true
@@ -95,6 +113,7 @@ struct MigrationManager {
                     meal.dirty = true
                     print("Meal \(meal.id) marked as dirty: owner assigned")
                 }
+                meal.dirty = true
             }
         } catch {
             print("Error migrating Meals: \(error)")
@@ -106,6 +125,10 @@ struct MigrationManager {
         do {
             let items = try context.fetch(descriptor)
             for item in items {
+                if item.isShared == nil {
+                    item.isShared = false
+                    item.dirty = true
+                }
                 if item.uid == nil {
                     item.uid = UUID().uuidString
                     item.dirty = true
@@ -116,6 +139,7 @@ struct MigrationManager {
                     item.dirty = true
                     print("ShoppingListItem \(item.id) marked as dirty: owner assigned")
                 }
+                item.dirty = true
             }
         } catch {
             print("Error migrating ShoppingListItems: \(error)")

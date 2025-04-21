@@ -9,7 +9,6 @@ extension ShoppingListItem {
             "uid": uid,
             "ownerId": owner?.uid ?? "",
             "isShared": isShared,
-            "lastModifiedBy": lastModifiedBy?.uid,
 
             "name": name,
             "isPurchased": isPurchased,

@@ -11,9 +11,6 @@ class Recipe: SyncableEntity {
     @Relationship(deleteRule: .noAction)
     var owner: User?
 
-    @Relationship(deleteRule: .noAction)
-    var lastModifiedBy: User?
-
     var isShared: Bool = false
     var dirty: Bool = true
 

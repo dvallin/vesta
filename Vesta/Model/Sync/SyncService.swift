@@ -1,6 +1,7 @@
 import Combine
 import Foundation
 import SwiftData
+import os
 
 enum SyncError: Error {
     case apiError(Error)
@@ -23,8 +24,14 @@ class SyncService: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var syncTimer: Timer?
     private var isSyncing = false
+    private var realTimeSubscription: AnyCancellable?
 
-    private let syncInterval: TimeInterval = 10  // seconds
+    @Published private(set) var lastSyncTime: Date?
+    @Published private(set) var isSyncEnabled: Bool = false
+
+    private let logger = Logger(subsystem: "com.app.Vesta", category: "Synchronization")
+    private let pushInterval: TimeInterval = 60  // seconds - push local changes every minute
+    private let initialPullDelay: TimeInterval = 2  // seconds - delay before initial pull
 
     // API client would be injected here
     private let apiClient: APIClient
@@ -47,70 +54,187 @@ class SyncService: ObservableObject {
         self.shoppingItems = shoppingItems
     }
 
-    /// Start periodic sync operations
+    /// Start sync operations: initial pull + subscribe to changes + periodic push
     func startSync() {
         stopSync()
 
-        // Immediately perform an initial sync
-        syncOnce()
+        guard let currentUser = auth.currentUser, currentUser.uid != nil else {
+            logger.error("Cannot start sync: User not authenticated")
+            return
+        }
 
-        // Schedule periodic sync
-        syncTimer = Timer.scheduledTimer(withTimeInterval: syncInterval, repeats: true) {
-            [weak self] _ in
-            self?.syncOnce()
+        logger.info("Starting sync service")
+        isSyncEnabled = true
+
+        // Perform initial pull after a short delay to allow the app to finish loading
+        DispatchQueue.main.asyncAfter(deadline: .now() + initialPullDelay) { [weak self] in
+            guard let self = self else { return }
+
+            // Step 1: Perform initial pull from Firebase
+            self.logger.info("Performing initial pull from Firebase")
+            self.pullChangesFromFirebase().sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        self.logger.error("Initial pull failed: \(error)")
+                    }
+
+                    // Step 2: Set up real-time subscription (even if initial pull failed)
+                    self.setupRealTimeSubscription()
+                },
+                receiveValue: { _ in
+                    self.logger.info("Initial pull completed successfully")
+                    self.lastSyncTime = Date()
+                }
+            )
+            .store(in: &self.cancellables)
+
+            // Step 3: Schedule periodic push for local changes
+            self.schedulePeriodicalPush()
         }
     }
 
-    /// Stop periodic sync operations
+    /// Set up real-time subscription to Firebase updates
+    private func setupRealTimeSubscription() {
+        guard let currentUser = auth.currentUser, let userId = currentUser.uid else {
+            logger.error("Cannot subscribe to updates: User not authenticated")
+            return
+        }
+
+        logger.info("Setting up real-time subscription for user: \(userId)")
+
+        realTimeSubscription = apiClient.subscribeToEntityUpdates(for: userId) {
+            [weak self] entityData in
+            guard let self = self else { return }
+
+            self.logger.info(
+                "Received real-time update with \(entityData.values.map { $0.count }.reduce(0, +)) entities"
+            )
+
+            // Process the received entities
+            self.processReceivedEntities(entityData, currentUser: currentUser)
+                .sink(
+                    receiveCompletion: { completion in
+                        if case .failure(let error) = completion {
+                            self.logger.error("Error processing real-time update: \(error)")
+                        }
+                    },
+                    receiveValue: { _ in
+                        self.logger.debug("Real-time update processed successfully")
+                        self.lastSyncTime = Date()
+                    }
+                )
+                .store(in: &self.cancellables)
+        }
+    }
+
+    /// Schedule periodic push of local changes
+    private func schedulePeriodicalPush() {
+        syncTimer = Timer.scheduledTimer(withTimeInterval: pushInterval, repeats: true) {
+            [weak self] _ in
+            guard let self = self else { return }
+            self.logger.info("Performing scheduled push of local changes")
+
+            // Only push local changes if we're not already syncing
+            guard !self.isSyncing else {
+                self.logger.info("Skipping scheduled push because sync is already in progress")
+                return
+            }
+
+            // Push local changes to the server
+            self.pushLocalChanges()
+                .sink(
+                    receiveCompletion: { completion in
+                        if case .failure(let error) = completion {
+                            self.logger.error("Scheduled push failed: \(error)")
+                        }
+                    },
+                    receiveValue: { _ in
+                        self.logger.info("Scheduled push completed successfully")
+                    }
+                )
+                .store(in: &self.cancellables)
+        }
+    }
+
+    /// Stop all sync operations
     func stopSync() {
+        logger.info("Stopping sync service")
+
+        // Cancel scheduled timer
         syncTimer?.invalidate()
         syncTimer = nil
+
+        // Cancel real-time subscription
+        realTimeSubscription?.cancel()
+        realTimeSubscription = nil
+
+        isSyncEnabled = false
+    }
+
+    /// Manually sync a specific entity immediately
+    /// - Parameters:
+    ///   - entity: The entity to sync
+    ///   - currentUser: The current user making the change
+    /// - Returns: A publisher that completes when the sync is finished
+    func syncEntityImmediately<T: PersistentModel & SyncableEntity>(_ entity: T, currentUser: User)
+        -> AnyPublisher<Void, SyncError>
+    {
+        // Mark as dirty first
+        entity.markAsDirty(currentUser)
+
+        do {
+            try modelContext.save()
+        } catch {
+            logger.error(
+                "Failed to save entity before immediate sync: \(error.localizedDescription)")
+            return Fail(error: SyncError.unknown).eraseToAnyPublisher()
+        }
+
+        // Create a batch with just this entity
+        return syncBatch([entity]).eraseToAnyPublisher()
     }
 
     // MARK: - Private methods
-    /// Perform a full bidirectional sync (push local changes, then pull remote changes)
-    private func syncOnce(completion: ((Result<Void, SyncError>) -> Void)? = nil) {
+
+    /// Force a manual sync - pushes local changes to Firebase and then pulls any changes
+    func performManualSync() -> AnyPublisher<Void, SyncError> {
         guard !isSyncing else {
-            completion?(.success(()))
-            return
+            return Just(())
+                .setFailureType(to: SyncError.self)
+                .eraseToAnyPublisher()
         }
 
-        // Check if user is authenticated
-        guard auth.currentUser != nil else {
-            completion?(.failure(.notAuthenticated))
-            return
+        guard let currentUser = auth.currentUser, currentUser.uid != nil else {
+            return Fail(error: SyncError.notAuthenticated).eraseToAnyPublisher()
         }
 
+        logger.info("Starting manual sync")
         isSyncing = true
 
-        // Perform bidirectional sync: push changes then pull changes
-        pushLocalChanges()
-            .flatMap { [weak self] _ -> Future<Void, SyncError> in
+        return pushLocalChanges()
+            .flatMap { [weak self] _ -> AnyPublisher<Void, SyncError> in
                 guard let self = self else {
-                    return Future { promise in promise(.failure(.unknown)) }
+                    return Fail(error: SyncError.unknown).eraseToAnyPublisher()
                 }
-                // Then pull changes from the server
                 return self.pullChangesFromFirebase()
             }
-            .sink(
-                receiveCompletion: { [weak self] completionState in
-                    Task { @MainActor in
-                        self?.isSyncing = false
-                        switch completionState {
-                        case .finished:
-                            completion?(.success(()))
-                        case .failure(let error):
-                            completion?(.failure(error))
-                        }
-                    }
-                },
-                receiveValue: { _ in }
-            )
-            .store(in: &cancellables)
+            .handleEvents(receiveCompletion: { [weak self] completion in
+                self?.isSyncing = false
+
+                if case .finished = completion {
+                    self?.logger.info("Manual sync completed successfully")
+                    self?.lastSyncTime = Date()
+                } else if case .failure(let error) = completion {
+                    self?.logger.error("Manual sync failed: \(error)")
+                }
+            })
+            .eraseToAnyPublisher()
     }
 
     /// Push local changes to the server
-    private func pushLocalChanges() -> Future<Void, SyncError> {
+    private func pushLocalChanges() -> AnyPublisher<Void, SyncError> {
+        logger.info("Pushing local changes to Firebase")
+
         return Future { [weak self] promise in
             guard let self = self else {
                 promise(.failure(.unknown))
@@ -137,15 +261,17 @@ class SyncService: ObservableObject {
                 receiveCompletion: { completion in
                     switch completion {
                     case .finished:
+                        self.logger.info("Successfully pushed local changes")
                         promise(.success(()))
                     case .failure(let error):
+                        self.logger.error("Error pushing local changes: \(error)")
                         promise(.failure(error))
                     }
                 },
                 receiveValue: { _ in }
             )
             .store(in: &self.cancellables)
-        }
+        }.eraseToAnyPublisher()
     }
 
     private func syncEntities<T: PersistentModel & SyncableEntity>(of type: T.Type) -> Future<
@@ -258,7 +384,9 @@ class SyncService: ObservableObject {
     }
 
     /// Pull down changes from Firebase and update the local database
-    func pullChangesFromFirebase() -> Future<Void, SyncError> {
+    func pullChangesFromFirebase() -> AnyPublisher<Void, SyncError> {
+        logger.info("Pulling changes from Firebase")
+
         return Future { [weak self] promise in
             guard let self = self else {
                 promise(.failure(.unknown))
@@ -269,27 +397,21 @@ class SyncService: ObservableObject {
             guard let currentUser = self.auth.currentUser,
                 let userId = currentUser.uid
             else {
+                self.logger.error("Cannot pull changes: User not authenticated")
                 promise(.failure(.notAuthenticated))
                 return
             }
 
-            // Define entity types to sync
-            let entityTypes = [
-                "User",
-                "TodoItem",
-                "Recipe",
-                "Meal",
-                "ShoppingListItem",
-            ]
-
-            self.apiClient.fetchUpdatedEntities(entityTypes: entityTypes, userId: userId)
+            self.apiClient.fetchUpdatedEntities(userId: userId)
                 .sink(
                     receiveCompletion: { completion in
                         switch completion {
                         case .finished:
-                            promise(.success(()))
+                            // Completion is handled in the receiveValue handler
+                            break
                         case .failure(let error):
-                            print("Error pulling changes: \(error)")
+                            self.logger.error(
+                                "Error pulling changes: \(error.localizedDescription)")
                             promise(.failure(.apiError(error)))
                         }
                     },
@@ -299,13 +421,26 @@ class SyncService: ObservableObject {
                             return
                         }
 
+                        let entityCount = entityData.values.map { $0.count }.reduce(0, +)
+                        if entityCount > 0 {
+                            self.logger.info(
+                                "Received \(entityCount) updated entities from Firebase")
+                        } else {
+                            self.logger.info("No new updates from Firebase")
+                            promise(.success(()))
+                            return
+                        }
+
                         self.processReceivedEntities(entityData, currentUser: currentUser)
                             .sink(
                                 receiveCompletion: { completion in
                                     switch completion {
                                     case .finished:
+                                        self.logger.info("Successfully processed pulled entities")
                                         promise(.success(()))
                                     case .failure(let error):
+                                        self.logger.error(
+                                            "Error processing pulled entities: \(error)")
                                         promise(.failure(error))
                                     }
                                 },
@@ -315,7 +450,7 @@ class SyncService: ObservableObject {
                     }
                 )
                 .store(in: &self.cancellables)
-        }
+        }.eraseToAnyPublisher()
     }
 
     private func processReceivedEntities(_ entityData: [String: [[String: Any]]], currentUser: User)
@@ -408,20 +543,6 @@ class SyncService: ObservableObject {
                 user.owner = nil
             }
 
-            // Update lastModifiedBy if available
-            if let lastModifiedById = data["lastModifiedBy"] as? String {
-                if lastModifiedById != user.lastModifiedBy?.uid {
-                    if lastModifiedById == uid {
-                        user.lastModifiedBy = user
-                    } else if let lastModifiedBy = try? users.fetchUnique(withUID: lastModifiedById)
-                    {
-                        user.lastModifiedBy = lastModifiedBy
-                    }
-                }
-            } else if user.lastModifiedBy != nil {
-                user.lastModifiedBy = nil
-            }
-
             user.markAsSynced()
         }
     }
@@ -460,18 +581,6 @@ class SyncService: ObservableObject {
             } else if todoItem.owner != nil {
                 todoItem.owner = nil
             }
-
-            // Update lastModifiedBy if available
-            if let lastModifiedById = data["lastModifiedBy"] as? String {
-                if lastModifiedById != todoItem.lastModifiedBy?.uid {
-                    if let lastModifiedBy = try? users.fetchUnique(withUID: lastModifiedById) {
-                        todoItem.lastModifiedBy = lastModifiedBy
-                    }
-                }
-            } else if todoItem.lastModifiedBy != nil {
-                todoItem.lastModifiedBy = nil
-            }
-
             // Process meal reference if available
             if let mealUID = data["mealId"] as? String {
                 if mealUID != todoItem.meal?.uid {
@@ -546,17 +655,6 @@ class SyncService: ObservableObject {
                 }
             } else if recipe.owner != nil {
                 recipe.owner = nil
-            }
-
-            // Update lastModifiedBy if available
-            if let lastModifiedById = data["lastModifiedBy"] as? String {
-                if lastModifiedById != recipe.lastModifiedBy?.uid {
-                    if let lastModifiedBy = try? users.fetchUnique(withUID: lastModifiedById) {
-                        recipe.lastModifiedBy = lastModifiedBy
-                    }
-                }
-            } else if recipe.lastModifiedBy != nil {
-                recipe.lastModifiedBy = nil
             }
 
             // For non-syncable related entities (ingredients and steps), we always recreate them
@@ -662,17 +760,6 @@ class SyncService: ObservableObject {
             // Update properties
             meal.update(from: data)
 
-            // Update lastModifiedBy if available
-            if let lastModifiedById = data["lastModifiedBy"] as? String {
-                if lastModifiedById != meal.lastModifiedBy?.uid {
-                    if let lastModifiedBy = try? users.fetchUnique(withUID: lastModifiedById) {
-                        meal.lastModifiedBy = lastModifiedBy
-                    }
-                }
-            } else if meal.lastModifiedBy != nil {
-                meal.lastModifiedBy = nil
-            }
-
             // Update owner if available
             if let ownerId = data["ownerId"] as? String {
                 if ownerId != meal.owner?.uid {
@@ -768,17 +855,6 @@ class SyncService: ObservableObject {
                 shoppingListItem.owner = nil
             }
 
-            // Update lastModifiedBy if available
-            if let lastModifiedById = data["lastModifiedBy"] as? String {
-                if lastModifiedById != shoppingListItem.lastModifiedBy?.uid {
-                    if let lastModifiedBy = try? users.fetchUnique(withUID: lastModifiedById) {
-                        shoppingListItem.lastModifiedBy = lastModifiedBy
-                    }
-                }
-            } else if shoppingListItem.lastModifiedBy != nil {
-                shoppingListItem.lastModifiedBy = nil
-            }
-
             // Process todoItem reference if available
             if let todoItemUID = data["todoItemId"] as? String {
                 if todoItemUID != shoppingListItem.todoItem?.uid {
@@ -814,7 +890,18 @@ class SyncService: ObservableObject {
 
 protocol APIClient {
     func syncEntities(dtos: [[String: Any]]) -> AnyPublisher<Void, Error>
-    func fetchUpdatedEntities(entityTypes: [String], userId: String) -> AnyPublisher<
+    func fetchUpdatedEntities(userId: String) -> AnyPublisher<
         [String: [[String: Any]]], Error
     >
+
+    /// Subscribes to real-time updates for a user's entities
+    /// - Parameters:
+    ///   - userId: The ID of the user whose entities to subscribe to
+    ///   - onUpdate: Callback function triggered when entities are updated
+    ///   - entityData: Dictionary containing updated entities by entity type
+    /// - Returns: A cancellable object that, when cancelled, will unsubscribe from updates
+    func subscribeToEntityUpdates(
+        for userId: String,
+        onUpdate: @escaping (_ entityData: [String: [[String: Any]]]) -> Void
+    ) -> AnyCancellable
 }

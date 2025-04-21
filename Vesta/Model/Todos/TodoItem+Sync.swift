@@ -9,7 +9,6 @@ extension TodoItem {
             "uid": uid,
             "ownerId": owner?.uid ?? "",
             "isShared": isShared,
-            "lastModifiedBy": lastModifiedBy?.uid,
 
             "title": title,
             "details": details,

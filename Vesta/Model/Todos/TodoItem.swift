@@ -52,9 +52,6 @@ class TodoItem: SyncableEntity {
     @Relationship(deleteRule: .noAction)
     var owner: User?
 
-    @Relationship(deleteRule: .noAction)
-    var lastModifiedBy: User?
-
     @Relationship
     var meal: Meal?
 
