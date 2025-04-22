@@ -23,10 +23,45 @@ service cloud.firestore {
       return data.isShared == true;
     }
 
-    // User profiles - only the owner can write, but friends can read
+    // Allow any authenticated user to list/query users for search functionality
     match /users/{userId} {
-      allow read: if isOwner(userId) || isFriend(userId);
-      allow write: if isOwner(userId);
+      // Allow queries on the users collection for search
+      allow list: if isAuthenticated();
+      
+      // Allow reading specific user profiles
+      allow get: if isAuthenticated() && (
+        // Full access for owner and friends
+        isOwner(userId) || isFriend(userId) || 
+        // Limited fields for other authenticated users (for search)
+        (request.resource == null && 
+         (resource.data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'isShared']) ||
+          resource.data.keys().hasAll(['uid', 'email', 'displayName'])))
+      );
+      
+      // Allow owner to modify their profile
+      // Also allow friend updates (for accepting invites and updating friend lists)
+      allow update: if isOwner(userId) || 
+                    (isAuthenticated() && 
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friendIds', 'lastModified']));
+      
+      // Only owner can create or delete their profile
+      allow create, delete: if isOwner(userId);
+      
+      // Sent invites subcollection - owner can manage their sent invites
+      match /sentInvites/{inviteId} {
+        // Owner has full access to their sent invites
+        allow read, create, delete: if isOwner(userId);
+      }
+      
+      // Received invites subcollection - owner can manage their received invites
+      match /receivedInvites/{inviteId} {
+        // Owner has full access to their received invites
+        allow read, delete: if isOwner(userId);
+        
+        // Any authenticated user can create a received invite for another user
+        // This allows sending invites to others
+        allow create: if isAuthenticated();
+      }
 
       // Entities subcollection
       match /entities/{entityId} {

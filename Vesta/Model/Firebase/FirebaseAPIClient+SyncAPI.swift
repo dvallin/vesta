@@ -3,11 +3,8 @@ import FirebaseFirestore
 import Foundation
 import os
 
-class FirebaseAPIClient: APIClient {
-    private let db = Firestore.firestore()
-    private let logger = Logger(subsystem: "com.app.Vesta", category: "Synchronization")
-    private var listeners: [String: ListenerRegistration] = [:]
-
+// MARK: - SyncAPIClient Implementation
+extension FirebaseAPIClient: SyncAPIClient {
     // MARK: - Public Methods
 
     /// Fetches updated entities from Firebase based on last sync time
@@ -120,47 +117,49 @@ class FirebaseAPIClient: APIClient {
                 }
                 return
             }
-            
+
             if let error = error {
-                self.logger.error("Error fetching user document: \(error.localizedDescription, privacy: .public)")
+                self.logger.error(
+                    "Error fetching user document: \(error.localizedDescription, privacy: .public)")
                 // Don't fail the entire operation for this - just log and continue
                 group.leave()
                 return
             }
-            
+
             if let document = document, document.exists {
                 let data = document.data() ?? [:]
                 var localFriendIds: [String] = []
-                
+
                 // Store the user's friend IDs for later use
                 if let friends = data["friendIds"] as? [String] {
                     localFriendIds = friends
                     self.logger.debug("User has \(friends.count) friends")
                 }
-                
+
                 // Check if user document was modified since last sync
                 if let lastModified = data["lastModified"] as? Timestamp,
-                   lastModified.compare(lastSyncTimestamp) == .orderedDescending {
-                    
+                    lastModified.compare(lastSyncTimestamp) == .orderedDescending
+                {
+
                     // Add entityType for consistency with the rest of the system
                     var userData = data
                     userData["uid"] = document.documentID
                     userData["entityType"] = "User"
-                    
+
                     // Use a local synchronization
                     DispatchQueue.global().async {
                         // Initialize User array
                         if allResults["User"] == nil {
                             allResults["User"] = []
                         }
-                        
+
                         // Add to User results
                         allResults["User"]?.append(userData)
-                        
+
                         // Now update the shared friendIds array
                         friendIds = localFriendIds
                     }
-                    
+
                     self.logger.debug("Fetched user document: \(document.documentID)")
                 } else {
                     // Still update friendIds even if no document changes
@@ -169,23 +168,23 @@ class FirebaseAPIClient: APIClient {
                     }
                 }
             }
-            
+
             group.leave()
         }
-        
+
         // Wait for user fetch to complete before proceeding
         group.notify(queue: .global(qos: .userInitiated)) { [weak self] in
             guard let self = self else {
                 completion(.failure(FirebaseError.unknown))
                 return
             }
-            
+
             let mainGroup = DispatchGroup()
-            
+
             // Create thread synchronization objects
             let resultQueue = DispatchQueue(label: "com.app.Vesta.resultQueue")
             let errorQueue = DispatchQueue(label: "com.app.Vesta.errorQueue")
-            
+
             // Fetch user's own entities
             mainGroup.enter()
             self.fetchEntitiesForUser(
@@ -197,7 +196,7 @@ class FirebaseAPIClient: APIClient {
                 errorRef: fetchError,
                 group: mainGroup
             )
-            
+
             // Fetch shared entities from each friend
             for friendId in friendIds {
                 mainGroup.enter()
@@ -211,21 +210,22 @@ class FirebaseAPIClient: APIClient {
                     group: mainGroup
                 )
             }
-            
+
             // When all fetches complete, process results
             mainGroup.notify(queue: .main) {
                 if let error = fetchError {
                     completion(.failure(error))
                     return
                 }
-                
+
                 let totalFetched = allResults.values.flatMap { $0 }.count
-                self.logger.info("Successfully fetched \(totalFetched) updated entities (including shared)")
+                self.logger.info(
+                    "Successfully fetched \(totalFetched) updated entities (including shared)")
                 completion(.success(allResults))
             }
         }
     }
-    
+
     private func fetchEntitiesForUser(
         userId: String,
         lastSyncTimestamp: Timestamp,
@@ -268,7 +268,7 @@ class FirebaseAPIClient: APIClient {
 
                 // Use a local collection to gather results
                 var localResults = [String: [[String: Any]]]()
-                
+
                 // Process documents and organize by entity type
                 for document in documents {
                     var data = document.data()
@@ -276,7 +276,8 @@ class FirebaseAPIClient: APIClient {
 
                     // Group entities by entity type
                     guard let entityType = data["entityType"] as? String else {
-                        self.logger.warning("Entity missing entityType field: \(document.documentID)")
+                        self.logger.warning(
+                            "Entity missing entityType field: \(document.documentID)")
                         continue
                     }
 
@@ -288,7 +289,7 @@ class FirebaseAPIClient: APIClient {
                     // Add to appropriate array
                     localResults[entityType]?.append(data)
                 }
-                
+
                 // Now merge the results back into the shared dictionary in a thread-safe way
                 resultQueue.sync {
                     var mutableResultsDict = resultsDict
@@ -299,11 +300,12 @@ class FirebaseAPIClient: APIClient {
                     }
                 }
 
-                self.logger.debug("Fetched \(documents.count) entities from collection for user \(userId)")
+                self.logger.debug(
+                    "Fetched \(documents.count) entities from collection for user \(userId)")
                 group.leave()
             }
     }
-    
+
     private func fetchSharedEntitiesFromFriend(
         friendId: String,
         lastSyncTimestamp: Timestamp,
@@ -314,7 +316,8 @@ class FirebaseAPIClient: APIClient {
         group: DispatchGroup
     ) {
         // Get reference to friend's entities collection
-        let friendEntitiesCollection = db.collection("users").document(friendId).collection("entities")
+        let friendEntitiesCollection = db.collection("users").document(friendId).collection(
+            "entities")
 
         // Fetch only shared entities from the friend's collection
         friendEntitiesCollection
@@ -345,7 +348,7 @@ class FirebaseAPIClient: APIClient {
 
                 // Use a local collection to gather results
                 var localResults = [String: [[String: Any]]]()
-                
+
                 // Process documents and organize by entity type
                 for document in documents {
                     var data = document.data()
@@ -353,7 +356,8 @@ class FirebaseAPIClient: APIClient {
 
                     // Group entities by entity type
                     guard let entityType = data["entityType"] as? String else {
-                        self.logger.warning("Entity missing entityType field: \(document.documentID)")
+                        self.logger.warning(
+                            "Entity missing entityType field: \(document.documentID)")
                         continue
                     }
 
@@ -376,7 +380,8 @@ class FirebaseAPIClient: APIClient {
                     }
                 }
 
-                self.logger.debug("Fetched \(documents.count) shared entities from friend \(friendId)")
+                self.logger.debug(
+                    "Fetched \(documents.count) shared entities from friend \(friendId)")
                 group.leave()
             }
     }
@@ -443,22 +448,23 @@ class FirebaseAPIClient: APIClient {
                 )
                 continue
             }
-            
+
             var sanitizedDTO = sanitizeDTO(dto)
             sanitizedDTO["lastModified"] = FieldValue.serverTimestamp()
-            
+
             // Create document reference based on entity type
             let docRef: DocumentReference
-            
+
             if entityType == "User" {
                 // User entities are stored directly in /users/{userId}
                 docRef = db.collection("users").document(uid)
-                
+
                 // Remove entityType field for User documents to keep them clean
                 sanitizedDTO.removeValue(forKey: "entityType")
             } else {
                 // All other entities go in the entities subcollection
-                docRef = db.collection("users").document(ownerId).collection("entities").document(uid)
+                docRef = db.collection("users").document(ownerId).collection("entities").document(
+                    uid)
             }
 
             // Add to batch
@@ -560,178 +566,189 @@ class FirebaseAPIClient: APIClient {
 
         return result
     }
-    
+
     // MARK: - Real-time Subscription
-    
+
     /// Subscribes to real-time updates for a user's entities and shared entities from friends
     /// - Parameters:
     ///   - userId: The ID of the user whose entities to subscribe to
     ///   - onUpdate: Callback function triggered when entities are updated
     /// - Returns: A cancellable object that, when cancelled, will unsubscribe from updates
     func subscribeToEntityUpdates(
-        for userId: String, 
+        for userId: String,
         onUpdate: @escaping (_ entityData: [String: [[String: Any]]]) -> Void
     ) -> AnyCancellable {
         logger.info("Setting up real-time subscription for user: \(userId)")
-        
+
         // Create a set to collect all listener cancellables
         let cancellables = Set<AnyCancellable>()
-        
+
         // Create a subject to represent the stream of updates
         let subject = PassthroughSubject<[String: [[String: Any]]], Never>()
-        
+
         // Subscribe to user document changes
         let userDocRef = db.collection("users").document(userId)
         let userListenerKey = "user_\(userId)"
-        
+
         // Remove any existing user document listener
         listeners[userListenerKey]?.remove()
-        
+
         // Set up a new listener for the user document
         let userListener = userDocRef.addSnapshotListener { [weak self] (document, error) in
             guard let self = self else { return }
-            
+
             if let error = error {
-                self.logger.error("Error listening for user updates: \(error.localizedDescription, privacy: .public)")
+                self.logger.error(
+                    "Error listening for user updates: \(error.localizedDescription, privacy: .public)"
+                )
                 return
             }
-            
+
             guard let document = document, document.exists else { return }
-            
+
             var userData = document.data() ?? [:]
-            
+
             // Only process if this is a data update (not just metadata)
             if document.metadata.hasPendingWrites || document.metadata.isFromCache {
                 return
             }
-            
+
             // Add required fields for consistency
             userData["uid"] = document.documentID
             userData["entityType"] = "User"
-            
+
             // Create the update payload
             var entityUpdates: [String: [[String: Any]]] = ["User": [userData]]
-            
+
             self.logger.debug("Emitting real-time update for user document: \(document.documentID)")
-            
+
             // Use the main thread for the callback to ensure UI updates work correctly
             DispatchQueue.main.async {
                 onUpdate(entityUpdates)
             }
-            
+
             subject.send(entityUpdates)
-            
+
             // When the user document changes, we need to check if the friends list has changed
             // If it has, we need to update our subscriptions to friend entities
             if let friendIds = userData["friendIds"] as? [String] {
-                self.updateFriendSubscriptions(userId: userId, friendIds: friendIds, onUpdate: onUpdate)
+                self.updateFriendSubscriptions(
+                    userId: userId, friendIds: friendIds, onUpdate: onUpdate)
             }
         }
-        
+
         // Store the user document listener
         listeners[userListenerKey] = userListener
-        
+
         // Now subscribe to entities collection changes
         let entitiesCollection = db.collection("users").document(userId).collection("entities")
         let entitiesListenerKey = "entities_\(userId)"
-        
+
         // Remove any existing entities listener
         listeners[entitiesListenerKey]?.remove()
-        
+
         // Maintain a reference to the last snapshot processed to avoid redundant processing
         var lastProcessedSnapshotTime: Timestamp?
-        
+
         // Set up a new real-time listener for the entities collection
-        let entitiesListener = entitiesCollection
+        let entitiesListener =
+            entitiesCollection
             .addSnapshotListener { [weak self] (snapshot, error) in
                 guard let self = self else { return }
-                
+
                 if let error = error {
-                    self.logger.error("Error listening for entity updates: \(error.localizedDescription, privacy: .public)")
+                    self.logger.error(
+                        "Error listening for entity updates: \(error.localizedDescription, privacy: .public)"
+                    )
                     return
                 }
-                
+
                 guard let snapshot = snapshot else { return }
-                
+
                 // Skip updates that are just metadata changes or local writes
                 if snapshot.metadata.hasPendingWrites || snapshot.metadata.isFromCache {
                     return
                 }
-                
+
                 // Check if this is a redundant update
                 let snapshotTime = Timestamp(date: Date())
                 if let lastTime = lastProcessedSnapshotTime,
-                   snapshotTime.seconds == lastTime.seconds && 
-                   snapshotTime.nanoseconds == lastTime.nanoseconds {
+                    snapshotTime.seconds == lastTime.seconds
+                        && snapshotTime.nanoseconds == lastTime.nanoseconds
+                {
                     return
                 }
-                
+
                 lastProcessedSnapshotTime = snapshotTime
-                
+
                 // Group changed documents by entity type
                 var entityUpdates: [String: [[String: Any]]] = [:]
-                
+
                 for document in snapshot.documentChanges {
                     // Skip deleted documents - they are handled elsewhere
                     if document.type == .removed {
                         continue
                     }
-                    
+
                     var data = document.document.data()
                     data["uid"] = document.document.documentID
-                    
+
                     // Group by entity type
                     guard let entityType = data["entityType"] as? String else {
-                        self.logger.warning("Entity missing entityType field: \(document.document.documentID)")
+                        self.logger.warning(
+                            "Entity missing entityType field: \(document.document.documentID)")
                         continue
                     }
-                    
+
                     // Initialize array for this entity type if it doesn't exist
                     if entityUpdates[entityType] == nil {
                         entityUpdates[entityType] = []
                     }
-                    
+
                     // Add to the appropriate array
                     entityUpdates[entityType]?.append(data)
                 }
-                
+
                 // Only emit update if there are changes
                 if !entityUpdates.isEmpty {
-                    self.logger.debug("Emitting real-time update with \(entityUpdates.values.map { $0.count }.reduce(0, +)) entities")
-                    
+                    self.logger.debug(
+                        "Emitting real-time update with \(entityUpdates.values.map { $0.count }.reduce(0, +)) entities"
+                    )
+
                     // Use the main thread for the callback to ensure UI updates work correctly
                     DispatchQueue.main.async {
                         onUpdate(entityUpdates)
                     }
-                    
+
                     subject.send(entityUpdates)
                 }
             }
-        
+
         // Store the entities listener
         listeners[entitiesListenerKey] = entitiesListener
-        
+
         // Fetch current friends and set up listeners for their shared entities
         userDocRef.getDocument { [weak self] (document, error) in
             guard let self = self, let document = document, document.exists else { return }
-            
+
             if let friendIds = document.data()?["friendIds"] as? [String] {
-                self.setupFriendEntityListeners(userId: userId, friendIds: friendIds, onUpdate: onUpdate)
+                self.setupFriendEntityListeners(
+                    userId: userId, friendIds: friendIds, onUpdate: onUpdate)
             }
         }
-        
+
         // Return a cancellable that removes all listeners when cancelled
         return AnyCancellable { [weak self] in
             guard let self = self else { return }
-            
+
             self.logger.info("Cancelling real-time subscriptions for user: \(userId)")
-            
+
             // Remove user and entities listeners
             self.listeners[userListenerKey]?.remove()
             self.listeners[entitiesListenerKey]?.remove()
             self.listeners.removeValue(forKey: userListenerKey)
             self.listeners.removeValue(forKey: entitiesListenerKey)
-            
+
             // Remove all friend entity listeners
             for (key, listener) in self.listeners {
                 if key.starts(with: "friend_entities_\(userId)_") {
@@ -741,7 +758,7 @@ class FirebaseAPIClient: APIClient {
             }
         }
     }
-    
+
     /// Sets up listeners for shared entities from a user's friends
     private func setupFriendEntityListeners(
         userId: String,
@@ -752,7 +769,7 @@ class FirebaseAPIClient: APIClient {
             setupFriendEntityListener(userId: userId, friendId: friendId, onUpdate: onUpdate)
         }
     }
-    
+
     /// Sets up a listener for shared entities from a specific friend
     private func setupFriendEntityListener(
         userId: String,
@@ -760,91 +777,99 @@ class FirebaseAPIClient: APIClient {
         onUpdate: @escaping (_ entityData: [String: [[String: Any]]]) -> Void
     ) {
         let listenerKey = "friend_entities_\(userId)_\(friendId)"
-        
+
         // Remove any existing listener for this friend
         listeners[listenerKey]?.remove()
-        
+
         // Get reference to friend's entities collection
-        let friendEntitiesCollection = db.collection("users").document(friendId).collection("entities")
-        
+        let friendEntitiesCollection = db.collection("users").document(friendId).collection(
+            "entities")
+
         // Maintain a reference to the last snapshot processed to avoid redundant processing
         var lastProcessedSnapshotTime: Timestamp?
-        
+
         // Set up a new real-time listener for the friend's shared entities
-        let listener = friendEntitiesCollection
+        let listener =
+            friendEntitiesCollection
             .whereField("isShared", isEqualTo: true)
             .addSnapshotListener { [weak self] (snapshot, error) in
                 guard let self = self else { return }
-                
+
                 if let error = error {
-                    self.logger.error("Error listening for friend \(friendId) shared entities: \(error.localizedDescription, privacy: .public)")
+                    self.logger.error(
+                        "Error listening for friend \(friendId) shared entities: \(error.localizedDescription, privacy: .public)"
+                    )
                     return
                 }
-                
+
                 guard let snapshot = snapshot else { return }
-                
+
                 // Skip updates that are just metadata changes or local writes
                 if snapshot.metadata.hasPendingWrites || snapshot.metadata.isFromCache {
                     return
                 }
-                
+
                 // Check if this is a redundant update
                 let snapshotTime = Timestamp(date: Date())
                 if let lastTime = lastProcessedSnapshotTime,
-                   snapshotTime.seconds == lastTime.seconds && 
-                   snapshotTime.nanoseconds == lastTime.nanoseconds {
+                    snapshotTime.seconds == lastTime.seconds
+                        && snapshotTime.nanoseconds == lastTime.nanoseconds
+                {
                     return
                 }
-                
+
                 lastProcessedSnapshotTime = snapshotTime
-                
+
                 // Group changed documents by entity type
                 var entityUpdates: [String: [[String: Any]]] = [:]
-                
+
                 for document in snapshot.documentChanges {
                     // Skip deleted documents - they are handled elsewhere
                     if document.type == .removed {
                         continue
                     }
-                    
+
                     var data = document.document.data()
                     data["uid"] = document.document.documentID
-                    
+
                     // Only include shared entities
                     guard let isShared = data["isShared"] as? Bool, isShared else {
                         continue
                     }
-                    
+
                     // Group by entity type
                     guard let entityType = data["entityType"] as? String else {
-                        self.logger.warning("Entity missing entityType field: \(document.document.documentID)")
+                        self.logger.warning(
+                            "Entity missing entityType field: \(document.document.documentID)")
                         continue
                     }
-                    
+
                     // Initialize array for this entity type if it doesn't exist
                     if entityUpdates[entityType] == nil {
                         entityUpdates[entityType] = []
                     }
-                    
+
                     // Add to the appropriate array
                     entityUpdates[entityType]?.append(data)
                 }
-                
+
                 // Only emit update if there are changes
                 if !entityUpdates.isEmpty {
-                    self.logger.debug("Emitting real-time update with \(entityUpdates.values.map { $0.count }.reduce(0, +)) shared entities from friend \(friendId)")
-                    
+                    self.logger.debug(
+                        "Emitting real-time update with \(entityUpdates.values.map { $0.count }.reduce(0, +)) shared entities from friend \(friendId)"
+                    )
+
                     // Use the main thread for the callback to ensure UI updates work correctly
                     DispatchQueue.main.async {
                         onUpdate(entityUpdates)
                     }
                 }
             }
-        
+
         // Store the friend entities listener
         listeners[listenerKey] = listener
     }
-    
+
     /// Updates subscriptions when the friends list changes
     private func updateFriendSubscriptions(
         userId: String,
@@ -859,9 +884,9 @@ class FirebaseAPIClient: APIClient {
                 currentFriendIds.insert(friendId)
             }
         }
-        
+
         let newFriendIds = Set(friendIds)
-        
+
         // Remove listeners for friends that are no longer in the list
         for friendId in currentFriendIds {
             if !newFriendIds.contains(friendId) {
@@ -871,35 +896,12 @@ class FirebaseAPIClient: APIClient {
                 logger.debug("Removed listener for former friend: \(friendId)")
             }
         }
-        
+
         // Add listeners for new friends
         for friendId in newFriendIds {
             if !currentFriendIds.contains(friendId) {
                 setupFriendEntityListener(userId: userId, friendId: friendId, onUpdate: onUpdate)
                 logger.debug("Added listener for new friend: \(friendId)")
-            }
-        }
-    }
-}
-
-// MARK: - Error Types
-extension FirebaseAPIClient {
-    enum FirebaseError: Error, LocalizedError {
-        case batchWriteFailure
-        case invalidEntityData
-        case unauthorizedSharedEntityModification
-        case unknown
-        
-        var errorDescription: String? {
-            switch self {
-            case .batchWriteFailure:
-                return "Failed to write batch to Firestore"
-            case .invalidEntityData:
-                return "Invalid or incomplete entity data"
-            case .unauthorizedSharedEntityModification:
-                return "Unauthorized modification of shared entity"
-            case .unknown:
-                return "An unknown error occurred"
             }
         }
     }

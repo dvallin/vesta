@@ -2,7 +2,7 @@ import Combine
 import Foundation
 import SwiftData
 
-class MockAPIClient: APIClient {
+class MockAPIClient: SyncAPIClient {
 
     private init() {}
 

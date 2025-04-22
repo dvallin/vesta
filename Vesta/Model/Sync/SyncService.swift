@@ -33,11 +33,11 @@ class SyncService: ObservableObject {
     private let pushInterval: TimeInterval = 60  // seconds - push local changes every minute
     private let initialPullDelay: TimeInterval = 2  // seconds - delay before initial pull
 
-    // API client would be injected here
-    private let apiClient: APIClient
+    // API client is now typed with the SyncAPIClient protocol
+    private let apiClient: SyncAPIClient
 
     public init(
-        apiClient: APIClient = FirebaseAPIClient(),
+        apiClient: SyncAPIClient = FirebaseAPIClient(),
         auth: UserAuthService, users: UserService,
         todoItemCategories: TodoItemCategoryService, meals: MealService, todoItems: TodoItemService,
         recipes: RecipeService, shoppingItems: ShoppingListItemService,
@@ -643,7 +643,7 @@ class SyncService: ObservableObject {
                 modelContext.insert(recipe)
             }
 
-            // Update properties
+            // Update properties using the Recipe's update method
             recipe.update(from: data)
 
             // Update owner if available
@@ -655,59 +655,6 @@ class SyncService: ObservableObject {
                 }
             } else if recipe.owner != nil {
                 recipe.owner = nil
-            }
-
-            // For non-syncable related entities (ingredients and steps), we always recreate them
-            // Process ingredients - first remove all existing ingredients
-            recipe.ingredients.removeAll()
-
-            // Then add new ingredients from data
-            if let ingredients = data["ingredients"] as? [[String: Any]] {
-                for ingredientData in ingredients {
-                    guard let name = ingredientData["name"] as? String,
-                        let order = ingredientData["order"] as? Int
-                    else { continue }
-
-                    let quantity = ingredientData["quantity"] as? Double
-                    var unit: Unit? = nil
-                    if let unitRaw = ingredientData["unit"] as? String {
-                        unit = Unit(rawValue: unitRaw)
-                    }
-
-                    let ingredient = Ingredient(
-                        name: name,
-                        order: order,
-                        quantity: quantity,
-                        unit: unit,
-                        recipe: recipe
-                    )
-                    recipe.ingredients.append(ingredient)
-                }
-            }
-
-            // Process steps - first remove all existing steps
-            recipe.steps.removeAll()
-
-            // Then add new steps from data
-            if let steps = data["steps"] as? [[String: Any]] {
-                for stepData in steps {
-                    guard let order = stepData["order"] as? Int,
-                        let instruction = stepData["instruction"] as? String,
-                        let typeRaw = stepData["type"] as? String,
-                        let type = StepType(rawValue: typeRaw)
-                    else { continue }
-
-                    let duration = stepData["duration"] as? TimeInterval
-
-                    let step = RecipeStep(
-                        order: order,
-                        instruction: instruction,
-                        type: type,
-                        duration: duration,
-                        recipe: recipe
-                    )
-                    recipe.steps.append(step)
-                }
             }
 
             // Process meal references
@@ -888,20 +835,4 @@ class SyncService: ObservableObject {
     }
 }
 
-protocol APIClient {
-    func syncEntities(dtos: [[String: Any]]) -> AnyPublisher<Void, Error>
-    func fetchUpdatedEntities(userId: String) -> AnyPublisher<
-        [String: [[String: Any]]], Error
-    >
 
-    /// Subscribes to real-time updates for a user's entities
-    /// - Parameters:
-    ///   - userId: The ID of the user whose entities to subscribe to
-    ///   - onUpdate: Callback function triggered when entities are updated
-    ///   - entityData: Dictionary containing updated entities by entity type
-    /// - Returns: A cancellable object that, when cancelled, will unsubscribe from updates
-    func subscribeToEntityUpdates(
-        for userId: String,
-        onUpdate: @escaping (_ entityData: [String: [[String: Any]]]) -> Void
-    ) -> AnyCancellable
-}

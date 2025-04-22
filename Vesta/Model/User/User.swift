@@ -14,6 +14,10 @@ class User: SyncableEntity {
 
     @Relationship(deleteRule: .noAction)
     var friends: [User] = []
+    @Relationship(deleteRule: .cascade, inverse: \Invite.owner)
+    var receivedInvites: [Invite] = []
+    @Relationship(deleteRule: .cascade, inverse: \Invite.owner)
+    var sentInvites: [Invite] = []
 
     var shareMeals: Bool? = false
     var shareShoppingItems: Bool? = false
@@ -37,5 +41,25 @@ class User: SyncableEntity {
         self.isEmailVerified = isEmailVerified
         self.createdAt = createdAt
         self.lastSignInAt = lastSignInAt
+    }
+}
+
+@Model
+class Invite {
+    @Relationship(deleteRule: .noAction)
+    var owner: User?
+
+    var uid: String
+    var createdAt: Date
+    var email: String?
+    var displayName: String?
+    var photoURL: String?
+
+    init(uid: String, createdAt: Date, email: String?, displayName: String?, photoURL: String?) {
+        self.uid = uid
+        self.createdAt = createdAt
+        self.email = email
+        self.displayName = displayName
+        self.photoURL = photoURL
     }
 }
