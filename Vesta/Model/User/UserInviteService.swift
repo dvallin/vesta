@@ -38,76 +38,65 @@ class UserInviteService: ObservableObject {
         isLoading = true
         errorMessage = nil
 
-        // Create user data dictionaries
-        let currentUserData: [String: Any] = [
-            "email": currentUser.email ?? "",
-            "displayName": currentUser.displayName ?? "",
-            "photoURL": currentUser.photoURL ?? "",
-        ]
-
-        let recipientData: [String: Any] = [
-            "email": recipient.email ?? "",
-            "displayName": recipient.displayName ?? "",
-            "photoURL": recipient.photoURL ?? "",
-        ]
-
-        // Call Firebase API
-        apiClient.sendInvite(
-            currentUserId: currentUserId,
-            currentUserData: currentUserData,
-            recipientId: recipient.uid,
-            recipientData: recipientData
+        // Create the invite with all the necessary information
+        let invite = Invite(
+            uid: UUID().uuidString,
+            createdAt: Date(),
+            senderUid: currentUserId,
+            recipientUid: recipient.uid,
+            senderEmail: currentUser.email,
+            senderDisplayName: currentUser.displayName,
+            senderPhotoURL: currentUser.photoURL,
+            recipientEmail: recipient.email,
+            recipientDisplayName: recipient.displayName,
+            recipientPhotoURL: recipient.photoURL
         )
-        .receive(on: DispatchQueue.main)
-        .sink { [weak self] completionStatus in
-            guard let self = self else { return }
-            self.isLoading = false
 
-            switch completionStatus {
-            case .finished:
-                // Success case handled in receiveValue
-                break
-            case .failure(let error):
-                self.logger.error("Failed to send invite: \(error.localizedDescription)")
-                self.errorMessage = NSLocalizedString(
-                    "Failed to send invite", comment: "Send invite error")
+        apiClient.sendInvite(invite)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] completionStatus in
+                guard let self = self else { return }
                 self.isLoading = false
+
+                switch completionStatus {
+                case .finished:
+                    // Success case handled in receiveValue
+                    break
+                case .failure(let error):
+                    self.logger.error("Failed to send invite: \(error.localizedDescription)")
+                    self.errorMessage = NSLocalizedString(
+                        "Failed to send invite", comment: "Send invite error")
+                    self.isLoading = false
+                    DispatchQueue.main.async {
+                        completion(false)
+                    }
+                }
+            } receiveValue: { [weak self] _ in
+                guard let self = self else { return }
+                self.logger.info("Successfully sent invite to: \(recipient.uid)")
+
+                // Add to local model
                 DispatchQueue.main.async {
-                    completion(false)
+                    currentUser.sentInvites.append(invite)
+                    self.modelContext.insert(invite)
+
+                    do {
+                        try self.modelContext.save()
+                        self.sentInvites.append(invite)
+                        completion(true)
+                    } catch {
+                        self.logger.error(
+                            "Failed to save local invite: \(error.localizedDescription)")
+                        completion(false)
+                    }
                 }
             }
-        } receiveValue: { [weak self] _ in
-            guard let self = self else { return }
-            self.logger.info("Successfully sent invite to: \(recipient.uid)")
-
-            // Create local invite record
-            let invite = Invite(
-                uid: "\(currentUserId)_to_\(recipient.uid)_\(Date().timeIntervalSince1970)",
-                createdAt: Date(),
-                email: recipient.email,
-                displayName: recipient.displayName,
-                photoURL: recipient.photoURL
-            )
-
-            // Add to local model
-            DispatchQueue.main.async {
-                invite.owner = currentUser
-                currentUser.sentInvites.append(invite)
-                self.modelContext.insert(invite)
-
-                do {
-                    try self.modelContext.save()
-                    self.sentInvites.append(invite)
-                    completion(true)
-                } catch {
-                    self.logger.error("Failed to save local invite: \(error.localizedDescription)")
-                    completion(false)
-                }
-            }
-        }
-        .store(in: &cancellables)
+            .store(in: &cancellables)
     }
 
+    /// Accepts an invite from another user
+    /// - Parameters:
+    ///   - invite: The invite to accept
     /// Accepts an invite from another user
     /// - Parameters:
     ///   - invite: The invite to accept
@@ -115,33 +104,16 @@ class UserInviteService: ObservableObject {
     ///   - completion: Completion handler called after the operation
     func acceptInvite(invite: Invite, currentUser: User, completion: @escaping (Bool) -> Void) {
         guard let currentUserId = currentUser.uid else {
-            logger.error("Cannot accept invite: missing user ID or invite ID")
+            logger.error("Cannot accept invite: missing user ID")
             completion(false)
             return
         }
-
-        // Extract sender ID from invite ID format
-        let components = invite.uid.components(separatedBy: "_from_")
-        guard components.count > 1 else {
-            logger.error("Invalid invite ID format")
-            completion(false)
-            return
-        }
-
-        // Extract sender ID from the second part (may contain timestamp)
-        let senderIdWithTimestamp = components[1]
-        let senderIdComponents = senderIdWithTimestamp.components(separatedBy: "_")
-        let senderId = senderIdComponents[0]
-
+        
         isLoading = true
         errorMessage = nil
 
         // Call Firebase API
-        apiClient.acceptInvite(
-            currentUserId: currentUserId,
-            inviteId: invite.uid,
-            senderId: senderId
-        )
+        apiClient.acceptInvite(invite)
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completionStatus in
             guard let self = self else { return }
@@ -161,11 +133,12 @@ class UserInviteService: ObservableObject {
             }
         } receiveValue: { [weak self] _ in
             guard let self = self else { return }
-            self.logger.info("Successfully accepted invite from \(senderId)")
+            self.logger.info("Successfully accepted invite from \(invite.senderUid)")
 
             // Handle local model updates
             DispatchQueue.main.async {
                 // Find the sender user or create a placeholder if not in our local database yet
+                let senderId = invite.senderUid
                 let descriptor = FetchDescriptor<User>(predicate: #Predicate { $0.uid == senderId })
 
                 do {
@@ -176,15 +149,15 @@ class UserInviteService: ObservableObject {
                         sender = existingUser
                     } else {
                         // Create a placeholder user that will be updated when data syncs
-                        sender = User(uid: senderId)
-                        sender.displayName = invite.displayName
-                        sender.email = invite.email
-                        sender.photoURL = invite.photoURL
+                        sender = User(uid: invite.senderUid)
+                        sender.displayName = invite.senderDisplayName
+                        sender.email = invite.senderEmail
+                        sender.photoURL = invite.senderPhotoURL
                         self.modelContext.insert(sender)
                     }
 
                     // Add relationship in both directions
-                    if !currentUser.friends.contains(where: { $0.uid == senderId }) {
+                    if !currentUser.friends.contains(where: { $0.uid == invite.senderUid }) {
                         currentUser.friends.append(sender)
                     }
 
@@ -219,33 +192,16 @@ class UserInviteService: ObservableObject {
     ///   - completion: Completion handler called after the operation
     func declineInvite(invite: Invite, currentUser: User, completion: @escaping (Bool) -> Void) {
         guard let currentUserId = currentUser.uid else {
-            logger.error("Cannot decline invite: missing user ID or invite ID")
+            logger.error("Cannot decline invite: missing user ID")
             completion(false)
             return
         }
-
-        // Extract sender ID from invite ID format
-        let components = invite.uid.components(separatedBy: "_from_")
-        guard components.count > 1 else {
-            logger.error("Invalid invite ID format")
-            completion(false)
-            return
-        }
-
-        // Extract sender ID from the second part (may contain timestamp)
-        let senderIdWithTimestamp = components[1]
-        let senderIdComponents = senderIdWithTimestamp.components(separatedBy: "_")
-        let senderId = senderIdComponents[0]
 
         isLoading = true
         errorMessage = nil
 
         // Call Firebase API
-        apiClient.declineInvite(
-            currentUserId: currentUserId,
-            inviteId: invite.uid,
-            senderId: senderId
-        )
+        apiClient.declineInvite(invite)
         .receive(on: DispatchQueue.main)
         .sink { [weak self] completionStatus in
             guard let self = self else { return }
@@ -265,7 +221,7 @@ class UserInviteService: ObservableObject {
             }
         } receiveValue: { [weak self] _ in
             guard let self = self else { return }
-            self.logger.info("Successfully declined invite from \(senderId)")
+            self.logger.info("Successfully declined invite from \(invite.senderUid)")
 
             // Handle local model updates
             DispatchQueue.main.async {
@@ -343,26 +299,7 @@ class UserInviteService: ObservableObject {
                         var newInvites: [Invite] = []
 
                         for inviteData in invitesData {
-                            if let uid = inviteData["uid"] as? String {
-                                // Convert Firestore timestamp to date
-                                let createdAt: Date
-                                if let timestamp = inviteData["createdAt"] as? [String: Any],
-                                    let seconds = timestamp["seconds"] as? TimeInterval
-                                {
-                                    createdAt = Date(timeIntervalSince1970: seconds)
-                                } else {
-                                    createdAt = Date()
-                                }
-
-                                let invite = Invite(
-                                    uid: uid,
-                                    createdAt: createdAt,
-                                    email: inviteData["email"] as? String,
-                                    displayName: inviteData["displayName"] as? String,
-                                    photoURL: inviteData["photoURL"] as? String
-                                )
-
-                                invite.owner = currentUser
+                            if let invite = Invite.fromDTO(inviteData, owner: currentUser) {
                                 self.modelContext.insert(invite)
                                 currentUser.receivedInvites.append(invite)
                                 newInvites.append(invite)
@@ -434,26 +371,7 @@ class UserInviteService: ObservableObject {
                         var newInvites: [Invite] = []
 
                         for inviteData in invitesData {
-                            if let uid = inviteData["uid"] as? String {
-                                // Convert Firestore timestamp to date
-                                let createdAt: Date
-                                if let timestamp = inviteData["createdAt"] as? [String: Any],
-                                    let seconds = timestamp["seconds"] as? TimeInterval
-                                {
-                                    createdAt = Date(timeIntervalSince1970: seconds)
-                                } else {
-                                    createdAt = Date()
-                                }
-
-                                let invite = Invite(
-                                    uid: uid,
-                                    createdAt: createdAt,
-                                    email: inviteData["email"] as? String,
-                                    displayName: inviteData["displayName"] as? String,
-                                    photoURL: inviteData["photoURL"] as? String
-                                )
-
-                                invite.owner = currentUser
+                            if let invite = Invite.fromDTO(inviteData, owner: currentUser) {
                                 self.modelContext.insert(invite)
                                 currentUser.sentInvites.append(invite)
                                 newInvites.append(invite)

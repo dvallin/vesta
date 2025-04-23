@@ -96,18 +96,34 @@ extension Invite {
         var dto: [String: Any] = [
             "uid": uid,
             "createdAt": createdAt,
+            "senderUid": senderUid,
+            "recipientUid": recipientUid,
         ]
 
-        if let email = email {
-            dto["email"] = email
+        // Add optional sender properties
+        if let senderEmail = senderEmail {
+            dto["senderEmail"] = senderEmail
         }
-
-        if let displayName = displayName {
-            dto["displayName"] = displayName
+        
+        if let senderDisplayName = senderDisplayName {
+            dto["senderDisplayName"] = senderDisplayName
         }
-
-        if let photoURL = photoURL {
-            dto["photoURL"] = photoURL
+        
+        if let senderPhotoURL = senderPhotoURL {
+            dto["senderPhotoURL"] = senderPhotoURL
+        }
+        
+        // Add optional recipient properties
+        if let recipientEmail = recipientEmail {
+            dto["recipientEmail"] = recipientEmail
+        }
+        
+        if let recipientDisplayName = recipientDisplayName {
+            dto["recipientDisplayName"] = recipientDisplayName
+        }
+        
+        if let recipientPhotoURL = recipientPhotoURL {
+            dto["recipientPhotoURL"] = recipientPhotoURL
         }
 
         return dto
@@ -119,19 +135,35 @@ extension Invite {
     ///   - owner: The user to associate this invite with
     /// - Returns: A new Invite instance, or nil if required data is missing
     static func fromDTO(_ data: [String: Any], owner: User?) -> Invite? {
-        guard let uid = data["uid"] as? String else { return nil }
+        guard let uid = data["uid"] as? String,
+              let senderUid = data["senderUid"] as? String,
+              let recipientUid = data["recipientUid"] as? String else { 
+            return nil 
+        }
         
         let createdAt = data["createdAt"] as? Date ?? Date()
-        let email = data["email"] as? String
-        let displayName = data["displayName"] as? String
-        let photoURL = data["photoURL"] as? String
+        
+        // Get sender information
+        let senderEmail = data["senderEmail"] as? String
+        let senderDisplayName = data["senderDisplayName"] as? String
+        let senderPhotoURL = data["senderPhotoURL"] as? String
+        
+        // Get recipient information
+        let recipientEmail = data["recipientEmail"] as? String
+        let recipientDisplayName = data["recipientDisplayName"] as? String
+        let recipientPhotoURL = data["recipientPhotoURL"] as? String
         
         let invite = Invite(
             uid: uid,
             createdAt: createdAt,
-            email: email,
-            displayName: displayName,
-            photoURL: photoURL
+            senderUid: senderUid,
+            recipientUid: recipientUid,
+            senderEmail: senderEmail,
+            senderDisplayName: senderDisplayName,
+            senderPhotoURL: senderPhotoURL,
+            recipientEmail: recipientEmail,
+            recipientDisplayName: recipientDisplayName,
+            recipientPhotoURL: recipientPhotoURL
         )
         invite.owner = owner
         

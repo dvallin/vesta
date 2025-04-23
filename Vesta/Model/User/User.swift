@@ -51,15 +51,40 @@ class Invite {
 
     var uid: String
     var createdAt: Date
-    var email: String?
-    var displayName: String?
-    var photoURL: String?
+    
+    // Sender information
+    var senderUid: String
+    var senderEmail: String?
+    var senderDisplayName: String?
+    var senderPhotoURL: String?
+    
+    // Recipient information
+    var recipientUid: String
+    var recipientEmail: String?
+    var recipientDisplayName: String?
+    var recipientPhotoURL: String?
 
-    init(uid: String, createdAt: Date, email: String?, displayName: String?, photoURL: String?) {
+    init(
+        uid: String,
+        createdAt: Date,
+        senderUid: String,
+        recipientUid: String,
+        senderEmail: String? = nil,
+        senderDisplayName: String? = nil,
+        senderPhotoURL: String? = nil,
+        recipientEmail: String? = nil,
+        recipientDisplayName: String? = nil,
+        recipientPhotoURL: String? = nil
+    ) {
         self.uid = uid
         self.createdAt = createdAt
-        self.email = email
-        self.displayName = displayName
-        self.photoURL = photoURL
+        self.senderUid = senderUid
+        self.recipientUid = recipientUid
+        self.senderEmail = senderEmail
+        self.senderDisplayName = senderDisplayName
+        self.senderPhotoURL = senderPhotoURL
+        self.recipientEmail = recipientEmail
+        self.recipientDisplayName = recipientDisplayName
+        self.recipientPhotoURL = recipientPhotoURL
     }
 }

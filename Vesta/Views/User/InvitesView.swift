@@ -186,7 +186,7 @@ struct ReceivedInviteRow: View {
     
     var body: some View {
         HStack {
-            if let photoURL = invite.photoURL, !photoURL.isEmpty {
+            if let photoURL = invite.senderPhotoURL, !photoURL.isEmpty {
                 AsyncImage(url: URL(string: photoURL)) { phase in
                     switch phase {
                     case .empty:
@@ -215,10 +215,10 @@ struct ReceivedInviteRow: View {
             }
             
             VStack(alignment: .leading) {
-                Text(invite.displayName ?? NSLocalizedString("No Name", comment: "Default display name"))
+                Text(invite.senderDisplayName ?? NSLocalizedString("No Name", comment: "Default display name"))
                     .font(.headline)
                 
-                Text(invite.email ?? "")
+                Text(invite.senderEmail ?? "")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
@@ -267,7 +267,7 @@ struct SentInviteRow: View {
     
     var body: some View {
         HStack {
-            if let photoURL = invite.photoURL, !photoURL.isEmpty {
+            if let photoURL = invite.recipientPhotoURL, !photoURL.isEmpty {
                 AsyncImage(url: URL(string: photoURL)) { phase in
                     switch phase {
                     case .empty:
@@ -296,10 +296,10 @@ struct SentInviteRow: View {
             }
             
             VStack(alignment: .leading) {
-                Text(invite.displayName ?? NSLocalizedString("No Name", comment: "Default display name"))
+                Text(invite.recipientDisplayName ?? NSLocalizedString("No Name", comment: "Default display name"))
                     .font(.headline)
                 
-                Text(invite.email ?? "")
+                Text(invite.recipientEmail ?? "")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
@@ -335,16 +335,27 @@ struct SentInviteRow: View {
         let invite1 = Invite(
             uid: "user_from_sender1_123456789",
             createdAt: Date(),
-            email: "sender1@example.com",
-            displayName: "Sender One",
-            photoURL: nil
+            senderUid: "sender1_uid",
+            recipientUid: user.uid ?? "current_user",
+            senderEmail: "sender1@example.com",
+            senderDisplayName: "Sender One",
+            senderPhotoURL: nil,
+            recipientEmail: user.email,
+            recipientDisplayName: user.displayName,
+            recipientPhotoURL: user.photoURL
         )
+        
         let invite2 = Invite(
             uid: "user_from_sender2_123456789",
             createdAt: Date().addingTimeInterval(-86400), // Yesterday
-            email: "sender2@example.com",
-            displayName: "Sender Two",
-            photoURL: nil
+            senderUid: "sender2_uid",
+            recipientUid: user.uid ?? "current_user",
+            senderEmail: "sender2@example.com",
+            senderDisplayName: "Sender Two",
+            senderPhotoURL: nil,
+            recipientEmail: user.email,
+            recipientDisplayName: user.displayName,
+            recipientPhotoURL: user.photoURL
         )
         
         invite1.owner = user
