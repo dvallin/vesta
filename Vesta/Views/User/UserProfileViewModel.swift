@@ -3,6 +3,7 @@ import SwiftData
 
 class UserProfileViewModel: ObservableObject {
     @Published var isPresentingAddFriendView = false
+    @Published var isPresentingInvitesView = false
     @Published var toastMessages: [ToastMessage] = []
     @Published var shareMeals: Bool = false
     @Published var shareShoppingItems: Bool = false

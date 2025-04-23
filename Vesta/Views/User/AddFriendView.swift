@@ -6,6 +6,7 @@ struct AddFriendView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var auth: UserAuthService
+    @EnvironmentObject private var invites: UserInviteService
 
     @StateObject private var viewModel = AddFriendViewModel()
 
@@ -109,6 +110,7 @@ struct AddFriendView: View {
         }
         .onAppear {
             viewModel.modelContext = modelContext
+            viewModel.configure(inviteService: invites)
         }
     }
 }
@@ -188,12 +190,19 @@ class AddFriendViewModel: ObservableObject {
     
     var modelContext: ModelContext?
     
+    // Dependencies injected by the view
+    private var inviteService: UserInviteService?
+    
     @Published var searchText: String = ""
     @Published var searchResults: [UserSearchResult] = []
     @Published var isSearching = false
     @Published var errorMessage: String? = nil
     @Published var hasSearched = false
     @Published var showingInviteSent = false
+    
+    func configure(inviteService: UserInviteService) {
+        self.inviteService = inviteService
+    }
     
     func searchForFriends() {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -222,8 +231,14 @@ class AddFriendViewModel: ObservableObject {
     }
     
     func sendInvite(to user: UserSearchResult, currentUser: User?) {
-        guard let currentUser = currentUser, let context = modelContext else {
+        guard let currentUser = currentUser else {
             errorMessage = NSLocalizedString("You need to be logged in to send invites", comment: "Not logged in error")
+            return
+        }
+        
+        guard let inviteService = inviteService else {
+            errorMessage = NSLocalizedString("Invite service not available", comment: "Service error")
+            logger.error("Invite service not configured")
             return
         }
         
@@ -235,29 +250,24 @@ class AddFriendViewModel: ObservableObject {
         }
         
         // Check if invite already sent
-        if currentUser.sentInvites.contains(where: { $0.uid == user.uid }) {
+        if currentUser.sentInvites.contains(where: { $0.uid.contains(user.uid) }) {
             errorMessage = NSLocalizedString(
                 "You've already sent an invite to this user", comment: "Invite already sent error")
             return
         }
         
-        // Create the invite
-        let invite = user.toInvite()
-        invite.owner = currentUser
-        
-        // Add to current user's sent invites
-        currentUser.sentInvites.append(invite)
-        currentUser.dirty = true
-        
-        // Save to database
-        do {
-            context.insert(invite)
-            try context.save()
-            logger.info("Invite sent successfully to: \(user.uid)")
-            showingInviteSent = true
-        } catch {
-            errorMessage = NSLocalizedString("Failed to send invite", comment: "Send invite error")
-            logger.error("Failed to save invite: \(error.localizedDescription)")
+        // Use the invite service to send the invite to Firebase
+        inviteService.sendInvite(from: currentUser, to: user) { [weak self] success in
+            guard let self = self else { return }
+            
+            if success {
+                self.logger.info("Invite sent successfully to: \(user.uid)")
+                self.showingInviteSent = true
+            } else {
+                self.errorMessage = inviteService.errorMessage ?? NSLocalizedString(
+                    "Failed to send invite", comment: "Send invite error")
+                self.logger.error("Failed to send invite: \(self.errorMessage ?? "Unknown error")")
+            }
         }
     }
 }

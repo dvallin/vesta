@@ -17,6 +17,7 @@ struct VestaApp: App {
     let recipes: RecipeService
     let shoppingItems: ShoppingListItemService
     let syncService: SyncService
+    let inviteService: UserInviteService
 
     init() {
         FirebaseApp.configure()
@@ -36,6 +37,10 @@ struct VestaApp: App {
         todoItems = TodoItemService(modelContext: modelContext)
         recipes = RecipeService(modelContext: modelContext)
         shoppingItems = ShoppingListItemService(modelContext: modelContext)
+        
+        // Create Firebase API client for use with invite service
+        let firebaseApi = FirebaseAPIClient()
+        inviteService = UserInviteService(modelContext: modelContext, apiClient: firebaseApi)
 
         syncService = SyncService(
             auth: auth, users: users, todoItemCategories: todoItemCategories,
@@ -52,5 +57,6 @@ struct VestaApp: App {
         .modelContainer(sharedModelContainer)
         .environmentObject(auth)
         .environmentObject(syncService)
+        .environmentObject(inviteService)
     }
 }

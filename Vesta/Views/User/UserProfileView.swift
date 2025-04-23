@@ -40,6 +40,9 @@ struct UserProfileView: View {
         .sheet(isPresented: $viewModel.isPresentingAddFriendView) {
             AddFriendView()
         }
+        .sheet(isPresented: $viewModel.isPresentingInvitesView) {
+            InvitesView()
+        }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
             viewModel.configureContext(modelContext, auth)
@@ -97,6 +100,16 @@ struct UserProfileView: View {
                     .font(.headline)
                 
                 Spacer()
+                
+                Button(action: {
+                    HapticFeedbackManager.shared.generateSelectionFeedback()
+                    viewModel.isPresentingInvitesView = true
+                }) {
+                    Label(
+                        NSLocalizedString("Invites", comment: "View invites button"),
+                        systemImage: "envelope"
+                    )
+                }
                 
                 Button(action: {
                     HapticFeedbackManager.shared.generateSelectionFeedback()

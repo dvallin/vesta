@@ -39,29 +39,13 @@ service cloud.firestore {
       );
       
       // Allow owner to modify their profile
-      // Also allow friend updates (for accepting invites and updating friend lists)
+      // Also allow authenticated users to update specific fields for invite/friend operations
       allow update: if isOwner(userId) || 
                     (isAuthenticated() && 
-                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friendIds', 'lastModified']));
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friendIds', 'sentInvites', 'receivedInvites', 'lastModified']));
       
       // Only owner can create or delete their profile
       allow create, delete: if isOwner(userId);
-      
-      // Sent invites subcollection - owner can manage their sent invites
-      match /sentInvites/{inviteId} {
-        // Owner has full access to their sent invites
-        allow read, create, delete: if isOwner(userId);
-      }
-      
-      // Received invites subcollection - owner can manage their received invites
-      match /receivedInvites/{inviteId} {
-        // Owner has full access to their received invites
-        allow read, delete: if isOwner(userId);
-        
-        // Any authenticated user can create a received invite for another user
-        // This allows sending invites to others
-        allow create: if isAuthenticated();
-      }
 
       // Entities subcollection
       match /entities/{entityId} {

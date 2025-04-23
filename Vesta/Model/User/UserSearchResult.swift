@@ -19,8 +19,10 @@ struct UserSearchResult: Identifiable, Hashable {
     
     /// Creates an Invite object from this search result
     func toInvite() -> Invite {
+        // Create a unique ID with timestamp to match Firebase format
+        let timestamp = Date().timeIntervalSince1970
         return Invite(
-            uid: uid,
+            uid: "to_\(uid)_\(timestamp)",
             createdAt: Date(),
             email: email,
             displayName: displayName,
