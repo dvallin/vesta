@@ -7,13 +7,13 @@ protocol SyncableEntity: AnyObject {
     var isShared: Bool { get set }
     var dirty: Bool { get set }
 
-    func markAsDirty(_ currentUser: User)
+    func markAsDirty()
 
     func toDTO() -> [String: Any]
 }
 
 extension SyncableEntity {
-    func markAsDirty(_ currentUser: User) {
+    func markAsDirty() {
         self.dirty = true
     }
     func markAsSynced() {

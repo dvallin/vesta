@@ -66,7 +66,7 @@ class Meal: SyncableEntity {
         if let newDueDate = DateUtils.setTime(hour: hour, minute: minute, for: baseDate) {
             todoItem?.setDueDate(dueDate: newDueDate, currentUser: currentUser)
         }
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setDueDate(_ newDate: Date, currentUser: User) {
@@ -74,16 +74,16 @@ class Meal: SyncableEntity {
             dueDate: DateUtils.preserveTime(from: todoItem?.dueDate, applying: newDate),
             currentUser: currentUser
         )
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setScalingFactor(_ newScalingFactor: Double, currentUser: User) {
         self.scalingFactor = newScalingFactor
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setMealType(_ newMealType: MealType, currentUser: User) {
         self.mealType = newMealType
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 }

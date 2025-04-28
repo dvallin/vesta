@@ -148,48 +148,48 @@ class TodoItem: SyncableEntity {
         }
 
         NotificationManager.shared.scheduleNotification(for: self)
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setDetails(details: String, currentUser: User) {
         self.details = details
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setTitle(title: String, currentUser: User) {
         self.title = title
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setDueDate(dueDate: Date?, currentUser: User) {
         self.dueDate = dueDate
 
         NotificationManager.shared.scheduleNotification(for: self)
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setIsCompleted(isCompleted: Bool, currentUser: User) {
         self.isCompleted = isCompleted
 
         NotificationManager.shared.scheduleNotification(for: self)
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setRecurrenceFrequency(
         recurrenceFrequency: RecurrenceFrequency?, currentUser: User
     ) {
         self.recurrenceFrequency = recurrenceFrequency
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setRecurrenceInterval(recurrenceInterval: Int?, currentUser: User) {
         self.recurrenceInterval = recurrenceInterval
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setRecurrenceType(recurrenceType: RecurrenceType?, currentUser: User) {
         self.recurrenceType = recurrenceType
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setIgnoreTimeComponent(ignoreTimeComponent: Bool, currentUser: User) {
@@ -201,17 +201,17 @@ class TodoItem: SyncableEntity {
 
         // Reschedule notification with new time component setting
         NotificationManager.shared.scheduleNotification(for: self)
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setPriority(priority: Int, currentUser: User) {
         self.priority = priority
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setCategory(category: TodoItemCategory?, currentUser: User) {
         self.category = category
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     private func updateDueDate(
@@ -235,6 +235,6 @@ class TodoItem: SyncableEntity {
             self.dueDate = DateUtils.calendar.startOfDay(for: dueDate)
         }
 
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 }

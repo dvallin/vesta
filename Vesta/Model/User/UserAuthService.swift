@@ -51,6 +51,7 @@ class UserAuthService: ObservableObject {
                     // Update existing user
                     logger.debug("Updating existing user with UID: \(firebaseUser.uid)")
                     existingUser.update(from: firebaseUser)
+                    existingUser.markAsDirty()
                     self.currentUser = existingUser
                 } else {
                     // Create new user

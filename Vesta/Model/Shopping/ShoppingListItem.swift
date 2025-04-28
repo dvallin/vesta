@@ -42,11 +42,11 @@ class ShoppingListItem: SyncableEntity {
 
     func setQuantity(newQuantity: Double?, currentUser: User) {
         self.quantity = newQuantity
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 
     func setUnit(newUnit: Unit?, currentUser: User) {
         self.unit = newUnit
-        self.markAsDirty(currentUser)
+        self.markAsDirty()
     }
 }

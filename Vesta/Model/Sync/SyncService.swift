@@ -176,11 +176,11 @@ class SyncService: ObservableObject {
     ///   - entity: The entity to sync
     ///   - currentUser: The current user making the change
     /// - Returns: A publisher that completes when the sync is finished
-    func syncEntityImmediately<T: PersistentModel & SyncableEntity>(_ entity: T, currentUser: User)
+    func syncEntityImmediately<T: PersistentModel & SyncableEntity>(_ entity: T)
         -> AnyPublisher<Void, SyncError>
     {
         // Mark as dirty first
-        entity.markAsDirty(currentUser)
+        entity.markAsDirty()
 
         do {
             try modelContext.save()

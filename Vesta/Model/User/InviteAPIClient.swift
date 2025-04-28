@@ -17,14 +17,4 @@ protocol InviteAPIClient {
     /// - Parameter invite: The invite object to be declined
     /// - Returns: Publisher that emits void on success or an error
     func declineInvite(_ invite: Invite) -> AnyPublisher<Void, Error>
-
-    /// Fetches all received invites for a user
-    /// - Parameter userId: The ID of the user whose received invites to fetch
-    /// - Returns: Publisher that emits an array of invite data or an error
-    func fetchReceivedInvites(userId: String) -> AnyPublisher<[[String: Any]], Error>
-
-    /// Fetches all sent invites for a user
-    /// - Parameter userId: The ID of the user whose sent invites to fetch
-    /// - Returns: Publisher that emits an array of invite data or an error
-    func fetchSentInvites(userId: String) -> AnyPublisher<[[String: Any]], Error>
 }

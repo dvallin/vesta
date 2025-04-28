@@ -74,13 +74,13 @@ class Recipe: SyncableEntity {
         let newIngredient = Ingredient(
             name: name, order: ingredients.count + 1, quantity: quantity, unit: unit, recipe: self)
         ingredients.append(newIngredient)
-        markAsDirty(currentUser)
+        markAsDirty()
     }
 
     func removeIngredient(_ ingredient: Ingredient, currentUser: User) {
         if let index = ingredients.firstIndex(where: { $0 === ingredient }) {
             ingredients.remove(at: index)
-            markAsDirty(currentUser)
+            markAsDirty()
         }
     }
 
@@ -92,7 +92,7 @@ class Recipe: SyncableEntity {
             ingredient.order = index + 1
         }
         ingredients = sortedIngredients
-        markAsDirty(currentUser)
+        markAsDirty()
     }
 
     func addStep(instruction: String, type: StepType, duration: TimeInterval?, currentUser: User) {
@@ -104,13 +104,13 @@ class Recipe: SyncableEntity {
             recipe: self
         )
         steps.append(newStep)
-        markAsDirty(currentUser)
+        markAsDirty()
     }
 
     func removeStep(_ step: RecipeStep, currentUser: User) {
         if let index = steps.firstIndex(where: { $0 === step }) {
             steps.remove(at: index)
-            markAsDirty(currentUser)
+            markAsDirty()
         }
     }
 
@@ -122,17 +122,17 @@ class Recipe: SyncableEntity {
             step.order = index + 1
         }
         steps = sortedSteps
-        markAsDirty(currentUser)
+        markAsDirty()
     }
 
     func setTitle(_ newTitle: String, currentUser: User) {
         title = newTitle
-        markAsDirty(currentUser)
+        markAsDirty()
     }
 
     func setDetails(_ newDetails: String, currentUser: User) {
         details = newDetails
-        markAsDirty(currentUser)
+        markAsDirty()
     }
 }
 

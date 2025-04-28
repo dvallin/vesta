@@ -1,18 +1,18 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 import os
 
 struct InvitesView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var auth: UserAuthService
     @EnvironmentObject private var invites: UserInviteService
-    
+
     private let logger = Logger(subsystem: "com.app.Vesta", category: "InvitesView")
     @State private var selectedTab = 0
     @State private var refreshing = false
     @State private var showingError = false
     @State private var errorMessage = ""
-    
+
     var body: some View {
         NavigationView {
             VStack {
@@ -24,7 +24,7 @@ struct InvitesView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding()
-                
+
                 if invites.isLoading {
                     ProgressView()
                         .padding()
@@ -33,7 +33,7 @@ struct InvitesView: View {
                 } else {
                     sentInvitesView
                 }
-                
+
                 Spacer()
             }
             .navigationTitle(NSLocalizedString("Invites", comment: "Invites screen title"))
@@ -42,13 +42,6 @@ struct InvitesView: View {
                     Button(NSLocalizedString("Done", comment: "Done button")) {
                         dismiss()
                     }
-                }
-                
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: refreshInvites) {
-                        Label(NSLocalizedString("Refresh", comment: "Refresh button"), systemImage: "arrow.clockwise")
-                    }
-                    .disabled(refreshing)
                 }
             }
             .alert(isPresented: $showingError) {
@@ -59,11 +52,8 @@ struct InvitesView: View {
                 )
             }
         }
-        .onAppear {
-            refreshInvites()
-        }
     }
-    
+
     private var receivedInvitesView: some View {
         ScrollView {
             LazyVStack {
@@ -73,7 +63,7 @@ struct InvitesView: View {
                         systemImage: "person.crop.circle.badge.xmark",
                         description: Text(
                             NSLocalizedString(
-                                "You don't have any received invites", 
+                                "You don't have any received invites",
                                 comment: "No received invites description")
                         )
                     )
@@ -90,7 +80,7 @@ struct InvitesView: View {
             }
         }
     }
-    
+
     private var sentInvitesView: some View {
         ScrollView {
             LazyVStack {
@@ -100,7 +90,7 @@ struct InvitesView: View {
                         systemImage: "person.crop.circle.badge.xmark",
                         description: Text(
                             NSLocalizedString(
-                                "You haven't sent any invites", 
+                                "You haven't sent any invites",
                                 comment: "No sent invites description")
                         )
                     )
@@ -115,37 +105,13 @@ struct InvitesView: View {
             }
         }
     }
-    
-    private func refreshInvites() {
-        guard let userId = auth.currentUser?.uid else {
-            logger.error("Cannot refresh invites: current user has no UID")
-            return
-        }
-        
-        refreshing = true
-        
-        // Refresh received invites
-        invites.fetchReceivedInvites(userId: userId) { success in
-            if !success {
-                showError(NSLocalizedString("Failed to load received invites", comment: "Fetch error"))
-            }
-            
-            // Refresh sent invites
-            invites.fetchSentInvites(userId: userId) { success in
-                refreshing = false
-                if !success {
-                    showError(NSLocalizedString("Failed to load sent invites", comment: "Fetch error"))
-                }
-            }
-        }
-    }
-    
+
     private func handleInviteAction(invite: Invite, action: InviteAction) {
         guard let currentUser = auth.currentUser else {
             showError(NSLocalizedString("You need to be logged in", comment: "Auth error"))
             return
         }
-        
+
         switch action {
         case .accept:
             invites.acceptInvite(invite: invite, currentUser: currentUser) { success in
@@ -155,18 +121,19 @@ struct InvitesView: View {
                     showError(NSLocalizedString("Failed to accept invite", comment: "Accept error"))
                 }
             }
-            
+
         case .decline:
             invites.declineInvite(invite: invite, currentUser: currentUser) { success in
                 if success {
                     logger.info("Successfully declined invite")
                 } else {
-                    showError(NSLocalizedString("Failed to decline invite", comment: "Decline error"))
+                    showError(
+                        NSLocalizedString("Failed to decline invite", comment: "Decline error"))
                 }
             }
         }
     }
-    
+
     private func showError(_ message: String) {
         errorMessage = message
         showingError = true
@@ -181,9 +148,9 @@ enum InviteAction {
 struct ReceivedInviteRow: View {
     let invite: Invite
     let onAction: (InviteAction) -> Void
-    
+
     @State private var isProcessing = false
-    
+
     var body: some View {
         HStack {
             if let photoURL = invite.senderPhotoURL, !photoURL.isEmpty {
@@ -213,15 +180,18 @@ struct ReceivedInviteRow: View {
                     .frame(width: 50, height: 50)
                     .foregroundColor(.gray)
             }
-            
+
             VStack(alignment: .leading) {
-                Text(invite.senderDisplayName ?? NSLocalizedString("No Name", comment: "Default display name"))
-                    .font(.headline)
-                
+                Text(
+                    invite.senderDisplayName
+                        ?? NSLocalizedString("No Name", comment: "Default display name")
+                )
+                .font(.headline)
+
                 Text(invite.senderEmail ?? "")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                
+
                 Text(
                     String(
                         format: NSLocalizedString("Sent %@", comment: "Invite sent date"),
@@ -231,9 +201,9 @@ struct ReceivedInviteRow: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             }
-            
+
             Spacer()
-            
+
             if isProcessing {
                 ProgressView()
             } else {
@@ -246,7 +216,7 @@ struct ReceivedInviteRow: View {
                             .foregroundColor(.green)
                             .font(.title2)
                     }
-                    
+
                     Button {
                         isProcessing = true
                         onAction(.decline)
@@ -264,7 +234,7 @@ struct ReceivedInviteRow: View {
 
 struct SentInviteRow: View {
     let invite: Invite
-    
+
     var body: some View {
         HStack {
             if let photoURL = invite.recipientPhotoURL, !photoURL.isEmpty {
@@ -294,15 +264,18 @@ struct SentInviteRow: View {
                     .frame(width: 50, height: 50)
                     .foregroundColor(.gray)
             }
-            
+
             VStack(alignment: .leading) {
-                Text(invite.recipientDisplayName ?? NSLocalizedString("No Name", comment: "Default display name"))
-                    .font(.headline)
-                
+                Text(
+                    invite.recipientDisplayName
+                        ?? NSLocalizedString("No Name", comment: "Default display name")
+                )
+                .font(.headline)
+
                 Text(invite.recipientEmail ?? "")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                
+
                 Text(
                     String(
                         format: NSLocalizedString("Sent %@", comment: "Invite sent date"),
@@ -312,9 +285,9 @@ struct SentInviteRow: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             }
-            
+
             Spacer()
-            
+
             Image(systemName: "hourglass")
                 .foregroundColor(.orange)
                 .font(.title3)
@@ -327,10 +300,10 @@ struct SentInviteRow: View {
     do {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
-        
+
         // Create a sample user with invites
         let user = Fixtures.createUser()
-        
+
         // Add some sample received invites
         let invite1 = Invite(
             uid: "user_from_sender1_123456789",
@@ -344,10 +317,10 @@ struct SentInviteRow: View {
             recipientDisplayName: user.displayName,
             recipientPhotoURL: user.photoURL
         )
-        
+
         let invite2 = Invite(
             uid: "user_from_sender2_123456789",
-            createdAt: Date().addingTimeInterval(-86400), // Yesterday
+            createdAt: Date().addingTimeInterval(-86400),  // Yesterday
             senderUid: "sender2_uid",
             recipientUid: user.uid ?? "current_user",
             senderEmail: "sender2@example.com",
@@ -357,27 +330,27 @@ struct SentInviteRow: View {
             recipientDisplayName: user.displayName,
             recipientPhotoURL: user.photoURL
         )
-        
+
         invite1.owner = user
         invite2.owner = user
         user.receivedInvites = [invite1, invite2]
-        
+
         context.insert(user)
         context.insert(invite1)
         context.insert(invite2)
-        
+
         // Create the user auth service
         let authService = UserAuthService(modelContext: context)
-        
+
         // Create the mock Firebase API client
         let mockAPIClient = FirebaseAPIClient()
-        
+
         // Create the invite service
         let inviteService = UserInviteService(modelContext: context, apiClient: mockAPIClient)
-        
+
         // Manually set the invites for preview
         inviteService.receivedInvites = [invite1, invite2]
-        
+
         return InvitesView()
             .modelContainer(container)
             .environmentObject(authService)
