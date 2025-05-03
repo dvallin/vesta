@@ -59,11 +59,11 @@ class SyncService: ObservableObject {
         stopSync()
 
         guard let currentUser = auth.currentUser, currentUser.uid != nil else {
-            logger.error("Cannot start sync: User not authenticated")
+            self.logger.error("Cannot start sync: User not authenticated")
             return
         }
 
-        logger.info("Starting sync service")
+        self.logger.info("Starting sync service")
         isSyncEnabled = true
 
         // Perform initial pull after a short delay to allow the app to finish loading
@@ -71,18 +71,18 @@ class SyncService: ObservableObject {
             guard let self = self else { return }
 
             // Step 1: Perform initial pull from Firebase
-            self.logger.info("Performing initial pull from Firebase")
+            self.self.logger.info("Performing initial pull from Firebase")
             self.pullChangesFromFirebase().sink(
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
-                        self.logger.error("Initial pull failed: \(error)")
+                        self.self.logger.error("Initial pull failed: \(error)")
                     }
 
                     // Step 2: Set up real-time subscription (even if initial pull failed)
                     self.setupRealTimeSubscription()
                 },
                 receiveValue: { _ in
-                    self.logger.info("Initial pull completed successfully")
+                    self.self.logger.info("Initial pull completed successfully")
                     self.lastSyncTime = Date()
                 }
             )
@@ -96,17 +96,17 @@ class SyncService: ObservableObject {
     /// Set up real-time subscription to Firebase updates
     private func setupRealTimeSubscription() {
         guard let currentUser = auth.currentUser, let userId = currentUser.uid else {
-            logger.error("Cannot subscribe to updates: User not authenticated")
+            self.logger.error("Cannot subscribe to updates: User not authenticated")
             return
         }
 
-        logger.info("Setting up real-time subscription for user: \(userId)")
+        self.logger.info("Setting up real-time subscription for user: \(userId)")
 
         realTimeSubscription = apiClient.subscribeToEntityUpdates(for: userId) {
             [weak self] entityData in
             guard let self = self else { return }
 
-            self.logger.info(
+            self.self.logger.info(
                 "Received real-time update with \(entityData.values.map { $0.count }.reduce(0, +)) entities"
             )
 
@@ -115,11 +115,11 @@ class SyncService: ObservableObject {
                 .sink(
                     receiveCompletion: { completion in
                         if case .failure(let error) = completion {
-                            self.logger.error("Error processing real-time update: \(error)")
+                            self.self.logger.error("Error processing real-time update: \(error)")
                         }
                     },
                     receiveValue: { _ in
-                        self.logger.debug("Real-time update processed successfully")
+                        self.self.logger.debug("Real-time update processed successfully")
                         self.lastSyncTime = Date()
                     }
                 )
@@ -132,11 +132,11 @@ class SyncService: ObservableObject {
         syncTimer = Timer.scheduledTimer(withTimeInterval: pushInterval, repeats: true) {
             [weak self] _ in
             guard let self = self else { return }
-            self.logger.info("Performing scheduled push of local changes")
+            self.self.logger.info("Performing scheduled push of local changes")
 
             // Only push local changes if we're not already syncing
             guard !self.isSyncing else {
-                self.logger.info("Skipping scheduled push because sync is already in progress")
+                self.self.logger.info("Skipping scheduled push because sync is already in progress")
                 return
             }
 
@@ -145,11 +145,11 @@ class SyncService: ObservableObject {
                 .sink(
                     receiveCompletion: { completion in
                         if case .failure(let error) = completion {
-                            self.logger.error("Scheduled push failed: \(error)")
+                            self.self.logger.error("Scheduled push failed: \(error)")
                         }
                     },
                     receiveValue: { _ in
-                        self.logger.info("Scheduled push completed successfully")
+                        self.self.logger.info("Scheduled push completed successfully")
                     }
                 )
                 .store(in: &self.cancellables)
@@ -158,7 +158,7 @@ class SyncService: ObservableObject {
 
     /// Stop all sync operations
     func stopSync() {
-        logger.info("Stopping sync service")
+        self.logger.info("Stopping sync service")
 
         // Cancel scheduled timer
         syncTimer?.invalidate()
@@ -185,7 +185,7 @@ class SyncService: ObservableObject {
         do {
             try modelContext.save()
         } catch {
-            logger.error(
+            self.logger.error(
                 "Failed to save entity before immediate sync: \(error.localizedDescription)")
             return Fail(error: SyncError.unknown).eraseToAnyPublisher()
         }
@@ -208,7 +208,7 @@ class SyncService: ObservableObject {
             return Fail(error: SyncError.notAuthenticated).eraseToAnyPublisher()
         }
 
-        logger.info("Starting manual sync")
+        self.logger.info("Starting manual sync")
         isSyncing = true
 
         return pushLocalChanges()
@@ -222,10 +222,10 @@ class SyncService: ObservableObject {
                 self?.isSyncing = false
 
                 if case .finished = completion {
-                    self?.logger.info("Manual sync completed successfully")
+                    self?.self.logger.info("Manual sync completed successfully")
                     self?.lastSyncTime = Date()
                 } else if case .failure(let error) = completion {
-                    self?.logger.error("Manual sync failed: \(error)")
+                    self?.self.logger.error("Manual sync failed: \(error)")
                 }
             })
             .eraseToAnyPublisher()
@@ -233,7 +233,7 @@ class SyncService: ObservableObject {
 
     /// Push local changes to the server
     private func pushLocalChanges() -> AnyPublisher<Void, SyncError> {
-        logger.info("Pushing local changes to Firebase")
+        self.logger.info("Pushing local changes to Firebase")
 
         return Future { [weak self] promise in
             guard let self = self else {
@@ -261,10 +261,10 @@ class SyncService: ObservableObject {
                 receiveCompletion: { completion in
                     switch completion {
                     case .finished:
-                        self.logger.info("Successfully pushed local changes")
+                        self.self.logger.info("Successfully pushed local changes")
                         promise(.success(()))
                     case .failure(let error):
-                        self.logger.error("Error pushing local changes: \(error)")
+                        self.self.logger.error("Error pushing local changes: \(error)")
                         promise(.failure(error))
                     }
                 },
@@ -385,7 +385,7 @@ class SyncService: ObservableObject {
 
     /// Pull down changes from Firebase and update the local database
     func pullChangesFromFirebase() -> AnyPublisher<Void, SyncError> {
-        logger.info("Pulling changes from Firebase")
+        self.logger.info("Pulling changes from Firebase")
 
         return Future { [weak self] promise in
             guard let self = self else {
@@ -397,7 +397,7 @@ class SyncService: ObservableObject {
             guard let currentUser = self.auth.currentUser,
                 let userId = currentUser.uid
             else {
-                self.logger.error("Cannot pull changes: User not authenticated")
+                self.self.logger.error("Cannot pull changes: User not authenticated")
                 promise(.failure(.notAuthenticated))
                 return
             }
@@ -410,7 +410,7 @@ class SyncService: ObservableObject {
                             // Completion is handled in the receiveValue handler
                             break
                         case .failure(let error):
-                            self.logger.error(
+                            self.self.logger.error(
                                 "Error pulling changes: \(error.localizedDescription)")
                             promise(.failure(.apiError(error)))
                         }
@@ -423,10 +423,10 @@ class SyncService: ObservableObject {
 
                         let entityCount = entityData.values.map { $0.count }.reduce(0, +)
                         if entityCount > 0 {
-                            self.logger.info(
+                            self.self.logger.info(
                                 "Received \(entityCount) updated entities from Firebase")
                         } else {
-                            self.logger.info("No new updates from Firebase")
+                            self.self.logger.info("No new updates from Firebase")
                             promise(.success(()))
                             return
                         }
@@ -436,10 +436,11 @@ class SyncService: ObservableObject {
                                 receiveCompletion: { completion in
                                     switch completion {
                                     case .finished:
-                                        self.logger.info("Successfully processed pulled entities")
+                                        self.self.logger.info(
+                                            "Successfully processed pulled entities")
                                         promise(.success(()))
                                     case .failure(let error):
-                                        self.logger.error(
+                                        self.self.logger.error(
                                             "Error processing pulled entities: \(error)")
                                         promise(.failure(error))
                                     }
@@ -515,17 +516,24 @@ class SyncService: ObservableObject {
 
     @MainActor
     private func processUserEntities(_ entities: [[String: Any]], currentUser: User) async throws {
+        self.logger.info("Processing \(entities.count) User entities")
+
         for data in entities {
-            guard let uid = data["uid"] as? String else { continue }
+            guard let uid = data["uid"] as? String else {
+                self.logger.warning("Skipping User entity without UID")
+                continue
+            }
 
             // Check if entity exists or create a new one
             let user: User
             if let existingUser = try users.fetchUnique(withUID: uid) {
                 user = existingUser
+                self.logger.debug("Found existing User with UID: \(uid)")
             } else {
-                guard let name = data["name"] as? String else { continue }
+                // For new users, we need just the UID - the rest will be updated
                 user = User(uid: uid)
                 modelContext.insert(user)
+                self.logger.debug("Created new User with UID: \(uid)")
             }
 
             // Update properties and members
@@ -543,7 +551,51 @@ class SyncService: ObservableObject {
                 user.owner = nil
             }
 
+            // Process friend IDs if available
+            if let friendIds = data["friendIds"] as? [String], !friendIds.isEmpty {
+                self.logger.debug("Processing \(friendIds.count) friends for user \(uid)")
+
+                // Get current friend IDs for comparison
+                let currentFriendIds = Set(user.friends.compactMap { $0.uid })
+                // Find new friend IDs that need to be added
+                let newFriendIds = Set(friendIds).subtracting(currentFriendIds)
+
+                if !newFriendIds.isEmpty {
+                    self.logger.debug("Adding \(newFriendIds.count) new friends to user \(uid)")
+                    // Fetch and add new friends
+                    if let newFriends = try? users.fetchMany(withUIDs: Array(newFriendIds)) {
+                        user.friends.append(contentsOf: newFriends)
+                    }
+
+                    // If new friends couldn't be found in database, create placeholder users
+                    let fetchedIds = Set(user.friends.compactMap { $0.uid })
+                    let missingIds = newFriendIds.subtracting(fetchedIds)
+
+                    for missingId in missingIds {
+                        let newFriend = User(uid: missingId)
+                        modelContext.insert(newFriend)
+                        user.friends.append(newFriend)
+                        self.logger.debug(
+                            "Created placeholder user for friend with UID: \(missingId)")
+                    }
+                }
+
+                // Remove friends that are no longer in the friend list
+                user.friends.removeAll { friend in
+                    guard let friendUid = friend.uid else { return false }
+                    let shouldRemove = !friendIds.contains(friendUid)
+                    if shouldRemove {
+                        self.logger.debug("Removing friend with UID \(friendUid) from user \(uid)")
+                    }
+                    return shouldRemove
+                }
+            } else if !user.friends.isEmpty {
+                self.logger.debug("Clearing all friends for user \(uid)")
+                user.friends.removeAll()
+            }
+
             user.markAsSynced()
+            self.logger.debug("Successfully processed User: \(uid)")
         }
     }
 
@@ -551,44 +603,67 @@ class SyncService: ObservableObject {
     private func processTodoItemEntities(_ entities: [[String: Any]], currentUser: User)
         async throws
     {
+        self.logger.info("Processing \(entities.count) TodoItem entities")
+
         for data in entities {
-            guard let uid = data["uid"] as? String else { continue }
+            guard let uid = data["uid"] as? String else {
+                self.logger.warning("Skipping TodoItem entity without UID")
+                continue
+            }
 
             // Check if entity exists or create a new one
             let todoItem: TodoItem
             if let existingTodoItem = try todoItems.fetchUnique(withUID: uid) {
                 todoItem = existingTodoItem
+                self.logger.debug("Found existing TodoItem with UID: \(uid)")
             } else {
                 guard let title = data["title"] as? String,
                     let details = data["details"] as? String
-                else { continue }
+                else {
+                    self.logger.warning(
+                        "Skipping TodoItem without required title or details: \(uid)")
+                    continue
+                }
 
                 todoItem = TodoItem(title: title, details: details, owner: nil)
                 todoItem.uid = uid
                 modelContext.insert(todoItem)
+                self.logger.debug("Created new TodoItem with UID: \(uid), title: \(title)")
             }
 
             // Update properties
             todoItem.update(from: data)
+            self.logger.debug("Updated properties for TodoItem: \(uid)")
 
             // Update owner if available
             if let ownerId = data["ownerId"] as? String {
                 if ownerId != todoItem.owner?.uid {
                     if let owner = try? users.fetchUnique(withUID: ownerId) {
                         todoItem.owner = owner
+                        self.logger.debug("Set owner \(ownerId) for TodoItem: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find owner with UID \(ownerId) for TodoItem: \(uid)")
                     }
                 }
             } else if todoItem.owner != nil {
+                self.logger.debug("Removing owner from TodoItem: \(uid)")
                 todoItem.owner = nil
             }
+
             // Process meal reference if available
             if let mealUID = data["mealId"] as? String {
                 if mealUID != todoItem.meal?.uid {
                     if let meal = try? meals.fetchUnique(withUID: mealUID) {
                         todoItem.meal = meal
+                        self.logger.debug("Set meal \(mealUID) for TodoItem: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find meal with UID \(mealUID) for TodoItem: \(uid)")
                     }
                 }
             } else if todoItem.meal != nil {
+                self.logger.debug("Removing meal from TodoItem: \(uid)")
                 todoItem.meal = nil
             }
 
@@ -599,9 +674,16 @@ class SyncService: ObservableObject {
                         withUID: shoppingListItemUID)
                     {
                         todoItem.shoppingListItem = shoppingListItem
+                        self.logger.debug(
+                            "Set shopping list item \(shoppingListItemUID) for TodoItem: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find shopping list item with UID \(shoppingListItemUID) for TodoItem: \(uid)"
+                        )
                     }
                 }
             } else if todoItem.shoppingListItem != nil {
+                self.logger.debug("Removing shopping list item from TodoItem: \(uid)")
                 todoItem.shoppingListItem = nil
             }
 
@@ -609,29 +691,41 @@ class SyncService: ObservableObject {
             if let categoryName = data["categoryName"] as? String {
                 if categoryName != todoItem.category?.name {
                     todoItem.category = todoItemCategories.fetchOrCreate(named: categoryName)
+                    self.logger.debug("Set category '\(categoryName)' for TodoItem: \(uid)")
                 }
             } else if todoItem.category != nil {
+                self.logger.debug("Removing category from TodoItem: \(uid)")
                 todoItem.category = nil
             }
 
             todoItem.markAsSynced()
+            self.logger.debug("Successfully processed TodoItem: \(uid)")
         }
     }
 
     @MainActor
     private func processRecipeEntities(_ entities: [[String: Any]], currentUser: User) async throws
     {
+        self.logger.info("Processing \(entities.count) Recipe entities")
+
         for data in entities {
-            guard let uid = data["uid"] as? String else { continue }
+            guard let uid = data["uid"] as? String else {
+                self.logger.warning("Skipping Recipe entity without UID")
+                continue
+            }
 
             // Check if entity exists or create a new one
             let recipe: Recipe
             if let existingRecipe = try recipes.fetchUnique(withUID: uid) {
                 recipe = existingRecipe
+                self.logger.debug("Found existing Recipe with UID: \(uid)")
             } else {
                 guard let title = data["title"] as? String,
                     let details = data["details"] as? String
-                else { continue }
+                else {
+                    self.logger.warning("Skipping Recipe without required title or details: \(uid)")
+                    continue
+                }
 
                 recipe = Recipe(
                     title: title,
@@ -641,57 +735,90 @@ class SyncService: ObservableObject {
                 recipe.uid = uid
                 recipe.dirty = false  // Fresh from server
                 modelContext.insert(recipe)
+                self.logger.debug("Created new Recipe with UID: \(uid), title: \(title)")
             }
 
             // Update properties using the Recipe's update method
             recipe.update(from: data)
+            self.logger.debug("Updated properties for Recipe: \(uid)")
 
             // Update owner if available
             if let ownerId = data["ownerId"] as? String {
                 if ownerId != recipe.owner?.uid {
                     if let owner = try? users.fetchUnique(withUID: ownerId) {
                         recipe.owner = owner
+                        self.logger.debug("Set owner \(ownerId) for Recipe: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find owner with UID \(ownerId) for Recipe: \(uid)")
                     }
                 }
             } else if recipe.owner != nil {
+                self.logger.debug("Removing owner from Recipe: \(uid)")
                 recipe.owner = nil
             }
 
             // Process meal references
             if let mealIds = data["mealIds"] as? [String], !mealIds.isEmpty {
+                self.logger.debug("Processing \(mealIds.count) meal references for Recipe: \(uid)")
+
                 let currentMealIds = Set(recipe.meals.compactMap { $0.uid })
                 let newMealIds = Set(mealIds).subtracting(currentMealIds)
 
                 if !newMealIds.isEmpty {
                     if let newMeals = try? meals.fetchMany(withUIDs: Array(newMealIds)) {
                         recipe.meals.append(contentsOf: newMeals)
+                        self.logger.debug("Added \(newMeals.count) new meals to Recipe: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find any of the \(newMealIds.count) new meals for Recipe: \(uid)"
+                        )
                     }
                 }
 
+                // Remove meals that are no longer associated with this recipe
+                let initialCount = recipe.meals.count
                 recipe.meals.removeAll { meal in
                     guard let mealUid = meal.uid else { return false }
                     return !mealIds.contains(mealUid)
                 }
+                let removedCount = initialCount - recipe.meals.count
+                if removedCount > 0 {
+                    self.logger.debug("Removed \(removedCount) meals from Recipe: \(uid)")
+                }
+            } else if !recipe.meals.isEmpty {
+                self.logger.debug("Clearing all \(recipe.meals.count) meals from Recipe: \(uid)")
+                recipe.meals.removeAll()
             }
 
             recipe.markAsSynced()
+            self.logger.debug("Successfully processed Recipe: \(uid)")
         }
     }
 
     @MainActor
     private func processMealEntities(_ entities: [[String: Any]], currentUser: User) async throws {
+        self.logger.info("Processing \(entities.count) Meal entities")
+
         for data in entities {
-            guard let uid = data["uid"] as? String else { continue }
+            guard let uid = data["uid"] as? String else {
+                self.logger.warning("Skipping Meal entity without UID")
+                continue
+            }
 
             // Check if entity exists or create a new one
             let meal: Meal
             if let existingMeal = try meals.fetchUnique(withUID: uid) {
                 meal = existingMeal
+                self.logger.debug("Found existing Meal with UID: \(uid)")
             } else {
                 guard let scalingFactor = data["scalingFactor"] as? Double,
                     let mealTypeRaw = data["mealType"] as? String,
                     let mealType = MealType(rawValue: mealTypeRaw)
-                else { continue }
+                else {
+                    self.logger.warning("Skipping Meal without required properties: \(uid)")
+                    continue
+                }
 
                 meal = Meal(
                     scalingFactor: scalingFactor,
@@ -702,19 +829,26 @@ class SyncService: ObservableObject {
                 )
                 meal.uid = uid
                 modelContext.insert(meal)
+                self.logger.debug("Created new Meal with UID: \(uid), type: \(mealType.rawValue)")
             }
 
             // Update properties
             meal.update(from: data)
+            self.logger.debug("Updated properties for Meal: \(uid)")
 
             // Update owner if available
             if let ownerId = data["ownerId"] as? String {
                 if ownerId != meal.owner?.uid {
                     if let owner = try? users.fetchUnique(withUID: ownerId) {
                         meal.owner = owner
+                        self.logger.debug("Set owner \(ownerId) for Meal: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find owner with UID \(ownerId) for Meal: \(uid)")
                     }
                 }
             } else if meal.owner != nil {
+                self.logger.debug("Removing owner from Meal: \(uid)")
                 meal.owner = nil
             }
 
@@ -723,9 +857,14 @@ class SyncService: ObservableObject {
                 if recipeUID != meal.recipe?.uid {
                     if let recipe = try? recipes.fetchUnique(withUID: recipeUID) {
                         meal.recipe = recipe
+                        self.logger.debug("Set recipe \(recipeUID) for Meal: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find recipe with UID \(recipeUID) for Meal: \(uid)")
                     }
                 }
             } else if meal.recipe != nil {
+                self.logger.debug("Removing recipe from Meal: \(uid)")
                 meal.recipe = nil
             }
 
@@ -734,9 +873,14 @@ class SyncService: ObservableObject {
                 if todoItemUID != meal.todoItem?.uid {
                     if let todoItem = try? todoItems.fetchUnique(withUID: todoItemUID) {
                         meal.todoItem = todoItem
+                        self.logger.debug("Set todoItem \(todoItemUID) for Meal: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find todoItem with UID \(todoItemUID) for Meal: \(uid)")
                     }
                 }
             } else if meal.todoItem != nil {
+                self.logger.debug("Removing todoItem from Meal: \(uid)")
                 meal.todoItem = nil
             }
 
@@ -744,6 +888,9 @@ class SyncService: ObservableObject {
             if let shoppingItemIds = data["shoppingListItemIds"] as? [String],
                 !shoppingItemIds.isEmpty
             {
+                self.logger.debug(
+                    "Processing \(shoppingItemIds.count) shopping list items for Meal: \(uid)")
+
                 let currentItemIds = Set(meal.shoppingListItems.compactMap { $0.uid })
                 let newItemIds = Set(shoppingItemIds).subtracting(currentItemIds)
 
@@ -752,14 +899,33 @@ class SyncService: ObservableObject {
                         withUIDs: Array(newItemIds)
                     ) {
                         meal.shoppingListItems.append(contentsOf: newItems)
+                        self.logger.debug(
+                            "Added \(newItems.count) new shopping items to Meal: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find any of the \(newItemIds.count) new shopping items for Meal: \(uid)"
+                        )
                     }
                 }
 
+                // Remove items that are no longer associated with this meal
+                let initialCount = meal.shoppingListItems.count
                 meal.shoppingListItems.removeAll { item in
                     guard let itemUid = item.uid else { return false }
                     return !shoppingItemIds.contains(itemUid)
                 }
+                let removedCount = initialCount - meal.shoppingListItems.count
+                if removedCount > 0 {
+                    self.logger.debug("Removed \(removedCount) shopping items from Meal: \(uid)")
+                }
+            } else if !meal.shoppingListItems.isEmpty {
+                self.logger.debug(
+                    "Clearing all \(meal.shoppingListItems.count) shopping items from Meal: \(uid)")
+                meal.shoppingListItems.removeAll()
             }
+
+            meal.markAsSynced()
+            self.logger.debug("Successfully processed Meal: \(uid)")
         }
     }
 
@@ -767,15 +933,24 @@ class SyncService: ObservableObject {
     private func processShoppingListItemEntities(_ entities: [[String: Any]], currentUser: User)
         async throws
     {
+        self.logger.info("Processing \(entities.count) ShoppingListItem entities")
+
         for data in entities {
-            guard let uid = data["uid"] as? String else { continue }
+            guard let uid = data["uid"] as? String else {
+                self.logger.warning("Skipping ShoppingListItem entity without UID")
+                continue
+            }
 
             // Check if entity exists or create a new one
             let shoppingListItem: ShoppingListItem
             if let existingItem = try shoppingItems.fetchUnique(withUID: uid) {
                 shoppingListItem = existingItem
+                self.logger.debug("Found existing ShoppingListItem with UID: \(uid)")
             } else {
-                guard let name = data["name"] as? String else { continue }
+                guard let name = data["name"] as? String else {
+                    self.logger.warning("Skipping ShoppingListItem without required name: \(uid)")
+                    continue
+                }
 
                 shoppingListItem = ShoppingListItem(
                     name: name,
@@ -786,19 +961,26 @@ class SyncService: ObservableObject {
                 )
                 shoppingListItem.uid = uid
                 modelContext.insert(shoppingListItem)
+                self.logger.debug("Created new ShoppingListItem with UID: \(uid), name: \(name)")
             }
 
             // Update properties
             shoppingListItem.update(from: data)
+            self.logger.debug("Updated properties for ShoppingListItem: \(uid)")
 
             // Update owner if available
             if let ownerId = data["ownerId"] as? String {
                 if ownerId != shoppingListItem.owner?.uid {
                     if let owner = try? users.fetchUnique(withUID: ownerId) {
                         shoppingListItem.owner = owner
+                        self.logger.debug("Set owner \(ownerId) for ShoppingListItem: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find owner with UID \(ownerId) for ShoppingListItem: \(uid)")
                     }
                 }
             } else if shoppingListItem.owner != nil {
+                self.logger.debug("Removing owner from ShoppingListItem: \(uid)")
                 shoppingListItem.owner = nil
             }
 
@@ -807,32 +989,58 @@ class SyncService: ObservableObject {
                 if todoItemUID != shoppingListItem.todoItem?.uid {
                     if let todoItem = try? todoItems.fetchUnique(withUID: todoItemUID) {
                         shoppingListItem.todoItem = todoItem
+                        self.logger.debug(
+                            "Set todoItem \(todoItemUID) for ShoppingListItem: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find todoItem with UID \(todoItemUID) for ShoppingListItem: \(uid)"
+                        )
                     }
                 }
             } else if shoppingListItem.todoItem != nil {
+                self.logger.debug("Removing todoItem from ShoppingListItem: \(uid)")
                 shoppingListItem.todoItem = nil
             }
 
             // Process meal references
             if let mealIds = data["mealIds"] as? [String], !mealIds.isEmpty {
+                self.logger.debug(
+                    "Processing \(mealIds.count) meal references for ShoppingListItem: \(uid)")
+
                 let currentMealIds = Set(shoppingListItem.meals.compactMap { $0.uid })
                 let newMealIds = Set(mealIds).subtracting(currentMealIds)
 
                 if !newMealIds.isEmpty {
                     if let newMeals = try? meals.fetchMany(withUIDs: Array(newMealIds)) {
                         shoppingListItem.meals.append(contentsOf: newMeals)
+                        self.logger.debug(
+                            "Added \(newMeals.count) new meals to ShoppingListItem: \(uid)")
+                    } else {
+                        self.logger.debug(
+                            "Failed to find any of the \(newMealIds.count) new meals for ShoppingListItem: \(uid)"
+                        )
                     }
                 }
 
+                // Remove meals that are no longer associated with this shopping list item
+                let initialCount = shoppingListItem.meals.count
                 shoppingListItem.meals.removeAll { meal in
                     guard let mealUid = meal.uid else { return false }
                     return !mealIds.contains(mealUid)
                 }
+                let removedCount = initialCount - shoppingListItem.meals.count
+                if removedCount > 0 {
+                    self.logger.debug("Removed \(removedCount) meals from ShoppingListItem: \(uid)")
+                }
+            } else if !shoppingListItem.meals.isEmpty {
+                self.logger.debug(
+                    "Clearing all \(shoppingListItem.meals.count) meals from ShoppingListItem: \(uid)"
+                )
+                shoppingListItem.meals.removeAll()
             }
 
             shoppingListItem.markAsSynced()
+            self.logger.debug("Successfully processed ShoppingListItem: \(uid)")
         }
     }
 }
-
-
