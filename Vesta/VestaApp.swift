@@ -18,6 +18,7 @@ struct VestaApp: App {
     let shoppingItems: ShoppingListItemService
     let syncService: SyncService
     let inviteService: UserInviteService
+    let entitySharingService: EntitySharingService
 
     init() {
         FirebaseApp.configure()
@@ -42,6 +43,15 @@ struct VestaApp: App {
         let firebaseApi = FirebaseAPIClient()
         inviteService = UserInviteService(modelContext: modelContext, apiClient: firebaseApi)
 
+        // Create entity sharing service
+        entitySharingService = EntitySharingService(
+            modelContext: modelContext,
+            todoItemService: todoItems,
+            mealService: meals,
+            recipeService: recipes,
+            shoppingItemService: shoppingItems
+        )
+
         syncService = SyncService(
             auth: auth, users: users, todoItemCategories: todoItemCategories,
             meals: meals, todoItems: todoItems, recipes: recipes, shoppingItems: shoppingItems,
@@ -58,5 +68,6 @@ struct VestaApp: App {
         .environmentObject(auth)
         .environmentObject(syncService)
         .environmentObject(inviteService)
+        .environmentObject(entitySharingService)
     }
 }

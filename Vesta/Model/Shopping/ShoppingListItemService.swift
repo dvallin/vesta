@@ -26,4 +26,14 @@ class ShoppingListItemService {
         )
         return try modelContext.fetch(descriptor)
     }
+    
+    /// Fetch all shopping list items owned by a specific user
+    func fetchByOwnerId(_ ownerId: String) throws -> [ShoppingListItem] {
+        let descriptor = FetchDescriptor<ShoppingListItem>(
+            predicate: #Predicate<ShoppingListItem> { item in
+                item.owner?.uid == ownerId
+            }
+        )
+        return try modelContext.fetch(descriptor)
+    }
 }

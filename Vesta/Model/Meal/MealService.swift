@@ -23,4 +23,14 @@ class MealService {
             })
         return try modelContext.fetch(descriptor)
     }
+    
+    /// Fetch all meals owned by a specific user
+    func fetchByOwnerId(_ ownerId: String) throws -> [Meal] {
+        let descriptor = FetchDescriptor<Meal>(
+            predicate: #Predicate<Meal> { meal in
+                meal.owner?.uid == ownerId
+            }
+        )
+        return try modelContext.fetch(descriptor)
+    }
 }

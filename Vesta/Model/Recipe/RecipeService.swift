@@ -14,4 +14,14 @@ class RecipeService {
         let recipes = try modelContext.fetch(descriptor)
         return recipes.first
     }
+    
+    /// Fetch all recipes owned by a specific user
+    func fetchByOwnerId(_ ownerId: String) throws -> [Recipe] {
+        let descriptor = FetchDescriptor<Recipe>(
+            predicate: #Predicate<Recipe> { recipe in
+                recipe.owner?.uid == ownerId
+            }
+        )
+        return try modelContext.fetch(descriptor)
+    }
 }

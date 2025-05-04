@@ -35,7 +35,6 @@ struct MigrationManager {
                     user.owner = owner
                     print("User \(user.id) marked as dirty: owner assigned")
                 }
-                user.dirty = true
             }
         } catch {
             print("Error migrating TodoItems: \(error)")
@@ -61,7 +60,6 @@ struct MigrationManager {
                     item.dirty = true
                     print("TodoItem \(item.id) marked as dirty: owner assigned")
                 }
-                item.dirty = true
             }
         } catch {
             print("Error migrating TodoItems: \(error)")
@@ -87,7 +85,6 @@ struct MigrationManager {
                     recipe.dirty = true
                     print("Recipe \(recipe.id) marked as dirty: owner assigned")
                 }
-                recipe.dirty = true
             }
         } catch {
             print("Error migrating Recipes: \(error)")
@@ -113,7 +110,6 @@ struct MigrationManager {
                     meal.dirty = true
                     print("Meal \(meal.id) marked as dirty: owner assigned")
                 }
-                meal.dirty = true
             }
         } catch {
             print("Error migrating Meals: \(error)")
@@ -139,7 +135,6 @@ struct MigrationManager {
                     item.dirty = true
                     print("ShoppingListItem \(item.id) marked as dirty: owner assigned")
                 }
-                item.dirty = true
             }
         } catch {
             print("Error migrating ShoppingListItems: \(error)")
