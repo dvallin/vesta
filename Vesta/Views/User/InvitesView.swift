@@ -57,7 +57,7 @@ struct InvitesView: View {
     private var receivedInvitesView: some View {
         ScrollView {
             LazyVStack {
-                if invites.receivedInvites.isEmpty {
+                if auth.currentUser?.receivedInvites.isEmpty ?? true {
                     ContentUnavailableView(
                         NSLocalizedString("No Invites", comment: "No invites title"),
                         systemImage: "person.crop.circle.badge.xmark",
@@ -68,8 +68,8 @@ struct InvitesView: View {
                         )
                     )
                     .padding()
-                } else {
-                    ForEach(invites.receivedInvites, id: \.uid) { invite in
+                } else if let receivedInvites = auth.currentUser?.receivedInvites {
+                    ForEach(receivedInvites, id: \.uid) { invite in
                         ReceivedInviteRow(invite: invite) { action in
                             handleInviteAction(invite: invite, action: action)
                         }
@@ -84,7 +84,7 @@ struct InvitesView: View {
     private var sentInvitesView: some View {
         ScrollView {
             LazyVStack {
-                if invites.sentInvites.isEmpty {
+                if auth.currentUser?.sentInvites.isEmpty ?? true {
                     ContentUnavailableView(
                         NSLocalizedString("No Invites", comment: "No invites title"),
                         systemImage: "person.crop.circle.badge.xmark",
@@ -95,8 +95,8 @@ struct InvitesView: View {
                         )
                     )
                     .padding()
-                } else {
-                    ForEach(invites.sentInvites, id: \.uid) { invite in
+                } else if let sentInvites = auth.currentUser?.sentInvites {
+                    ForEach(sentInvites, id: \.uid) { invite in
                         SentInviteRow(invite: invite)
                             .padding(.horizontal)
                         Divider()
@@ -347,9 +347,9 @@ struct SentInviteRow: View {
 
         // Create the invite service
         let inviteService = UserInviteService(modelContext: context, apiClient: mockAPIClient)
-
-        // Manually set the invites for preview
-        inviteService.receivedInvites = [invite1, invite2]
+        
+        // Set the current user on the auth service for preview
+        authService.setCurrentUser(user: user)
 
         return InvitesView()
             .modelContainer(container)

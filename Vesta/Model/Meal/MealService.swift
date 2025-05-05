@@ -19,11 +19,11 @@ class MealService {
     func fetchMany(withUIDs uids: [String]) throws -> [Meal] {
         let descriptor = FetchDescriptor<Meal>(
             predicate: #Predicate<Meal> {
-                uids.contains($0.uid ?? "")
+                $0.uid != nil && uids.contains($0.uid!)
             })
         return try modelContext.fetch(descriptor)
     }
-    
+
     /// Fetch all meals owned by a specific user
     func fetchByOwnerId(_ ownerId: String) throws -> [Meal] {
         let descriptor = FetchDescriptor<Meal>(

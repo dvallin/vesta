@@ -21,12 +21,12 @@ class ShoppingListItemService {
     func fetchMany(withUIDs uids: [String]) throws -> [ShoppingListItem] {
         let descriptor = FetchDescriptor<ShoppingListItem>(
             predicate: #Predicate<ShoppingListItem> {
-                uids.contains($0.uid ?? "")
+                $0.uid != nil && uids.contains($0.uid!)
             }
         )
         return try modelContext.fetch(descriptor)
     }
-    
+
     /// Fetch all shopping list items owned by a specific user
     func fetchByOwnerId(_ ownerId: String) throws -> [ShoppingListItem] {
         let descriptor = FetchDescriptor<ShoppingListItem>(

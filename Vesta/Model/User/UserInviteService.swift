@@ -10,8 +10,6 @@ class UserInviteService: ObservableObject {
     private let logger = Logger(subsystem: "com.app.Vesta", category: "UserInvite")
     private var cancellables = Set<AnyCancellable>()
 
-    @Published var receivedInvites: [Invite] = []
-    @Published var sentInvites: [Invite] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil
 
@@ -82,7 +80,6 @@ class UserInviteService: ObservableObject {
 
                     do {
                         try self.modelContext.save()
-                        self.sentInvites.append(invite)
                         completion(true)
                     } catch {
                         self.logger.error(
@@ -103,12 +100,6 @@ class UserInviteService: ObservableObject {
     ///   - currentUser: The current user accepting the invite
     ///   - completion: Completion handler called after the operation
     func acceptInvite(invite: Invite, currentUser: User, completion: @escaping (Bool) -> Void) {
-        guard let currentUserId = currentUser.uid else {
-            logger.error("Cannot accept invite: missing user ID")
-            completion(false)
-            return
-        }
-
         isLoading = true
         errorMessage = nil
 
@@ -134,54 +125,7 @@ class UserInviteService: ObservableObject {
             } receiveValue: { [weak self] _ in
                 guard let self = self else { return }
                 self.logger.info("Successfully accepted invite from \(invite.senderUid)")
-
-                // Handle local model updates
-                DispatchQueue.main.async {
-                    // Find the sender user or create a placeholder if not in our local database yet
-                    let senderId = invite.senderUid
-                    let descriptor = FetchDescriptor<User>(
-                        predicate: #Predicate { $0.uid == senderId })
-
-                    do {
-                        let users = try self.modelContext.fetch(descriptor)
-                        let sender: User
-
-                        if let existingUser = users.first {
-                            sender = existingUser
-                        } else {
-                            // Create a placeholder user that will be updated when data syncs
-                            sender = User(uid: invite.senderUid)
-                            sender.displayName = invite.senderDisplayName
-                            sender.email = invite.senderEmail
-                            sender.photoURL = invite.senderPhotoURL
-                            self.modelContext.insert(sender)
-                        }
-
-                        // Add relationship in both directions
-                        if !currentUser.friends.contains(where: { $0.uid == invite.senderUid }) {
-                            currentUser.friends.append(sender)
-                        }
-
-                        if !sender.friends.contains(where: { $0.uid == currentUserId }) {
-                            sender.friends.append(currentUser)
-                        }
-
-                        // Remove the invite from our list
-                        currentUser.receivedInvites.removeAll { $0.uid == invite.uid }
-                        self.receivedInvites.removeAll { $0.uid == invite.uid }
-
-                        // Delete the invite
-                        self.modelContext.delete(invite)
-
-                        try self.modelContext.save()
-                        completion(true)
-                    } catch {
-                        self.logger.error(
-                            "Failed to update local model after accepting invite: \(error.localizedDescription)"
-                        )
-                        completion(false)
-                    }
-                }
+                completion(true)
             }
             .store(in: &cancellables)
     }
@@ -192,11 +136,6 @@ class UserInviteService: ObservableObject {
     ///   - currentUser: The current user declining the invite
     ///   - completion: Completion handler called after the operation
     func declineInvite(invite: Invite, currentUser: User, completion: @escaping (Bool) -> Void) {
-        guard let currentUserId = currentUser.uid else {
-            logger.error("Cannot decline invite: missing user ID")
-            completion(false)
-            return
-        }
 
         isLoading = true
         errorMessage = nil
@@ -223,26 +162,7 @@ class UserInviteService: ObservableObject {
             } receiveValue: { [weak self] _ in
                 guard let self = self else { return }
                 self.logger.info("Successfully declined invite from \(invite.senderUid)")
-
-                // Handle local model updates
-                DispatchQueue.main.async {
-                    // Remove the invite from our list
-                    currentUser.receivedInvites.removeAll { $0.uid == invite.uid }
-                    self.receivedInvites.removeAll { $0.uid == invite.uid }
-
-                    // Delete the invite
-                    self.modelContext.delete(invite)
-
-                    do {
-                        try self.modelContext.save()
-                        completion(true)
-                    } catch {
-                        self.logger.error(
-                            "Failed to update local model after declining invite: \(error.localizedDescription)"
-                        )
-                        completion(false)
-                    }
-                }
+                completion(true)
             }
             .store(in: &cancellables)
     }
