@@ -51,7 +51,8 @@ extension FirebaseAPIClient: UserSearchAPIClient {
 
                     if let documents = snapshot?.documents {
                         let results = documents.compactMap { document -> UserSearchResult? in
-                            let data = document.data()
+                            let rawData = document.data()
+                            let data = self.desanitizeDTO(rawData)
                             return UserSearchResult(
                                 uid: document.documentID,
                                 email: data["email"] as? String,
@@ -83,7 +84,8 @@ extension FirebaseAPIClient: UserSearchAPIClient {
 
                         if let documents = snapshot?.documents {
                             let results = documents.compactMap { document -> UserSearchResult? in
-                                let data = document.data()
+                                let rawData = document.data()
+                                let data = self.desanitizeDTO(rawData)
                                 return UserSearchResult(
                                     uid: document.documentID,
                                     email: data["email"] as? String,
@@ -114,7 +116,8 @@ extension FirebaseAPIClient: UserSearchAPIClient {
 
                         if let documents = snapshot?.documents {
                             let results = documents.compactMap { document -> UserSearchResult? in
-                                let data = document.data()
+                                let rawData = document.data()
+                                let data = self.desanitizeDTO(rawData)
                                 return UserSearchResult(
                                     uid: document.documentID,
                                     email: data["email"] as? String,

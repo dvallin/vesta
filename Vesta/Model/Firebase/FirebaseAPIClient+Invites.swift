@@ -23,14 +23,15 @@ extension FirebaseAPIClient: InviteAPIClient {
             let recipientRef = self.db.collection("users").document(invite.recipientUid)
 
             let dto = invite.toDTO()
+            let sanitizedDto = self.sanitizeDTO(dto)
             batch.updateData(
                 [
-                    "sentInvites": FieldValue.arrayUnion([dto]),
+                    "sentInvites": FieldValue.arrayUnion([sanitizedDto]),
                     "lastModified": FieldValue.serverTimestamp(),
                 ], forDocument: senderRef)
             batch.updateData(
                 [
-                    "receivedInvites": FieldValue.arrayUnion([dto]),
+                    "receivedInvites": FieldValue.arrayUnion([sanitizedDto]),
                     "lastModified": FieldValue.serverTimestamp(),
                 ], forDocument: recipientRef)
 
@@ -66,13 +67,14 @@ extension FirebaseAPIClient: InviteAPIClient {
             // Create a batch operation
             let batch = self.db.batch()
             let dto = invite.toDTO()
+            let sanitizedDto = self.sanitizeDTO(dto)
 
             // Update recipient document - add friend and remove received invite
             let recipientRef = self.db.collection("users").document(invite.recipientUid)
             batch.updateData(
                 [
                     "friendIds": FieldValue.arrayUnion([invite.senderUid]),
-                    "receivedInvites": FieldValue.arrayRemove([dto]),
+                    "receivedInvites": FieldValue.arrayRemove([sanitizedDto]),
                     "lastModified": FieldValue.serverTimestamp(),
                 ], forDocument: recipientRef)
 
@@ -81,7 +83,7 @@ extension FirebaseAPIClient: InviteAPIClient {
             batch.updateData(
                 [
                     "friendIds": FieldValue.arrayUnion([invite.recipientUid]),
-                    "sentInvites": FieldValue.arrayRemove([dto]),
+                    "sentInvites": FieldValue.arrayRemove([sanitizedDto]),
                     "lastModified": FieldValue.serverTimestamp(),
                 ], forDocument: senderRef)
 
@@ -120,12 +122,13 @@ extension FirebaseAPIClient: InviteAPIClient {
             // Create a batch operation
             let batch = self.db.batch()
             let dto = invite.toDTO()
+            let sanitizedDto = self.sanitizeDTO(dto)
 
             // Update recipient document - remove received invite
             let recipientRef = self.db.collection("users").document(invite.recipientUid)
             batch.updateData(
                 [
-                    "receivedInvites": FieldValue.arrayRemove([dto]),
+                    "receivedInvites": FieldValue.arrayRemove([sanitizedDto]),
                     "lastModified": FieldValue.serverTimestamp(),
                 ], forDocument: recipientRef)
 
@@ -133,7 +136,7 @@ extension FirebaseAPIClient: InviteAPIClient {
             let senderRef = self.db.collection("users").document(invite.senderUid)
             batch.updateData(
                 [
-                    "sentInvites": FieldValue.arrayRemove([dto]),
+                    "sentInvites": FieldValue.arrayRemove([sanitizedDto]),
                     "lastModified": FieldValue.serverTimestamp(),
                 ], forDocument: senderRef)
 

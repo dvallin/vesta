@@ -61,26 +61,20 @@ extension User {
         if let photoURL = data["photoURL"] as? String {
             self.photoURL = photoURL
         }
-        
+
         // Process received invites
+        self.receivedInvites.removeAll()
         if let receivedInvitesData = data["receivedInvites"] as? [[String: Any]] {
-            // Remove existing received invites
-            self.receivedInvites.removeAll()
-            
-            // Add new received invites
             for inviteData in receivedInvitesData {
                 if let invite = Invite.fromDTO(inviteData, owner: self) {
                     self.receivedInvites.append(invite)
                 }
             }
         }
-        
+
         // Process sent invites
+        self.sentInvites.removeAll()
         if let sentInvitesData = data["sentInvites"] as? [[String: Any]] {
-            // Remove existing sent invites
-            self.sentInvites.removeAll()
-            
-            // Add new sent invites
             for inviteData in sentInvitesData {
                 if let invite = Invite.fromDTO(inviteData, owner: self) {
                     self.sentInvites.append(invite)
@@ -104,31 +98,31 @@ extension Invite {
         if let senderEmail = senderEmail {
             dto["senderEmail"] = senderEmail
         }
-        
+
         if let senderDisplayName = senderDisplayName {
             dto["senderDisplayName"] = senderDisplayName
         }
-        
+
         if let senderPhotoURL = senderPhotoURL {
             dto["senderPhotoURL"] = senderPhotoURL
         }
-        
+
         // Add optional recipient properties
         if let recipientEmail = recipientEmail {
             dto["recipientEmail"] = recipientEmail
         }
-        
+
         if let recipientDisplayName = recipientDisplayName {
             dto["recipientDisplayName"] = recipientDisplayName
         }
-        
+
         if let recipientPhotoURL = recipientPhotoURL {
             dto["recipientPhotoURL"] = recipientPhotoURL
         }
 
         return dto
     }
-    
+
     /// Creates an Invite instance from a DTO (Data Transfer Object)
     /// - Parameters:
     ///   - data: Dictionary containing invite data
@@ -136,23 +130,24 @@ extension Invite {
     /// - Returns: A new Invite instance, or nil if required data is missing
     static func fromDTO(_ data: [String: Any], owner: User?) -> Invite? {
         guard let uid = data["uid"] as? String,
-              let senderUid = data["senderUid"] as? String,
-              let recipientUid = data["recipientUid"] as? String else { 
-            return nil 
+            let senderUid = data["senderUid"] as? String,
+            let recipientUid = data["recipientUid"] as? String
+        else {
+            return nil
         }
-        
+
         let createdAt = data["createdAt"] as? Date ?? Date()
-        
+
         // Get sender information
         let senderEmail = data["senderEmail"] as? String
         let senderDisplayName = data["senderDisplayName"] as? String
         let senderPhotoURL = data["senderPhotoURL"] as? String
-        
+
         // Get recipient information
         let recipientEmail = data["recipientEmail"] as? String
         let recipientDisplayName = data["recipientDisplayName"] as? String
         let recipientPhotoURL = data["recipientPhotoURL"] as? String
-        
+
         let invite = Invite(
             uid: uid,
             createdAt: createdAt,
@@ -166,7 +161,7 @@ extension Invite {
             recipientPhotoURL: recipientPhotoURL
         )
         invite.owner = owner
-        
+
         return invite
     }
 }
