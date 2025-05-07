@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct AddMealView: View {
+    @EnvironmentObject private var auth: UserAuthService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var recipes: [Recipe]
@@ -76,7 +77,7 @@ struct AddMealView: View {
             }
         }
         .onAppear {
-            viewModel.configureEnvironment(modelContext, dismiss)
+            viewModel.configureEnvironment(modelContext, dismiss, auth)
         }
     }
 }
@@ -86,29 +87,11 @@ struct AddMealView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
-        // Create sample recipes with ingredients
-        let spaghettiRecipe = Recipe(
-            title: "Spaghetti Bolognese",
-            details: "Classic Italian pasta dish",
-            ingredients: [
-                Ingredient(name: "Spaghetti", order: 1, quantity: 500, unit: .gram),
-                Ingredient(name: "Ground Beef", order: 2, quantity: 400, unit: .gram),
-                Ingredient(name: "Tomato Sauce", order: 3, quantity: 2, unit: .cup),
-            ]
-        )
+        let user = Fixtures.createUser()
+        let bolognese = Fixtures.bolognese(owner: user)
+        let curry = Fixtures.curry(owner: user)
 
-        let curryRecipe = Recipe(
-            title: "Chicken Curry",
-            details: "Spicy Indian curry",
-            ingredients: [
-                Ingredient(name: "Chicken", order: 1, quantity: 1, unit: .kilogram),
-                Ingredient(name: "Curry Powder", order: 2,  quantity: 2, unit: .tablespoon),
-                Ingredient(name: "Coconut Milk", order: 3,  quantity: 400, unit: .milliliter),
-            ]
-        )
-
-        // Insert recipes into the context
-        for recipe in [spaghettiRecipe, curryRecipe] {
+        for recipe in [bolognese, curry] {
             context.insert(recipe)
         }
 

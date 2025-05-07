@@ -62,13 +62,21 @@ struct ShoppingList: View {
 }
 
 #Preview {
-    let todoItem = TodoItem(title: "Grocery Shopping", details: "Weekly groceries")
+    let todoItem = TodoItem(
+        title: "Grocery Shopping", details: "Weekly groceries", owner: Fixtures.createUser())
     let shoppingItems = [
-        ShoppingListItem(name: "Milk", quantity: 1, unit: .liter, todoItem: todoItem),
-        ShoppingListItem(name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem),
-        ShoppingListItem(name: "Eggs", quantity: 12, unit: .piece, todoItem: todoItem),
         ShoppingListItem(
-            name: "Wine", quantity: 2, unit: .piece, todoItem: todoItem),
+            name: "Milk", quantity: 1, unit: .liter, todoItem: todoItem,
+            owner: Fixtures.createUser()),
+        ShoppingListItem(
+            name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem,
+            owner: Fixtures.createUser()),
+        ShoppingListItem(
+            name: "Eggs", quantity: 12, unit: .piece, todoItem: todoItem,
+            owner: Fixtures.createUser()),
+        ShoppingListItem(
+            name: "Wine", quantity: 2, unit: .piece, todoItem: todoItem,
+            owner: Fixtures.createUser()),
     ]
 
     return NavigationView {

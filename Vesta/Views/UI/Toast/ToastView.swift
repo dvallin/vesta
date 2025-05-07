@@ -2,17 +2,19 @@ import SwiftUI
 
 struct ToastView: View {
     let message: String
-    let undoAction: () -> Void
+    let undoAction: (() -> Void)?
 
     var body: some View {
         HStack {
             Text(message)
                 .font(.subheadline)
-            Spacer()
-            Button(action: undoAction) {
-                Text(NSLocalizedString("Undo", comment: "Undo button"))
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
+            if let undoAction = undoAction {
+                Spacer()
+                Button(action: undoAction) {
+                    Text(NSLocalizedString("Undo", comment: "Undo button"))
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                }
             }
         }
         .padding()

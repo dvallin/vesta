@@ -5,6 +5,7 @@ class AddTodoItemViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
+    private var auth: UserAuthService?
 
     @Published var title: String = ""
     @Published var details: String = ""
@@ -32,10 +33,13 @@ class AddTodoItemViewModel: ObservableObject {
         self.dueDate = initialDueDate
     }
 
-    func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction) {
+    func configureEnvironment(
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
+    ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
+        self.auth = auth
     }
 
     @MainActor
@@ -53,6 +57,7 @@ class AddTodoItemViewModel: ObservableObject {
             showingValidationAlert = true
             return
         }
+        guard let currentUser = auth?.currentUser else { return }
 
         isSaving = true
         do {
@@ -63,7 +68,8 @@ class AddTodoItemViewModel: ObservableObject {
                 recurrenceInterval: recurrenceInterval,
                 ignoreTimeComponent: ignoreTimeComponent,
                 priority: priority,
-                category: categoryEntity
+                category: categoryEntity,
+                owner: currentUser
             )
 
             modelContext!.insert(todoItem)

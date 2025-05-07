@@ -3,83 +3,88 @@ import SwiftUI
 
 class RecipeDetailViewModel: ObservableObject {
     private var modelContext: ModelContext?
+    private var auth: UserAuthService?
+    private var dismiss: DismissAction?
 
     @Published var recipe: Recipe
+
+    @Published var showingValidationAlert = false
+    @Published var validationMessage = ""
 
     init(recipe: Recipe) {
         self.recipe = recipe
     }
 
-    func configureEnvironment(_ context: ModelContext) {
+    func configureEnvironment(
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
+    ) {
         self.modelContext = context
+        self.dismiss = dismiss
+        self.auth = auth
     }
 
     func save() {
         do {
             try modelContext?.save()
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+            dismiss!()
         } catch {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
+            validationMessage = String(
+                format: NSLocalizedString(
+                    "Error saving meal: %@", comment: "Error saving meal message"),
+                error.localizedDescription)
+            showingValidationAlert = true
         }
     }
 
+    @MainActor
+    func cancel() {
+        modelContext?.rollback()
+        dismiss!()
+    }
+
     func addIngredient(name: String, quantity: Double?, unit: Unit?) {
-        let newIngredient = Ingredient(
-            name: name, order: recipe.ingredients.count + 1, quantity: quantity, unit: unit)
+        guard let currentUser = auth?.currentUser else { return }
         withAnimation {
-            recipe.ingredients.append(newIngredient)
+            recipe.addIngredient(
+                name: name, quantity: quantity, unit: unit, currentUser: currentUser)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 
     func removeIngredient(_ ingredient: Ingredient) {
+        guard let currentUser = auth?.currentUser else { return }
         withAnimation {
-            if let index = recipe.ingredients.firstIndex(where: { $0 === ingredient }) {
-                recipe.ingredients.remove(at: index)
-                HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
-            }
+            recipe.removeIngredient(ingredient, currentUser: currentUser)
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 
     func moveIngredient(from source: IndexSet, to destination: Int) {
-        var sortedIngredients = recipe.sortedIngredients
-
-        sortedIngredients.move(fromOffsets: source, toOffset: destination)
-        for (index, ingredient) in sortedIngredients.enumerated() {
-            ingredient.order = index + 1
-        }
-        recipe.ingredients = sortedIngredients
+        guard let currentUser = auth?.currentUser else { return }
+        recipe.moveIngredient(from: source, to: destination, currentUser: currentUser)
     }
 
     func addStep(instruction: String, type: StepType, duration: TimeInterval?) {
-        let newStep = RecipeStep(
-            order: recipe.steps.count + 1,
-            instruction: instruction,
-            type: type,
-            duration: duration
-        )
+        guard let currentUser = auth?.currentUser else { return }
         withAnimation {
-            recipe.steps.append(newStep)
+            recipe.addStep(
+                instruction: instruction, type: type, duration: duration, currentUser: currentUser)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 
     func removeStep(_ step: RecipeStep) {
+        guard let currentUser = auth?.currentUser else { return }
         withAnimation {
-            if let index = recipe.steps.firstIndex(where: { $0 === step }) {
-                recipe.steps.remove(at: index)
-                HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
-            }
+            recipe.removeStep(step, currentUser: currentUser)
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 
     func moveStep(from source: IndexSet, to destination: Int) {
-        var sortedSteps = recipe.sortedSteps
-
-        sortedSteps.move(fromOffsets: source, toOffset: destination)
-        for (index, step) in sortedSteps.enumerated() {
-            step.order = index + 1
-        }
-        recipe.steps = sortedSteps
+        guard let currentUser = auth?.currentUser else { return }
+        recipe.moveStep(from: source, to: destination, currentUser: currentUser)
     }
 }
