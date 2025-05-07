@@ -34,11 +34,8 @@ extension Recipe {
         }
 
         // Process ingredients from data
+        self.ingredients.removeAll()
         if let ingredients = data["ingredients"] as? [[String: Any]] {
-            // Remove existing ingredients
-            self.ingredients.removeAll()
-
-            // Add new ingredients from data
             for ingredientData in ingredients {
                 if let ingredient = Ingredient.fromDTO(ingredientData, recipe: self) {
                     self.ingredients.append(ingredient)
@@ -47,11 +44,8 @@ extension Recipe {
         }
 
         // Process steps from data
+        self.steps.removeAll()
         if let steps = data["steps"] as? [[String: Any]] {
-            // Remove existing steps
-            self.steps.removeAll()
-
-            // Add new steps from data
             for stepData in steps {
                 if let step = RecipeStep.fromDTO(stepData, recipe: self) {
                     self.steps.append(step)
@@ -90,7 +84,7 @@ extension Ingredient {
     /// - Returns: A new Ingredient instance, or nil if required data is missing
     static func fromDTO(_ data: [String: Any], recipe: Recipe?) -> Ingredient? {
         guard let name = data["name"] as? String,
-              let order = data["order"] as? Int
+            let order = data["order"] as? Int
         else { return nil }
 
         let quantity = data["quantity"] as? Double
@@ -135,9 +129,9 @@ extension RecipeStep {
     /// - Returns: A new RecipeStep instance, or nil if required data is missing
     static func fromDTO(_ data: [String: Any], recipe: Recipe?) -> RecipeStep? {
         guard let order = data["order"] as? Int,
-              let instruction = data["instruction"] as? String,
-              let typeRaw = data["type"] as? String,
-              let type = StepType(rawValue: typeRaw)
+            let instruction = data["instruction"] as? String,
+            let typeRaw = data["type"] as? String,
+            let type = StepType(rawValue: typeRaw)
         else { return nil }
 
         let duration = data["duration"] as? TimeInterval

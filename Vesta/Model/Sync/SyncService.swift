@@ -573,7 +573,7 @@ class SyncService: ObservableObject {
 
                     for missingId in missingIds {
                         let newFriend = User(uid: missingId)
-                        modelContext.insert(newFriend)
+                        newFriend.markAsSynced()
                         user.friends.append(newFriend)
                         self.logger.debug(
                             "Created placeholder user for friend with UID: \(missingId)")

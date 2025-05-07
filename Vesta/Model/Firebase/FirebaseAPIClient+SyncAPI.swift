@@ -100,10 +100,27 @@ extension FirebaseAPIClient: SyncAPIClient {
         lastSyncTimestamp: Timestamp,
         completion: @escaping (Result<[String: [[String: Any]]], Error>) -> Void
     ) {
+        logger.info("Starting fetch of updated entities for user: \(userId)")
+
         let group = DispatchGroup()
         var allResults: [String: [[String: Any]]] = [:]
         var fetchError: Error?
         var friendIds: [String] = []
+
+        // Create thread synchronization objects
+        let resultsQueue = DispatchQueue(
+            label: "com.app.Vesta.resultsQueue", attributes: .concurrent)
+        let errorQueue = DispatchQueue(label: "com.app.Vesta.errorQueue")
+
+        // Helper function to safely update the results dictionary
+        let updateResults = { (entityType: String, entities: [[String: Any]]) in
+            resultsQueue.sync(flags: .barrier) {
+                if allResults[entityType] == nil {
+                    allResults[entityType] = []
+                }
+                allResults[entityType]?.append(contentsOf: entities)
+            }
+        }
 
         // First, fetch the user document to get friend IDs
         group.enter()
@@ -127,7 +144,9 @@ extension FirebaseAPIClient: SyncAPIClient {
             }
 
             if let document = document, document.exists {
-                let data = document.data() ?? [:]
+                let rawData = document.data() ?? [:]
+                // Convert Firestore types to Swift native types
+                let data = self.desanitizeDTO(rawData)
                 var localFriendIds: [String] = []
 
                 // Always add user document regardless of last modified timestamp
@@ -137,20 +156,16 @@ extension FirebaseAPIClient: SyncAPIClient {
                 userData["entityType"] = "User"
                 userData["ownerId"] = document.documentID  // Ensure ownerId is set
 
-                // Initialize User array if it doesn't exist
-                if allResults["User"] == nil {
-                    allResults["User"] = []
-                }
+                // Add to User results using the thread-safe update function
+                updateResults("User", [userData])
 
-                // Add to User results
-                allResults["User"]?.append(userData)
                 self.logger.debug("Added current user document to results: \(document.documentID)")
 
                 // Store the user's friend IDs for later use
                 if let friends = data["friendIds"] as? [String] {
                     localFriendIds = friends
                     self.logger.debug("User has \(friends.count) friends")
-                    
+
                     // Store friend IDs for processing
                     DispatchQueue.global().async {
                         friendIds = localFriendIds
@@ -170,18 +185,13 @@ extension FirebaseAPIClient: SyncAPIClient {
 
             let mainGroup = DispatchGroup()
 
-            // Create thread synchronization objects
-            let resultQueue = DispatchQueue(label: "com.app.Vesta.resultQueue")
-            let errorQueue = DispatchQueue(label: "com.app.Vesta.errorQueue")
-
             // Fetch friend user documents first
             for friendId in friendIds {
                 mainGroup.enter()
                 self.fetchFriendUserDocument(
                     friendId: friendId,
                     lastSyncTimestamp: lastSyncTimestamp,
-                    resultQueue: resultQueue,
-                    resultsDict: allResults,
+                    updateResults: updateResults,
                     errorQueue: errorQueue,
                     errorRef: fetchError,
                     group: mainGroup
@@ -193,8 +203,8 @@ extension FirebaseAPIClient: SyncAPIClient {
             self.fetchEntitiesForUser(
                 userId: userId,
                 lastSyncTimestamp: lastSyncTimestamp,
-                resultQueue: resultQueue,
-                resultsDict: allResults,
+                resultQueue: resultsQueue,
+                updateResults: updateResults,
                 errorQueue: errorQueue,
                 errorRef: fetchError,
                 group: mainGroup
@@ -206,8 +216,7 @@ extension FirebaseAPIClient: SyncAPIClient {
                 self.fetchSharedEntitiesFromFriend(
                     friendId: friendId,
                     lastSyncTimestamp: lastSyncTimestamp,
-                    resultQueue: resultQueue,
-                    resultsDict: allResults,
+                    updateResults: updateResults,
                     errorQueue: errorQueue,
                     errorRef: fetchError,
                     group: mainGroup
@@ -233,7 +242,7 @@ extension FirebaseAPIClient: SyncAPIClient {
         userId: String,
         lastSyncTimestamp: Timestamp,
         resultQueue: DispatchQueue,
-        resultsDict: [String: [[String: Any]]],
+        updateResults: @escaping (String, [[String: Any]]) -> Void,
         errorQueue: DispatchQueue,
         errorRef: Error?,
         group: DispatchGroup
@@ -277,6 +286,9 @@ extension FirebaseAPIClient: SyncAPIClient {
                     var data = document.data()
                     data["uid"] = document.documentID
 
+                    // Convert Firestore types to Swift native types
+                    data = self.desanitizeDTO(data)
+
                     // Group entities by entity type
                     guard let entityType = data["entityType"] as? String else {
                         self.logger.warning(
@@ -293,14 +305,9 @@ extension FirebaseAPIClient: SyncAPIClient {
                     localResults[entityType]?.append(data)
                 }
 
-                // Now merge the results back into the shared dictionary in a thread-safe way
-                resultQueue.sync {
-                    var mutableResultsDict = resultsDict
-                    for (entityType, entities) in localResults {
-                        var existingEntities = mutableResultsDict[entityType] ?? []
-                        existingEntities.append(contentsOf: entities)
-                        mutableResultsDict[entityType] = existingEntities
-                    }
+                // Update results using the provided closure
+                for (entityType, entities) in localResults {
+                    updateResults(entityType, entities)
                 }
 
                 self.logger.debug(
@@ -313,15 +320,14 @@ extension FirebaseAPIClient: SyncAPIClient {
     private func fetchFriendUserDocument(
         friendId: String,
         lastSyncTimestamp: Timestamp,
-        resultQueue: DispatchQueue,
-        resultsDict: [String: [[String: Any]]],
+        updateResults: @escaping (String, [[String: Any]]) -> Void,
         errorQueue: DispatchQueue,
         errorRef: Error?,
         group: DispatchGroup
     ) {
         // Get reference to friend's user document
         let friendDocRef = db.collection("users").document(friendId)
-        
+
         // Fetch the friend's user document
         friendDocRef.getDocument { [weak self] (document, error) in
             guard let self = self else {
@@ -331,7 +337,7 @@ extension FirebaseAPIClient: SyncAPIClient {
                 group.leave()
                 return
             }
-            
+
             if let error = error {
                 self.logger.error(
                     "Error fetching friend user document \(friendId): \(error.localizedDescription, privacy: .public)"
@@ -340,47 +346,35 @@ extension FirebaseAPIClient: SyncAPIClient {
                 group.leave()
                 return
             }
-            
+
             guard let document = document, document.exists else {
                 group.leave()
                 return
             }
-            
-            let data = document.data() ?? [:]
-            
-            // Check if friend document was modified since last sync
-            if let lastModified = data["lastModified"] as? Timestamp,
-               lastModified.compare(lastSyncTimestamp) == .orderedDescending {
-                
-                // Add entityType and other required fields for consistency
-                var userData = data
-                userData["uid"] = document.documentID
-                userData["entityType"] = "User"
-                userData["ownerId"] = document.documentID
-                
-                // Add to results in a thread-safe way
-                resultQueue.sync {
-                    var mutableResultsDict = resultsDict
-                    if mutableResultsDict["User"] == nil {
-                        mutableResultsDict["User"] = []
-                    }
-                    mutableResultsDict["User"]?.append(userData)
-                }
-                
-                self.logger.debug("Added friend user document to results: \(document.documentID)")
-            } else {
-                self.logger.debug("Friend user document \(friendId) not modified since last sync")
-            }
-            
+
+            let rawData = document.data() ?? [:]
+            // Convert Firestore types to Swift native types
+            let data = self.desanitizeDTO(rawData)
+
+            // Add entityType and other required fields for consistency
+            var userData = data
+            userData["uid"] = document.documentID
+            userData["entityType"] = "User"
+            userData["ownerId"] = document.documentID
+
+            // Update results using the provided closure
+            updateResults("User", [userData])
+
+            self.logger.debug("Added friend user document to results: \(document.documentID)")
+
             group.leave()
         }
     }
-    
+
     private func fetchSharedEntitiesFromFriend(
         friendId: String,
         lastSyncTimestamp: Timestamp,
-        resultQueue: DispatchQueue,
-        resultsDict: [String: [[String: Any]]],
+        updateResults: @escaping (String, [[String: Any]]) -> Void,
         errorQueue: DispatchQueue,
         errorRef: Error?,
         group: DispatchGroup
@@ -424,6 +418,9 @@ extension FirebaseAPIClient: SyncAPIClient {
                     var data = document.data()
                     data["uid"] = document.documentID
 
+                    // Convert Firestore types to Swift native types
+                    data = self.desanitizeDTO(data)
+
                     // Group entities by entity type
                     guard let entityType = data["entityType"] as? String else {
                         self.logger.warning(
@@ -440,14 +437,9 @@ extension FirebaseAPIClient: SyncAPIClient {
                     localResults[entityType]?.append(data)
                 }
 
-                // Now merge the results back into the shared dictionary in a thread-safe way
-                resultQueue.sync {
-                    var mutableResultsDict = resultsDict
-                    for (entityType, entities) in localResults {
-                        var existingEntities = mutableResultsDict[entityType] ?? []
-                        existingEntities.append(contentsOf: entities)
-                        mutableResultsDict[entityType] = existingEntities
-                    }
+                // Update results using the provided closure
+                for (entityType, entities) in localResults {
+                    updateResults(entityType, entities)
                 }
 
                 self.logger.debug(
@@ -462,7 +454,9 @@ extension FirebaseAPIClient: SyncAPIClient {
         // Find the latest modified timestamp
         for entityDocs in entities.values {
             for doc in entityDocs {
-                if let timestamp = doc["lastModified"] as? Timestamp {
+                if let date = doc["lastModified"] as? Date {
+                    // Convert Date to Timestamp for comparison
+                    let timestamp = Timestamp(date: date)
                     if latestTimestamp == nil || timestamp.seconds > latestTimestamp!.seconds
                         || (timestamp.seconds == latestTimestamp!.seconds
                             && timestamp.nanoseconds > latestTimestamp!.nanoseconds)
@@ -615,28 +609,6 @@ extension FirebaseAPIClient: SyncAPIClient {
         }
     }
 
-    private func sanitizeDTO(_ dto: [String: Any]) -> [String: Any] {
-        var result: [String: Any] = [:]
-
-        for (key, value) in dto {
-            if let date = value as? Date {
-                // Convert Date to Timestamp for Firestore
-                result[key] = Timestamp(date: date)
-            } else if let array = value as? [[String: Any]] {
-                // Recursively sanitize arrays of dictionaries
-                result[key] = array.map { sanitizeDTO($0) }
-            } else if let nestedDict = value as? [String: Any] {
-                // Recursively sanitize nested dictionaries
-                result[key] = sanitizeDTO(nestedDict)
-            } else {
-                // Use the value as is
-                result[key] = value
-            }
-        }
-
-        return result
-    }
-
     // MARK: - Real-time Subscription
 
     /// Subscribes to real-time updates for a user's entities and shared entities from friends
@@ -677,6 +649,9 @@ extension FirebaseAPIClient: SyncAPIClient {
             guard let document = document, document.exists else { return }
 
             var userData = document.data() ?? [:]
+
+            // Convert Firestore types to Swift native types
+            userData = self.desanitizeDTO(userData)
 
             // Only process if this is a data update (not just metadata)
             if document.metadata.hasPendingWrites || document.metadata.isFromCache {
@@ -764,6 +739,9 @@ extension FirebaseAPIClient: SyncAPIClient {
                     var data = document.document.data()
                     data["uid"] = document.document.documentID
 
+                    // Convert Firestore types to Swift native types
+                    data = self.desanitizeDTO(data)
+
                     // Group by entity type
                     guard let entityType = data["entityType"] as? String else {
                         self.logger.warning(
@@ -802,11 +780,12 @@ extension FirebaseAPIClient: SyncAPIClient {
         userDocRef.getDocument { [weak self] (document, error) in
             guard let self = self, let document = document, document.exists else { return }
 
-            if let friendIds = document.data()?["friendIds"] as? [String] {
+            let data = self.desanitizeDTO(document.data() ?? [:])
+            if let friendIds = data["friendIds"] as? [String] {
                 // Set up listeners for friend entities
                 self.setupFriendEntityListeners(
                     userId: userId, friendIds: friendIds, onUpdate: onUpdate)
-                
+
                 // Set up listeners for friend user documents
                 self.setupFriendUserDocumentListeners(
                     userId: userId, friendIds: friendIds, onUpdate: onUpdate)
@@ -827,7 +806,9 @@ extension FirebaseAPIClient: SyncAPIClient {
 
             // Remove all friend listeners
             for (key, listener) in self.listeners {
-                if key.starts(with: "friend_entities_\(userId)_") || key.starts(with: "friend_document_\(userId)_") {
+                if key.starts(with: "friend_entities_\(userId)_")
+                    || key.starts(with: "friend_document_\(userId)_")
+                {
                     listener.remove()
                     self.listeners.removeValue(forKey: key)
                 }
@@ -845,7 +826,7 @@ extension FirebaseAPIClient: SyncAPIClient {
             setupFriendUserDocumentListener(userId: userId, friendId: friendId, onUpdate: onUpdate)
         }
     }
-    
+
     /// Sets up a listener for a specific friend's user document
     private func setupFriendUserDocumentListener(
         userId: String,
@@ -853,49 +834,53 @@ extension FirebaseAPIClient: SyncAPIClient {
         onUpdate: @escaping (_ entityData: [String: [[String: Any]]]) -> Void
     ) {
         let listenerKey = "friend_document_\(userId)_\(friendId)"
-        
+
         // Remove any existing listener for this friend's document
         listeners[listenerKey]?.remove()
-        
+
         // Get reference to friend's user document
         let friendDocRef = db.collection("users").document(friendId)
-        
+
         // Set up a new real-time listener for the friend's user document
         let listener = friendDocRef.addSnapshotListener { [weak self] (document, error) in
             guard let self = self else { return }
-            
+
             if let error = error {
                 self.logger.error(
                     "Error listening for friend user document \(friendId): \(error.localizedDescription, privacy: .public)"
                 )
                 return
             }
-            
+
             guard let document = document, document.exists else { return }
-            
+
             // Skip updates that are just metadata changes or local writes
             if document.metadata.hasPendingWrites || document.metadata.isFromCache {
                 return
             }
-            
+
             var userData = document.data() ?? [:]
-            
+
+            // Convert Firestore types to Swift native types
+            userData = self.desanitizeDTO(userData)
+
             // Add required fields for consistency
             userData["uid"] = document.documentID
             userData["entityType"] = "User"
             userData["ownerId"] = document.documentID
-            
+
             // Create the update payload
             let entityUpdates: [String: [[String: Any]]] = ["User": [userData]]
-            
-            self.logger.debug("Emitting real-time update for friend user document: \(document.documentID)")
-            
+
+            self.logger.debug(
+                "Emitting real-time update for friend user document: \(document.documentID)")
+
             // Use the main thread for the callback to ensure UI updates work correctly
             DispatchQueue.main.async {
                 onUpdate(entityUpdates)
             }
         }
-        
+
         // Store the friend document listener
         listeners[listenerKey] = listener
     }
@@ -973,6 +958,9 @@ extension FirebaseAPIClient: SyncAPIClient {
                     var data = document.document.data()
                     data["uid"] = document.document.documentID
 
+                    // Convert Firestore types to Swift native types
+                    data = self.desanitizeDTO(data)
+
                     // Only include shared entities
                     guard let isShared = data["isShared"] as? Bool, isShared else {
                         continue
@@ -1020,7 +1008,7 @@ extension FirebaseAPIClient: SyncAPIClient {
         // Get current friend entity and document listeners
         var currentFriendEntityIds = Set<String>()
         var currentFriendDocumentIds = Set<String>()
-        
+
         // Extract friend IDs from entity listeners
         for key in listeners.keys {
             if key.starts(with: "friend_entities_\(userId)_") {
@@ -1028,7 +1016,7 @@ extension FirebaseAPIClient: SyncAPIClient {
                 currentFriendEntityIds.insert(friendId)
             }
         }
-        
+
         // Extract friend IDs from document listeners
         for key in listeners.keys {
             if key.starts(with: "friend_document_\(userId)_") {
@@ -1048,7 +1036,7 @@ extension FirebaseAPIClient: SyncAPIClient {
                 logger.debug("Removed entity listener for former friend: \(friendId)")
             }
         }
-        
+
         // Remove document listeners for friends that are no longer in the list
         for friendId in currentFriendDocumentIds {
             if !newFriendIds.contains(friendId) {
@@ -1066,10 +1054,11 @@ extension FirebaseAPIClient: SyncAPIClient {
                 setupFriendEntityListener(userId: userId, friendId: friendId, onUpdate: onUpdate)
                 logger.debug("Added entity listener for new friend: \(friendId)")
             }
-            
+
             // Add document listener if needed
             if !currentFriendDocumentIds.contains(friendId) {
-                setupFriendUserDocumentListener(userId: userId, friendId: friendId, onUpdate: onUpdate)
+                setupFriendUserDocumentListener(
+                    userId: userId, friendId: friendId, onUpdate: onUpdate)
                 logger.debug("Added document listener for new friend: \(friendId)")
             }
         }
