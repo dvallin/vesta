@@ -15,7 +15,6 @@ final class ShoppingListItemTests: XCTestCase {
 
         // Set up the UserAuthService to return our test user
         user = Fixtures.createUser()
-        UserAuthService.shared.setCurrentUser(user: user)
     }
 
     override func tearDown() {
@@ -181,7 +180,7 @@ final class ShoppingListItemTests: XCTestCase {
         shoppingListItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        shoppingListItem.setQuantity(newQuantity: 500)
+        shoppingListItem.setQuantity(newQuantity: 500, currentUser: user)
 
         // Assert
         XCTAssertEqual(shoppingListItem.quantity, 500)
@@ -205,7 +204,7 @@ final class ShoppingListItemTests: XCTestCase {
         shoppingListItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        shoppingListItem.setQuantity(newQuantity: nil)
+        shoppingListItem.setQuantity(newQuantity: nil, currentUser: user)
 
         // Assert
         XCTAssertNil(shoppingListItem.quantity)
@@ -229,7 +228,7 @@ final class ShoppingListItemTests: XCTestCase {
         shoppingListItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        shoppingListItem.setUnit(newUnit: .liter)
+        shoppingListItem.setUnit(newUnit: .liter, currentUser: user)
 
         // Assert
         XCTAssertEqual(shoppingListItem.unit, .liter)
@@ -252,7 +251,7 @@ final class ShoppingListItemTests: XCTestCase {
         shoppingListItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        shoppingListItem.setUnit(newUnit: nil)
+        shoppingListItem.setUnit(newUnit: nil, currentUser: user)
 
         // Assert
         XCTAssertNil(shoppingListItem.unit)
@@ -368,7 +367,7 @@ final class ShoppingListItemTests: XCTestCase {
         XCTAssertFalse(shoppingListItem.dirty, "Item should not be dirty after marked as synced")
 
         // Act - modify item
-        shoppingListItem.setQuantity(newQuantity: 300)
+        shoppingListItem.setQuantity(newQuantity: 300, currentUser: user)
 
         // Assert
         XCTAssertTrue(shoppingListItem.dirty, "Item should be marked as dirty after modification")

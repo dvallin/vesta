@@ -17,7 +17,6 @@ final class MealTests: XCTestCase {
 
         // Set up the UserAuthService to return our test user
         user = Fixtures.createUser()
-        UserAuthService.shared.setCurrentUser(user: user)
 
         // Set up test recipe and todoItem
         recipe = Fixtures.bolognese(owner: user)
@@ -76,7 +75,7 @@ final class MealTests: XCTestCase {
         meal.markAsSynced()  // Reset dirty flag
 
         // Act
-        meal.setScalingFactor(2.0)
+        meal.setScalingFactor(2.0, currentUser: user)
 
         // Assert
         XCTAssertEqual(meal.scalingFactor, 2.0)
@@ -96,7 +95,7 @@ final class MealTests: XCTestCase {
         meal.markAsSynced()  // Reset dirty flag
 
         // Act
-        meal.setMealType(.lunch)
+        meal.setMealType(.lunch, currentUser: user)
 
         // Assert
         XCTAssertEqual(meal.mealType, .lunch)
@@ -122,7 +121,7 @@ final class MealTests: XCTestCase {
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
 
         // Act
-        meal.setDueDate(tomorrow)
+        meal.setDueDate(tomorrow, currentUser: user)
 
         // Assert
         XCTAssertNotEqual(todoItem.dueDate, originalDueDate)
@@ -145,7 +144,7 @@ final class MealTests: XCTestCase {
         meal.markAsSynced()  // Reset dirty flag
 
         // Act - Change meal type to breakfast
-        meal.updateTodoItemDueDate(for: .breakfast)
+        meal.updateTodoItemDueDate(for: .breakfast, currentUser: user)
 
         // Assert
         let calendar = Calendar.current
@@ -157,7 +156,7 @@ final class MealTests: XCTestCase {
 
         // Act - Change meal type to dinner
         meal.markAsSynced()  // Reset dirty flag
-        meal.updateTodoItemDueDate(for: .dinner)
+        meal.updateTodoItemDueDate(for: .dinner, currentUser: user)
 
         // Assert
         let dinnerComponents = calendar.dateComponents([.hour, .minute], from: todoItem.dueDate!)
@@ -183,7 +182,7 @@ final class MealTests: XCTestCase {
         let futureDateOnly = Calendar.current.date(byAdding: .day, value: 3, to: Date())!
 
         // Act
-        meal.updateTodoItemDueDate(for: .lunch, on: futureDateOnly)
+        meal.updateTodoItemDueDate(for: .lunch, on: futureDateOnly, currentUser: user)
 
         // Assert
         XCTAssertTrue(Calendar.current.isDate(todoItem.dueDate!, inSameDayAs: futureDateOnly))
@@ -213,7 +212,7 @@ final class MealTests: XCTestCase {
         XCTAssertFalse(meal.isDone, "Meal should not be done when todoItem is not completed")
 
         // Act - Complete the todoItem
-        todoItem.setIsCompleted(isCompleted: true)
+        todoItem.setIsCompleted(isCompleted: true, currentUser: user)
 
         // Assert - Should be done now
         XCTAssertTrue(meal.isDone, "Meal should be done when todoItem is completed")
@@ -270,7 +269,7 @@ final class MealTests: XCTestCase {
             meal.shoppingListItems.contains(item2), "Meal should contain the ground beef item")
 
         // Act - Complete a shopping item
-        item1Todo.setIsCompleted(isCompleted: true)
+        item1Todo.setIsCompleted(isCompleted: true, currentUser: user)
 
         // Assert - Verify the meal is still incomplete (both shopping items need to be completed)
         XCTAssertFalse(meal.isDone, "Meal should not be done when todo item is not completed")
@@ -288,7 +287,7 @@ final class MealTests: XCTestCase {
         )
 
         // Act - Complete the meal's todo item
-        todoItem.setIsCompleted(isCompleted: true)
+        todoItem.setIsCompleted(isCompleted: true, currentUser: user)
 
         // Assert - Verify the meal is now done
         XCTAssertTrue(meal.isDone, "Meal should be done when its todo item is completed")
@@ -317,8 +316,8 @@ final class MealTests: XCTestCase {
         XCTAssertFalse(meal.dirty, "Meal should not be dirty after marked as synced")
 
         // Act
-        meal.setScalingFactor(1.5)
-
+        meal.setScalingFactor(1.5, currentUser: user)
+        
         // Assert
         XCTAssertTrue(meal.dirty, "Meal should be marked as dirty after modification")
 

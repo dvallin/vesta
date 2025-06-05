@@ -60,7 +60,10 @@ class UserEntityProcessor: BaseEntityProcessor, EntityProcessor {
                     self.logger.debug("Adding \(newFriendIds.count) new friends to user \(uid)")
                     // Fetch and add new friends
                     if let newFriends = try? users.fetchMany(withUIDs: Array(newFriendIds)) {
+                        self.logger.debug("Found \(newFriends.count) in the context")
                         user.friends.append(contentsOf: newFriends)
+                    } else {
+                        self.logger.debug("Could not find friends in the context")
                     }
                 }
 

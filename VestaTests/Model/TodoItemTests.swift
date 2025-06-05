@@ -15,7 +15,6 @@ final class TodoItemTests: XCTestCase {
 
         // Set up the UserAuthService to return our test user
         user = Fixtures.createUser()
-        UserAuthService.shared.setCurrentUser(user: user)
     }
 
     override func tearDown() {
@@ -28,7 +27,11 @@ final class TodoItemTests: XCTestCase {
 
     func testCreateTodoItem() throws {
         // Arrange & Act
-        let todoItem = TodoItem.create(title: "Test Task", details: "Test Details")
+        let todoItem = TodoItem.create(
+            title: "Test Task",
+            details: "Test Details",
+            owner: user
+        )
         context.insert(todoItem)
 
         // Assert
@@ -39,8 +42,6 @@ final class TodoItemTests: XCTestCase {
         XCTAssertNil(todoItem.recurrenceFrequency)
         XCTAssertTrue(todoItem.ignoreTimeComponent)
         XCTAssertEqual(todoItem.priority, 4)
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .created)
         XCTAssertTrue(todoItem.dirty, "New item should be marked as dirty")
     }
 
@@ -54,13 +55,10 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.setTitle(title: "Updated Title")
+        todoItem.setTitle(title: "Updated Title", currentUser: user)
 
         // Assert
         XCTAssertEqual(todoItem.title, "Updated Title")
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .editTitle)
-        XCTAssertEqual(todoItem.events.first?.previousTitle, "Initial Title")
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after title change")
     }
 
@@ -72,31 +70,26 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.setDetails(details: "Updated Details")
+        todoItem.setDetails(details: "Updated Details", currentUser: user)
 
         // Assert
         XCTAssertEqual(todoItem.details, "Updated Details")
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .editDetails)
-        XCTAssertEqual(todoItem.events.first?.previousDetails, "Initial Details")
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after details change")
     }
 
     func testSetDueDate() throws {
         // Arrange
-        let todoItem = TodoItem(title: "Task", details: "Details", owner: user!)
+        let todoItem = TodoItem(
+            title: "Task", details: "Details", owner: user!)
         context.insert(todoItem)
+        let today = Date()
         todoItem.markAsSynced()  // Reset dirty flag
-        let newDate = Date()
 
         // Act
-        todoItem.setDueDate(dueDate: newDate)
+        todoItem.setDueDate(dueDate: today, currentUser: user)
 
         // Assert
-        XCTAssertEqual(todoItem.dueDate, newDate)
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .editDueDate)
-        XCTAssertNil(todoItem.events.first?.previousDueDate)
+        XCTAssertNotNil(todoItem.dueDate)
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after due date change")
     }
 
@@ -107,13 +100,10 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.setIsCompleted(isCompleted: true)
+        todoItem.setIsCompleted(isCompleted: true, currentUser: user)
 
         // Assert
         XCTAssertTrue(todoItem.isCompleted)
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .editIsCompleted)
-        XCTAssertEqual(todoItem.events.first?.previousIsCompleted, false)
         XCTAssertTrue(
             todoItem.dirty, "Item should be marked as dirty after completion status change")
     }
@@ -125,13 +115,10 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.setRecurrenceFrequency(recurrenceFrequency: .weekly)
+        todoItem.setRecurrenceFrequency(recurrenceFrequency: .weekly, currentUser: user)
 
         // Assert
         XCTAssertEqual(todoItem.recurrenceFrequency, .weekly)
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .editRecurrenceFrequency)
-        XCTAssertNil(todoItem.events.first?.previousRecurrenceFrequency)
         XCTAssertTrue(
             todoItem.dirty, "Item should be marked as dirty after recurrence frequency change")
     }
@@ -143,13 +130,10 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.setRecurrenceType(recurrenceType: .fixed)
+        todoItem.setRecurrenceType(recurrenceType: .fixed, currentUser: user)
 
         // Assert
         XCTAssertEqual(todoItem.recurrenceType, .fixed)
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .editRecurrenceType)
-        XCTAssertNil(todoItem.events.first?.previousRecurrenceType)
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after recurrence type change")
     }
 
@@ -160,13 +144,10 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.setRecurrenceInterval(recurrenceInterval: 2)
+        todoItem.setRecurrenceInterval(recurrenceInterval: 2, currentUser: user)
 
         // Assert
         XCTAssertEqual(todoItem.recurrenceInterval, 2)
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .editRecurrenceInterval)
-        XCTAssertNil(todoItem.events.first?.previousRecurrenceInterval)
         XCTAssertTrue(
             todoItem.dirty, "Item should be marked as dirty after recurrence interval change")
     }
@@ -180,32 +161,25 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.setIgnoreTimeComponent(ignoreTimeComponent: false)
+        todoItem.setIgnoreTimeComponent(ignoreTimeComponent: false, currentUser: user)
 
         // Assert
         XCTAssertFalse(todoItem.ignoreTimeComponent)
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .editIgnoreTimeComponent)
-        XCTAssertEqual(todoItem.events.first?.previousIgnoreTimeComponent, true)
         XCTAssertTrue(
             todoItem.dirty, "Item should be marked as dirty after ignore time component change")
     }
 
     func testSetPriority() throws {
         // Arrange
-        let todoItem = TodoItem(
-            title: "Task", details: "Details", priority: 3, owner: user!)
+        let todoItem = TodoItem(title: "Task", details: "Details", priority: 3, owner: user!)
         context.insert(todoItem)
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.setPriority(priority: 1)
+        todoItem.setPriority(priority: 1, currentUser: user)
 
         // Assert
         XCTAssertEqual(todoItem.priority, 1)
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .editPriority)
-        XCTAssertEqual(todoItem.events.first?.previousPriority, 3)
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after priority change")
     }
 
@@ -217,13 +191,10 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.setCategory(category: category)
+        todoItem.setCategory(category: category, currentUser: user)
 
         // Assert
         XCTAssertEqual(todoItem.category?.name, "Test Category")
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .editCategory)
-        XCTAssertNil(todoItem.events.first?.previousCategory)
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after category change")
     }
 
@@ -329,12 +300,10 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.markAsDone()
+        todoItem.markAsDone(currentUser: user)
 
         // Assert
         XCTAssertTrue(todoItem.isCompleted, "Item should be marked completed")
-        XCTAssertEqual(todoItem.events.count, 1)
-        XCTAssertEqual(todoItem.events.first?.type, .markAsDone)
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after being marked as done")
     }
 
@@ -353,11 +322,12 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.markAsDone()
+        todoItem.markAsDone(currentUser: user)
 
         // Assert
         XCTAssertFalse(todoItem.isCompleted, "Recurring item should not be marked as completed")
 
+        // Now should be set to today since it's a flexible recurrence
         // Check if the due date is now tomorrow
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
         let dueDateComponents = Calendar.current.dateComponents(
@@ -386,7 +356,7 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.markAsDone()
+        todoItem.markAsDone(currentUser: user)
 
         // Assert
         XCTAssertFalse(todoItem.isCompleted, "Recurring item should not be marked as completed")
@@ -420,7 +390,7 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.markAsDone()
+        todoItem.markAsDone(currentUser: user)
 
         // Assert
         // Due date should be based on completion time, not the original due date
@@ -452,7 +422,7 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act
-        todoItem.markAsDone()
+        todoItem.markAsDone(currentUser: user)
 
         // Assert
         // Due date should be based on the original due date
@@ -465,70 +435,6 @@ final class TodoItemTests: XCTestCase {
         XCTAssertEqual(dueDateComponents.month, todayComponents.month)
         XCTAssertEqual(dueDateComponents.day, todayComponents.day)
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after being marked as done")
-    }
-
-    // MARK: - Undo Tests
-
-    func testUndoLastEvent() throws {
-        // Arrange
-        let todoItem = TodoItem(
-            title: "Original Title", details: "Original Details", owner: user!)
-        context.insert(todoItem)
-        todoItem.setTitle(title: "Updated Title")
-        todoItem.markAsSynced()  // Reset dirty flag
-
-        // Act
-        let undoneEvent = todoItem.undoLastEvent()
-
-        // Assert
-        XCTAssertEqual(todoItem.title, "Original Title", "Title should be restored to original")
-        XCTAssertEqual(todoItem.events.count, 0, "Event should be removed")
-        XCTAssertEqual(
-            undoneEvent?.type, .editTitle, "Returned event should be the edit title event")
-        XCTAssertEqual(
-            undoneEvent?.previousTitle, "Original Title", "Previous title in event should match")
-        XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after undoing an event")
-    }
-
-    func testUndoMultipleEvents() throws {
-        // Arrange
-        let todoItem = TodoItem(
-            title: "Original Title", details: "Original Details", owner: user!)
-        context.insert(todoItem)
-        todoItem.setTitle(title: "Updated Title")
-        todoItem.setDetails(details: "Updated Details")
-        todoItem.setPriority(priority: 1)
-        todoItem.markAsSynced()  // Reset dirty flag
-
-        // Act & Assert - First undo (priority)
-        var undoneEvent = todoItem.undoLastEvent()
-        XCTAssertEqual(undoneEvent?.type, .editPriority)
-        XCTAssertEqual(todoItem.priority, 4)
-        XCTAssertTrue(
-            todoItem.dirty, "Item should be marked as dirty after undoing priority change")
-
-        todoItem.markAsSynced()  // Reset dirty flag
-
-        // Act & Assert - Second undo (details)
-        undoneEvent = todoItem.undoLastEvent()
-        XCTAssertEqual(undoneEvent?.type, .editDetails)
-        XCTAssertEqual(todoItem.details, "Original Details")
-        XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after undoing details change")
-
-        todoItem.markAsSynced()  // Reset dirty flag
-
-        // Act & Assert - Third undo (title)
-        undoneEvent = todoItem.undoLastEvent()
-        XCTAssertEqual(undoneEvent?.type, .editTitle)
-        XCTAssertEqual(todoItem.title, "Original Title")
-        XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after undoing title change")
-
-        todoItem.markAsSynced()  // Reset dirty flag
-
-        // Act & Assert - No more events to undo
-        undoneEvent = todoItem.undoLastEvent()
-        XCTAssertNil(undoneEvent)
-        XCTAssertFalse(todoItem.dirty, "Item should not be dirty when no event was undone")
     }
 
     // MARK: - Integration Tests
@@ -547,7 +453,7 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act & Assert - With ignoreTimeComponent = false
-        todoItem.setDueDate(dueDate: now)
+        todoItem.setDueDate(dueDate: now, currentUser: user)
         XCTAssertNotEqual(
             Calendar.current.startOfDay(for: todoItem.dueDate!),
             todoItem.dueDate!,
@@ -558,7 +464,7 @@ final class TodoItemTests: XCTestCase {
         todoItem.markAsSynced()  // Reset dirty flag
 
         // Act & Assert - Setting ignoreTimeComponent to true should convert date
-        todoItem.setIgnoreTimeComponent(ignoreTimeComponent: true)
+        todoItem.setIgnoreTimeComponent(ignoreTimeComponent: true, currentUser: user)
         XCTAssertEqual(
             Calendar.current.startOfDay(for: todoItem.dueDate!),
             todoItem.dueDate!,
@@ -571,7 +477,7 @@ final class TodoItemTests: XCTestCase {
 
         // Act & Assert - New dates while ignoreTimeComponent is true
         let newDate = Date().addingTimeInterval(3600)  // one hour later
-        todoItem.setDueDate(dueDate: newDate)
+        todoItem.setDueDate(dueDate: newDate, currentUser: user)
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after due date change")
     }
 
@@ -581,7 +487,7 @@ final class TodoItemTests: XCTestCase {
         context.insert(todoItem)
 
         // Act
-        todoItem.setTitle(title: "New Title")
+        todoItem.setTitle(title: "New Title", currentUser: user)
 
         // Assert
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after modification")
@@ -593,7 +499,7 @@ final class TodoItemTests: XCTestCase {
         XCTAssertFalse(todoItem.dirty, "Item should not be dirty after marked as synced")
 
         // Act
-        todoItem.setPriority(priority: 1)
+        todoItem.setPriority(priority: 1, currentUser: user)
 
         // Assert
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after another modification")

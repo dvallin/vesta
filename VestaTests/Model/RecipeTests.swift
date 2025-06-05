@@ -15,7 +15,6 @@ final class RecipeTests: XCTestCase {
 
         // Set up the UserAuthService to return our test user
         user = Fixtures.createUser()
-        UserAuthService.shared.setCurrentUser(user: user)
     }
 
     override func tearDown() {
@@ -95,7 +94,7 @@ final class RecipeTests: XCTestCase {
         recipe.markAsSynced()  // Reset dirty flag
 
         // Act
-        recipe.setTitle("Updated Bolognese")
+        recipe.setTitle("Updated Bolognese", currentUser: user)
 
         // Assert
         XCTAssertEqual(recipe.title, "Updated Bolognese")
@@ -109,7 +108,7 @@ final class RecipeTests: XCTestCase {
         recipe.markAsSynced()  // Reset dirty flag
 
         // Act
-        recipe.setDetails("New detailed instructions")
+        recipe.setDetails("New detailed instructions", currentUser: user)
 
         // Assert
         XCTAssertEqual(recipe.details, "New detailed instructions")
@@ -126,7 +125,7 @@ final class RecipeTests: XCTestCase {
         let initialCount = recipe.ingredients.count
 
         // Act
-        recipe.addIngredient(name: "Garlic", quantity: 3, unit: .piece)
+        recipe.addIngredient(name: "Garlic", quantity: 3, unit: .piece, currentUser: user)
 
         // Assert
         XCTAssertEqual(recipe.ingredients.count, initialCount + 1)
@@ -144,7 +143,7 @@ final class RecipeTests: XCTestCase {
         let ingredientToRemove = recipe.ingredients.first!
 
         // Act
-        recipe.removeIngredient(ingredientToRemove)
+        recipe.removeIngredient(ingredientToRemove, currentUser: user)
 
         // Assert
         XCTAssertEqual(recipe.ingredients.count, initialCount - 1)
@@ -163,7 +162,7 @@ final class RecipeTests: XCTestCase {
         let firstIngredient = initialIngredients[0]
 
         // Act - move the first ingredient to the end
-        recipe.moveIngredient(from: IndexSet(integer: 0), to: recipe.ingredients.count)
+        recipe.moveIngredient(from: IndexSet(integer: 0), to: recipe.ingredients.count, currentUser: user)
 
         // Assert
         let newIngredients = recipe.sortedIngredients
@@ -187,7 +186,7 @@ final class RecipeTests: XCTestCase {
         let initialCount = recipe.steps.count
 
         // Act
-        recipe.addStep(instruction: "Serve hot", type: .preparation, duration: 60)
+        recipe.addStep(instruction: "Serve hot", type: .preparation, duration: 60, currentUser: user)
 
         // Assert
         XCTAssertEqual(recipe.steps.count, initialCount + 1)
@@ -205,7 +204,7 @@ final class RecipeTests: XCTestCase {
         let stepToRemove = recipe.steps.first!
 
         // Act
-        recipe.removeStep(stepToRemove)
+        recipe.removeStep(stepToRemove, currentUser: user)
 
         // Assert
         XCTAssertEqual(recipe.steps.count, initialCount - 1)
@@ -224,7 +223,7 @@ final class RecipeTests: XCTestCase {
         let firstStep = initialSteps[0]
 
         // Act - move the first step to the end
-        recipe.moveStep(from: IndexSet(integer: 0), to: recipe.steps.count)
+        recipe.moveStep(from: IndexSet(integer: 0), to: recipe.steps.count, currentUser: user)
 
         // Assert
         let newSteps = recipe.sortedSteps
@@ -249,11 +248,11 @@ final class RecipeTests: XCTestCase {
         context.insert(recipe)
 
         // Add steps with different types and durations
-        recipe.addStep(instruction: "Prepare ingredients", type: .preparation, duration: 600)  // 10 minutes
-        recipe.addStep(instruction: "Mix ingredients", type: .preparation, duration: 300)  // 5 minutes
-        recipe.addStep(instruction: "Cook on stove", type: .cooking, duration: 1200)  // 20 minutes
-        recipe.addStep(instruction: "Bake in oven", type: .cooking, duration: 1800)  // 30 minutes
-        recipe.addStep(instruction: "Let rest", type: .maturing, duration: 3600)  // 60 minutes
+        recipe.addStep(instruction: "Prepare ingredients", type: .preparation, duration: 600, currentUser: user)  // 10 minutes
+        recipe.addStep(instruction: "Mix ingredients", type: .preparation, duration: 300, currentUser: user)  // 5 minutes
+        recipe.addStep(instruction: "Cook on stove", type: .cooking, duration: 1200, currentUser: user)  // 20 minutes
+        recipe.addStep(instruction: "Bake in oven", type: .cooking, duration: 1800, currentUser: user)  // 30 minutes
+        recipe.addStep(instruction: "Let rest", type: .maturing, duration: 3600, currentUser: user)  // 60 minutes
 
         // Act & Assert
         XCTAssertEqual(recipe.preparationDuration, 900, "Preparation duration should be 15 minutes")
@@ -272,9 +271,9 @@ final class RecipeTests: XCTestCase {
         context.insert(recipe)
 
         // Add steps with some nil durations
-        recipe.addStep(instruction: "Prepare ingredients", type: .preparation, duration: 600)
-        recipe.addStep(instruction: "Mix ingredients", type: .preparation, duration: nil)
-        recipe.addStep(instruction: "Cook on stove", type: .cooking, duration: 1200)
+        recipe.addStep(instruction: "Prepare ingredients", type: .preparation, duration: 600, currentUser: user)
+        recipe.addStep(instruction: "Mix ingredients", type: .preparation, duration: nil, currentUser: user)
+        recipe.addStep(instruction: "Cook on stove", type: .cooking, duration: 1200, currentUser: user)
 
         // Act & Assert
         XCTAssertEqual(
@@ -306,7 +305,7 @@ final class RecipeTests: XCTestCase {
         XCTAssertFalse(recipe.dirty, "Recipe should not be dirty after marked as synced")
 
         // Act - modify recipe
-        recipe.setTitle("Updated Sync Test")
+        recipe.setTitle("Updated Sync Test", currentUser: user)
 
         // Assert
         XCTAssertTrue(recipe.dirty, "Recipe should be marked as dirty after modification")
