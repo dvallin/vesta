@@ -3,6 +3,10 @@ import SwiftData
 
 struct Fixtures {
 
+    // MARK: - Common Values
+
+    static let defaultUID = "fixture-item-123"
+
     static func createUser() -> User {
         return User(
             uid: "fixture-user-123",
@@ -40,7 +44,8 @@ struct Fixtures {
                     order: 4, instruction: "Let the sauce simmer", type: .cooking, duration: 1800),
                 RecipeStep(
                     order: 5,
-                    instruction: "Cook spaghetti in boiling water according to package instructions",
+                    instruction:
+                        "Cook spaghetti in boiling water according to package instructions",
                     type: .cooking, duration: 600),
                 RecipeStep(
                     order: 6, instruction: "Drain spaghetti and combine with sauce", type: .cooking,
@@ -51,7 +56,7 @@ struct Fixtures {
     }
 
     static func curry(owner: User = Fixtures.createUser()) -> Recipe {
-            return Recipe(
+        return Recipe(
             title: "Chicken Curry",
             details: "Spicy Indian curry",
             ingredients: [
@@ -61,7 +66,92 @@ struct Fixtures {
             ],
             owner: owner
         )
-   }
+    }
+
+    // MARK: - Meal Factories
+
+    static func meal(
+        scalingFactor: Double = 1.0,
+        mealType: MealType = .dinner,
+        recipe: Recipe? = nil,
+        todoItem: TodoItem? = nil,
+        owner: User = Fixtures.createUser()
+    ) -> Meal {
+        let meal = Meal(
+            scalingFactor: scalingFactor,
+            todoItem: todoItem,
+            recipe: recipe,
+            mealType: mealType,
+            owner: owner
+        )
+        meal.uid = UUID().uuidString
+        return meal
+    }
+
+    static func breakfast(
+        scalingFactor: Double = 1.0,
+        recipe: Recipe? = nil,
+        todoItem: TodoItem? = nil,
+        owner: User = Fixtures.createUser()
+    ) -> Meal {
+        return meal(
+            scalingFactor: scalingFactor,
+            mealType: .breakfast,
+            recipe: recipe,
+            todoItem: todoItem,
+            owner: owner
+        )
+    }
+
+    static func lunch(
+        scalingFactor: Double = 1.0,
+        recipe: Recipe? = nil,
+        todoItem: TodoItem? = nil,
+        owner: User = Fixtures.createUser()
+    ) -> Meal {
+        return meal(
+            scalingFactor: scalingFactor,
+            mealType: .lunch,
+            recipe: recipe,
+            todoItem: todoItem,
+            owner: owner
+        )
+    }
+
+    static func dinner(
+        scalingFactor: Double = 1.0,
+        recipe: Recipe? = nil,
+        todoItem: TodoItem? = nil,
+        owner: User = Fixtures.createUser()
+    ) -> Meal {
+        return meal(
+            scalingFactor: scalingFactor,
+            mealType: .dinner,
+            recipe: recipe,
+            todoItem: todoItem,
+            owner: owner
+        )
+    }
+
+    // MARK: - ShoppingListItem Factories
+
+    static func shoppingListItem(
+        name: String,
+        quantity: Double? = 1.0,
+        unit: Unit? = nil,
+        todoItem: TodoItem? = nil,
+        owner: User = Fixtures.createUser()
+    ) -> ShoppingListItem {
+        let item = ShoppingListItem(
+            name: name,
+            quantity: quantity,
+            unit: unit,
+            todoItem: todoItem,
+            owner: owner
+        )
+        item.uid = UUID().uuidString
+        return item
+    }
 
     // MARK: - TodoItem Factories
 

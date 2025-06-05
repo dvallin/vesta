@@ -8,6 +8,12 @@ class UserService {
         self.modelContext = modelContext
     }
 
+    /// Fetch all users
+    func fetchAll() throws -> [User] {
+        let descriptor = FetchDescriptor<User>()
+        return try modelContext.fetch(descriptor)
+    }
+
     /// Fetch a user by their unique identifier
     func fetchUnique(withUID uid: String) throws -> User? {
         let descriptor = FetchDescriptor<User>(predicate: #Predicate<User> { $0.uid == uid })
@@ -17,11 +23,13 @@ class UserService {
 
     /// Fetch multiple users by their unique identifiers
     func fetchMany(withUIDs uids: [String]) throws -> [User] {
-        // Filter out any potential nil UIDs first
-        let descriptor = FetchDescriptor<User>(
-            predicate: #Predicate<User> {
-                $0.uid != nil && uids.contains($0.uid!)
-            })
-        return try modelContext.fetch(descriptor)
+        // Fetch all users first
+        let allUsers = try fetchAll()
+
+        // Then filter in memory to avoid unsupported predicate
+        return allUsers.filter { user in
+            guard let uid = user.uid else { return false }
+            return uids.contains(uid)
+        }
     }
 }

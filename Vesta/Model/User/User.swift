@@ -14,9 +14,9 @@ class User: SyncableEntity {
 
     @Relationship(deleteRule: .noAction)
     var friends: [User] = []
-    @Relationship(deleteRule: .cascade, inverse: \Invite.owner)
+    @Relationship(deleteRule: .cascade)
     var receivedInvites: [Invite] = []
-    @Relationship(deleteRule: .cascade, inverse: \Invite.owner)
+    @Relationship(deleteRule: .cascade)
     var sentInvites: [Invite] = []
 
     var shareMeals: Bool? = false
@@ -51,13 +51,13 @@ class Invite {
 
     var uid: String
     var createdAt: Date
-    
+
     // Sender information
     var senderUid: String
     var senderEmail: String?
     var senderDisplayName: String?
     var senderPhotoURL: String?
-    
+
     // Recipient information
     var recipientUid: String
     var recipientEmail: String?
