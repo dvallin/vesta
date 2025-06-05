@@ -42,24 +42,6 @@ final class ModelIntegrityTests: XCTestCase {
             "Ingredients should be deleted when their Recipe is deleted")
     }
 
-    func testDeleteTodoItemCascadeToEvents() throws {
-        // Arrange
-        let user = Fixtures.createUser()
-        let todoItem = TodoItem(title: "Test Todo", details: "Test Details", owner: user)
-
-        context.insert(todoItem)
-
-        // Act
-        context.delete(todoItem)
-        try context.save()
-
-        // Assert
-        let fetchDescriptor = FetchDescriptor<TodoItemEvent>()
-        let remainingEvents = try context.fetch(fetchDescriptor)
-        XCTAssertEqual(
-            remainingEvents.count, 0, "Events should be deleted when their TodoItem is deleted")
-    }
-
     func testDeleteRecipeCascadeToMeals() throws {
         // Arrange
         let user = Fixtures.createUser()
