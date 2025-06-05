@@ -22,7 +22,8 @@ final class ModelIntegrityTests: XCTestCase {
 
     func testDeleteRecipeCascadeToIngredients() throws {
         // Arrange
-        let recipe = Recipe(title: "Test Recipe", details: "Test Details")
+        let user = Fixtures.createUser()
+        let recipe = Recipe(title: "Test Recipe", details: "Test Details", owner: user)
         let ingredient = Ingredient(
             name: "Test Ingredient", order: 1, quantity: 1.0, unit: .cup, recipe: recipe)
         recipe.ingredients = [ingredient]
@@ -41,29 +42,12 @@ final class ModelIntegrityTests: XCTestCase {
             "Ingredients should be deleted when their Recipe is deleted")
     }
 
-    func testDeleteTodoItemCascadeToEvents() throws {
-        // Arrange
-        let todoItem = TodoItem(title: "Test Todo", details: "Test Details")
-
-        context.insert(todoItem)
-
-        // Act
-        context.delete(todoItem)
-        try context.save()
-
-        // Assert
-        let fetchDescriptor = FetchDescriptor<TodoItemEvent>()
-        let remainingEvents = try context.fetch(fetchDescriptor)
-        XCTAssertEqual(
-            remainingEvents.count, 0, "Events should be deleted when their TodoItem is deleted")
-    }
-
     func testDeleteRecipeCascadeToMeals() throws {
         // Arrange
-        let recipe = Recipe(title: "Test Recipe", details: "Test Details")
-        let meal = Meal(
-            scalingFactor: 1.0, todoItem: TodoItem(title: "Test Todo", details: "Test Details"),
-            recipe: recipe)
+        let user = Fixtures.createUser()
+        let recipe = Recipe(title: "Test Recipe", details: "Test Details", owner: user)
+        let todoItem = TodoItem(title: "Test Todo", details: "Test Details", owner: user)
+        let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe, owner:user)
 
         context.insert(recipe)
         context.insert(meal)
@@ -80,11 +64,12 @@ final class ModelIntegrityTests: XCTestCase {
 
     func testComplexDeletionChain() throws {
         // Arrange
-        let recipe = Recipe(title: "Test Recipe", details: "Test Details")
-        let todoItem = TodoItem(title: "Test Todo", details: "Test Details")
-        let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe)
-        _ = ShoppingListItem(
-            name: "Test Item", todoItem: todoItem, meals: [meal])
+        let user = Fixtures.createUser()
+        let recipe = Recipe(title: "Test Recipe", details: "Test Details", owner: user)
+        let todoItem = TodoItem(title: "Test Todo", details: "Test Details", owner: user)
+        let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe, owner: user)
+        let item = ShoppingListItem(name: "Test Item", todoItem: todoItem, owner: user)
+        item.meals = [meal]
 
         context.insert(recipe)
         context.insert(todoItem)
@@ -106,11 +91,12 @@ final class ModelIntegrityTests: XCTestCase {
 
     func testDeleteMealCascadesToTodoItemButNotRecipeOrShoppingListItems() throws {
         // Arrange
-        let recipe = Recipe(title: "Test Recipe", details: "Test Details")
-        let mealTodoItem = TodoItem(title: "Meal Todo", details: "Test Details")
-        let shoppingTodoItem = TodoItem(title: "Shopping Todo", details: "Test Details")
-        let shoppingListItem = ShoppingListItem(name: "Test Item", todoItem: shoppingTodoItem)
-        let meal = Meal(scalingFactor: 1.0, todoItem: mealTodoItem, recipe: recipe)
+        let user = Fixtures.createUser()
+        let recipe = Recipe(title: "Test Recipe", details: "Test Details", owner: user)
+        let mealTodoItem = TodoItem(title: "Meal Todo", details: "Test Details", owner: user)
+        let shoppingTodoItem = TodoItem(title: "Shopping Todo", details: "Test Details", owner: user)
+        let shoppingListItem = ShoppingListItem(name: "Test Item", todoItem: shoppingTodoItem, owner: user)
+        let meal = Meal(scalingFactor: 1.0, todoItem: mealTodoItem, recipe: recipe, owner: user)
         meal.shoppingListItems.append(shoppingListItem)
         shoppingListItem.meals.append(meal)
 
@@ -150,11 +136,12 @@ final class ModelIntegrityTests: XCTestCase {
 
     func testDeleteRecipeCascadesToMealsAndTodoItemsButNotShoppingListItems() throws {
         // Arrange
-        let recipe = Recipe(title: "Test Recipe", details: "Test Details")
-        let mealTodoItem = TodoItem(title: "Meal Todo", details: "Test Details")
-        let shoppingTodoItem = TodoItem(title: "Shopping Todo", details: "Test Details")
-        let shoppingListItem = ShoppingListItem(name: "Test Item", todoItem: shoppingTodoItem)
-        let meal = Meal(scalingFactor: 1.0, todoItem: mealTodoItem, recipe: recipe)
+        let user = Fixtures.createUser()
+        let recipe = Recipe(title: "Test Recipe", details: "Test Details", owner: user)
+        let mealTodoItem = TodoItem(title: "Meal Todo", details: "Test Details", owner: user)
+        let shoppingTodoItem = TodoItem(title: "Shopping Todo", details: "Test Details", owner: user)
+        let shoppingListItem = ShoppingListItem(name: "Test Item", todoItem: shoppingTodoItem, owner: user)
+        let meal = Meal(scalingFactor: 1.0, todoItem: mealTodoItem, recipe: recipe, owner: user)
         meal.shoppingListItems.append(shoppingListItem)
         shoppingListItem.meals.append(meal)
 

@@ -4,6 +4,7 @@ import SwiftUI
 class AddMealViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
+    private var auth: UserAuthService?
     private var categoryService: TodoItemCategoryService?
 
     @Published var selectedRecipe: Recipe?
@@ -18,14 +19,18 @@ class AddMealViewModel: ObservableObject {
         self.selectedDate = selectedDate
     }
 
-    func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction) {
+    func configureEnvironment(
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
+    ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
+        self.auth = auth
         self.dismiss = dismiss
     }
 
     @MainActor
     func save() {
+        guard let currentUser = auth?.currentUser else { return }
         guard let recipe = selectedRecipe else {
             validationMessage = NSLocalizedString(
                 "Please select a recipe", comment: "Recipe selection validation message")
@@ -49,14 +54,16 @@ class AddMealViewModel: ObservableObject {
                 details: recipe.details,
                 dueDate: selectedDate,
                 ignoreTimeComponent: false,
-                category: mealCategory
+                category: mealCategory,
+                owner: currentUser
             )
 
             let meal = Meal(
                 scalingFactor: scalingFactor, todoItem: todoItem, recipe: recipe,
-                mealType: selectedMealType
+                mealType: selectedMealType, owner: currentUser
             )
-            meal.updateTodoItemDueDate(for: selectedMealType, on: selectedDate)
+            meal.updateTodoItemDueDate(
+                for: selectedMealType, on: selectedDate, currentUser: currentUser)
 
             modelContext!.insert(todoItem)
             modelContext!.insert(meal)
@@ -75,6 +82,7 @@ class AddMealViewModel: ObservableObject {
 
     @MainActor
     func cancel() {
+        modelContext?.rollback()
         dismiss!()
     }
 }

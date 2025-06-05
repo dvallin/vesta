@@ -3,12 +3,12 @@ import SwiftData
 class ModelContainerHelper {
     static func createModelContainer(isStoredInMemoryOnly: Bool) throws -> ModelContainer {
         let schema = Schema([
-            TodoItem.self,
-            TodoItemEvent.self,
-            TodoItemCategory.self,
-            Recipe.self,
             Meal.self,
+            Recipe.self,
             ShoppingListItem.self,
+            TodoItem.self,
+            TodoItemCategory.self,
+            User.self,
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: isStoredInMemoryOnly)

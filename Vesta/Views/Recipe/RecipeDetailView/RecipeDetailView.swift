@@ -4,6 +4,7 @@ import SwiftUI
 struct RecipeDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var auth: UserAuthService
     @StateObject private var viewModel: RecipeDetailViewModel
 
     @State private var ingredientName: String = ""
@@ -94,10 +95,16 @@ struct RecipeDetailView: View {
         }
         .toolbar {
             #if os(iOS)
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
+                        Task {
+                            viewModel.cancel()
+                        }
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
                         viewModel.save()
-                        dismiss()
                     }
                 }
             #endif
@@ -108,8 +115,19 @@ struct RecipeDetailView: View {
                 }
             }
         }
+        .alert(
+            NSLocalizedString("Validation Error", comment: "Validation error alert title"),
+            isPresented: $viewModel.showingValidationAlert
+        ) {
+            Button(
+                NSLocalizedString("OK", comment: "Validation error accept button"),
+                role: .cancel
+            ) {}
+        } message: {
+            Text(viewModel.validationMessage)
+        }
         .onAppear {
-            viewModel.configureEnvironment(modelContext)
+            viewModel.configureEnvironment(modelContext, dismiss, auth)
         }
     }
 
@@ -161,7 +179,7 @@ struct RecipeDetailView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
-        let recipe = Fixtures.createRecipe()
+        let recipe = Fixtures.bolognese()
         context.insert(recipe)
         return RecipeDetailView(recipe: recipe)
             .modelContainer(container)
