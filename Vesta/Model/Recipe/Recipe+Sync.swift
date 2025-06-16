@@ -5,7 +5,7 @@ extension Recipe {
     /// Converts the Recipe entity to a DTO (Data Transfer Object) for API syncing
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
-            "entityType": "TodoItem",
+            "entityType": "Recipe",
             "uid": uid,
             "ownerId": owner?.uid ?? "",
             "isShared": isShared,
