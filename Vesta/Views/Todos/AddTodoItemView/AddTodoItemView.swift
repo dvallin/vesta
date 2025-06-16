@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AddTodoItemView: View {
     @EnvironmentObject private var auth: UserAuthService
+    @EnvironmentObject private var syncService: SyncService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -98,7 +99,7 @@ struct AddTodoItemView: View {
             .navigationBarTitleDisplayMode(.inline)
         #endif
         .onAppear {
-            viewModel.configureEnvironment(modelContext, dismiss, auth)
+            viewModel.configureEnvironment(modelContext, dismiss, auth, syncService)
         }
     }
 }

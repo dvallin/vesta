@@ -6,6 +6,7 @@ class AddShoppingItemViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
+    private var syncService: SyncService?
 
     @Published var name: String = ""
     @Published var showQuantityField: Bool = false
@@ -13,12 +14,14 @@ class AddShoppingItemViewModel: ObservableObject {
     @Published var selectedUnit: Unit? = nil
 
     func configureEnvironment(
-        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService,
+        _ syncService: SyncService
     ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
         self.auth = auth
+        self.syncService = syncService
     }
 
     var isAddButtonDisabled: Bool {
@@ -69,6 +72,7 @@ class AddShoppingItemViewModel: ObservableObject {
 
         if saveContext() {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+            _ = syncService?.pushLocalChanges()
         }
 
         dismiss?()

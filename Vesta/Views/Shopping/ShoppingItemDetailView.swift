@@ -3,6 +3,7 @@ import SwiftUI
 struct ShoppingItemDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var auth: UserAuthService
+    @EnvironmentObject private var syncService: SyncService
     @Environment(\.dismiss) private var dismiss
 
     @State var item: ShoppingListItem
@@ -184,6 +185,7 @@ struct ShoppingItemDetailView: View {
 
         do {
             try modelContext.save()
+            _ = syncService.pushLocalChanges()
         } catch {}
     }
 }

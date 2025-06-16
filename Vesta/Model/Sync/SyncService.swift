@@ -185,29 +185,6 @@ class SyncService: ObservableObject {
         isSyncEnabled = false
     }
 
-    /// Manually sync a specific entity immediately
-    /// - Parameters:
-    ///   - entity: The entity to sync
-    ///   - currentUser: The current user making the change
-    /// - Returns: A publisher that completes when the sync is finished
-    func syncEntityImmediately<T: PersistentModel & SyncableEntity>(_ entity: T)
-        -> AnyPublisher<Void, SyncError>
-    {
-        // Mark as dirty first
-        entity.markAsDirty()
-
-        do {
-            try modelContext.save()
-        } catch {
-            self.logger.error(
-                "Failed to save entity before immediate sync: \(error.localizedDescription)")
-            return Fail(error: SyncError.unknown).eraseToAnyPublisher()
-        }
-
-        // Create a batch with just this entity
-        return syncBatch([entity]).eraseToAnyPublisher()
-    }
-
     // MARK: - Private methods
 
     /// Force a manual sync - pushes local changes to Firebase and then pulls any changes
@@ -246,7 +223,7 @@ class SyncService: ObservableObject {
     }
 
     /// Push local changes to the server
-    private func pushLocalChanges() -> AnyPublisher<Void, SyncError> {
+    func pushLocalChanges() -> AnyPublisher<Void, SyncError> {
         self.logger.info("Pushing local changes to Firebase")
 
         return Future { [weak self] promise in

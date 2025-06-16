@@ -32,6 +32,7 @@ class TodoListViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
     private var auth: UserAuthService?
+    private var syncService: SyncService?
 
     @Published var currentDay: Date = Date()
     @Published var toastMessages: [ToastMessage] = []
@@ -46,10 +47,14 @@ class TodoListViewModel: ObservableObject {
 
     @Published var isPresentingAddTodoItemView = false
 
-    func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
+    func configureContext(
+        _ context: ModelContext, _ auth: UserAuthService,
+        _ syncService: SyncService
+    ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.auth = auth
+        self.syncService = syncService
     }
 
     func fetchCategories() -> [TodoItemCategory] {
@@ -78,6 +83,7 @@ class TodoListViewModel: ObservableObject {
         item.markAsDone(currentUser: currentUser)
 
         if saveContext() {
+            _ = syncService?.pushLocalChanges()
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
 
             let id = UUID()
@@ -100,8 +106,9 @@ class TodoListViewModel: ObservableObject {
     func undoMarkAsDone(_ item: TodoItem, id: UUID) {
         guard let currentUser = auth?.currentUser else { return }
         item.setIsCompleted(isCompleted: false, currentUser: currentUser)
-    
+
         if saveContext() {
+            _ = syncService?.pushLocalChanges()
             NotificationManager.shared.scheduleNotification(for: item)
 
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
@@ -148,6 +155,7 @@ class TodoListViewModel: ObservableObject {
         }
 
         if saveContext() {
+            _ = syncService?.pushLocalChanges()
             filterMode = .today
 
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)

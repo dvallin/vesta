@@ -6,6 +6,7 @@ class TodoItemDetailViewModel: ObservableObject {
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
     private var auth: UserAuthService?
+    private var syncService: SyncService?
 
     @Published var item: TodoItem
 
@@ -42,12 +43,14 @@ class TodoItemDetailViewModel: ObservableObject {
     }
 
     func configureEnvironment(
-        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService,
+        _ syncService: SyncService
     ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
         self.auth = auth
+        self.syncService = syncService
     }
 
     var isDirty: Bool {
@@ -129,6 +132,8 @@ class TodoItemDetailViewModel: ObservableObject {
         isSaving = true
         do {
             try modelContext.save()
+
+            _ = syncService?.pushLocalChanges()
 
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
             dismiss!()

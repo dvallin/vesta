@@ -4,6 +4,7 @@ import SwiftUI
 class ShoppingListViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var auth: UserAuthService?
+    private var syncService: SyncService?
 
     @Published var toastMessages: [ToastMessage] = []
 
@@ -19,9 +20,13 @@ class ShoppingListViewModel: ObservableObject {
         self.showPurchased = showPurchased
     }
 
-    func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
+    func configureContext(
+        _ context: ModelContext, _ auth: UserAuthService,
+        _ syncService: SyncService
+    ) {
         self.modelContext = context
         self.auth = auth
+        self.syncService = syncService
     }
 
     func saveContext() -> Bool {
@@ -37,10 +42,12 @@ class ShoppingListViewModel: ObservableObject {
         _ item: ShoppingListItem, undoAction: @escaping (ShoppingListItem, UUID) -> Void
     ) {
         guard let currentUser = auth?.currentUser else { return }
-        item.todoItem?.markAsDone(currentUser: currentUser)
+        guard let todoItem = item.todoItem else { return }
+        todoItem.markAsDone(currentUser: currentUser)
 
         if saveContext() {
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+            _ = syncService?.pushLocalChanges()
 
             let id = UUID()
             let toastMessage = ToastMessage(
@@ -65,9 +72,12 @@ class ShoppingListViewModel: ObservableObject {
 
     func undoTogglePurchased(_ item: ShoppingListItem, id: UUID) {
         guard let currentUser = auth?.currentUser else { return }
-        item.todoItem?.setIsCompleted(isCompleted: false, currentUser: currentUser)
+        guard let todoItem = item.todoItem else { return }
+        
+        todoItem.setIsCompleted(isCompleted: false, currentUser: currentUser)
         if saveContext() {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+            _ = syncService?.pushLocalChanges()
             toastMessages.removeAll { $0.id == id }
         }
     }

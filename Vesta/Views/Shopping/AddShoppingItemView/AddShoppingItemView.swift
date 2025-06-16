@@ -3,6 +3,7 @@ import SwiftUI
 
 struct AddShoppingItemView: View {
     @EnvironmentObject private var auth: UserAuthService
+    @EnvironmentObject private var syncService: SyncService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -93,7 +94,7 @@ struct AddShoppingItemView: View {
         .presentationDetents([.medium, .large])
         .onAppear {
             focusedField = .name
-            viewModel.configureEnvironment(modelContext, dismiss, auth)
+            viewModel.configureEnvironment(modelContext, dismiss, auth, syncService)
         }
     }
 }

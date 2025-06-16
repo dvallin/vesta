@@ -3,6 +3,7 @@ import SwiftUI
 
 struct TodoListView: View {
     @EnvironmentObject private var auth: UserAuthService
+    @EnvironmentObject private var syncService: SyncService
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
 
@@ -29,7 +30,7 @@ struct TodoListView: View {
         }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
-            viewModel.configureContext(modelContext, auth)
+            viewModel.configureContext(modelContext, auth, syncService)
             viewModel.reset()
         }
         .onChange(of: scenePhase) { newPhase, _ in

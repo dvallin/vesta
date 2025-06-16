@@ -5,11 +5,16 @@ class ShoppingListGeneratorViewModel: ObservableObject {
     private var auth: UserAuthService?
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
+    private var syncService: SyncService?
 
-    func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
+    func configureContext(
+        _ context: ModelContext, _ auth: UserAuthService,
+        _ syncService: SyncService
+    ) {
         self.modelContext = context
         self.auth = auth
         self.categoryService = TodoItemCategoryService(modelContext: context)
+        self.syncService = syncService
     }
 
     struct IngredientSelection: Identifiable {
@@ -96,6 +101,7 @@ class ShoppingListGeneratorViewModel: ObservableObject {
         }
         do {
             try modelContext.save()
+            _ = syncService?.pushLocalChanges()
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
         } catch {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)

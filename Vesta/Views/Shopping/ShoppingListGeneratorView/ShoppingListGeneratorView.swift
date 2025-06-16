@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ShoppingListGeneratorView: View {
     @EnvironmentObject private var auth: UserAuthService
+    @EnvironmentObject private var syncService: SyncService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -37,7 +38,7 @@ struct ShoppingListGeneratorView: View {
             }
         }
         .onAppear {
-            viewModel.configureContext(modelContext, auth)
+            viewModel.configureContext(modelContext, auth, syncService)
             viewModel.prepareMealsForShoppingList(meals)
         }
     }
