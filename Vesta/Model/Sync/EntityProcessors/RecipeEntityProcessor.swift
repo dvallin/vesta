@@ -95,8 +95,7 @@ class RecipeEntityProcessor: BaseEntityProcessor, EntityProcessor {
                 // Remove meals that are no longer associated with this recipe
                 let initialCount = recipe.meals.count
                 recipe.meals.removeAll { meal in
-                    guard let mealUid = meal.uid else { return false }
-                    return !mealIds.contains(mealUid)
+                    return !mealIds.contains(meal.uid)
                 }
                 let removedCount = initialCount - recipe.meals.count
                 if removedCount > 0 {

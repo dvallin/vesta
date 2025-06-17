@@ -141,8 +141,7 @@ class MealEntityProcessor: BaseEntityProcessor, EntityProcessor {
                 // Remove items that are no longer associated with this meal
                 let initialCount = meal.shoppingListItems.count
                 meal.shoppingListItems.removeAll { item in
-                    guard let itemUid = item.uid else { return false }
-                    return !shoppingItemIds.contains(itemUid)
+                    return !shoppingItemIds.contains(item.uid)
                 }
                 let removedCount = initialCount - meal.shoppingListItems.count
                 if removedCount > 0 {

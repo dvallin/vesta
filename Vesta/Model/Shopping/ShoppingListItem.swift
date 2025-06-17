@@ -3,7 +3,7 @@ import SwiftData
 
 @Model
 class ShoppingListItem: SyncableEntity {
-    @Attribute(.unique) var uid: String?
+    @Attribute(.unique) var uid: String
 
     var name: String
     var quantity: Double?

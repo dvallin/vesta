@@ -69,10 +69,9 @@ class UserEntityProcessor: BaseEntityProcessor, EntityProcessor {
 
                 // Remove friends that are no longer in the friend list
                 user.friends.removeAll { friend in
-                    guard let friendUid = friend.uid else { return false }
-                    let shouldRemove = !friendIds.contains(friendUid)
+                    let shouldRemove = !friendIds.contains(friend.uid)
                     if shouldRemove {
-                        self.logger.debug("Removing friend with UID \(friendUid) from user \(uid)")
+                        self.logger.debug("Removing friend with UID \(friend.uid) from user \(uid)")
                     }
                     return shouldRemove
                 }

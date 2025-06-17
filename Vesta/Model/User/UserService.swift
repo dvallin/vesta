@@ -23,13 +23,8 @@ class UserService {
 
     /// Fetch multiple users by their unique identifiers
     func fetchMany(withUIDs uids: [String]) throws -> [User] {
-        // Fetch all users first
-        let allUsers = try fetchAll()
-
-        // Then filter in memory to avoid unsupported predicate
-        return allUsers.filter { user in
-            guard let uid = user.uid else { return false }
-            return uids.contains(uid)
-        }
+        let descriptor = FetchDescriptor<User>(
+            predicate: #Predicate<User> { uids.contains($0.uid) })
+        return try modelContext.fetch(descriptor)
     }
 }

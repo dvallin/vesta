@@ -27,12 +27,6 @@ class UserInviteService: ObservableObject {
         from currentUser: User, to recipient: UserSearchResult,
         completion: @escaping (Bool) -> Void
     ) {
-        guard let currentUserId = currentUser.uid else {
-            logger.error("Cannot send invite: current user has no UID")
-            completion(false)
-            return
-        }
-
         isLoading = true
         errorMessage = nil
 
@@ -40,7 +34,7 @@ class UserInviteService: ObservableObject {
         let invite = Invite(
             uid: UUID().uuidString,
             createdAt: Date(),
-            senderUid: currentUserId,
+            senderUid: currentUser.uid,
             recipientUid: recipient.uid,
             senderEmail: currentUser.email,
             senderDisplayName: currentUser.displayName,

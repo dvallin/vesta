@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 protocol SyncableEntity: AnyObject {
-    var uid: String? { get set }
+    var uid: String { get set }
     var owner: User? { get set }
     var isShared: Bool { get set }
     var dirty: Bool { get set }

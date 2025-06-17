@@ -109,14 +109,14 @@ class SyncService: ObservableObject {
 
     /// Set up real-time subscription to Firebase updates
     private func setupRealTimeSubscription() {
-        guard let currentUser = auth.currentUser, let userId = currentUser.uid else {
+        guard let currentUser = auth.currentUser else {
             self.logger.error("Cannot subscribe to updates: User not authenticated")
             return
         }
 
-        self.logger.info("Setting up real-time subscription for user: \(userId)")
+        self.logger.info("Setting up real-time subscription for user: \(currentUser.uid)")
 
-        realTimeSubscription = apiClient.subscribeToEntityUpdates(for: userId) {
+        realTimeSubscription = apiClient.subscribeToEntityUpdates(for: currentUser.uid) {
             [weak self] entityData in
             guard let self = self else { return }
 
@@ -385,15 +385,14 @@ class SyncService: ObservableObject {
             }
 
             // Check if user is authenticated
-            guard let currentUser = self.auth.currentUser,
-                let userId = currentUser.uid
+            guard let currentUser = self.auth.currentUser
             else {
                 self.self.logger.error("Cannot pull changes: User not authenticated")
                 promise(.failure(.notAuthenticated))
                 return
             }
 
-            self.apiClient.fetchUpdatedEntities(userId: userId)
+            self.apiClient.fetchUpdatedEntities(userId: currentUser.uid)
                 .sink(
                     receiveCompletion: { completion in
                         switch completion {

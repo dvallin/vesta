@@ -3,7 +3,7 @@ import SwiftData
 
 @Model
 class Recipe: SyncableEntity {
-    @Attribute(.unique) var uid: String?
+    @Attribute(.unique) var uid: String
 
     var title: String
     var details: String

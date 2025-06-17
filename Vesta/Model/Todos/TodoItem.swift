@@ -34,7 +34,7 @@ enum RecurrenceType: String, Codable, CaseIterable {
 
 @Model
 class TodoItem: SyncableEntity {
-    @Attribute(.unique) var uid: String?
+    @Attribute(.unique) var uid: String
 
     var title: String
     var details: String

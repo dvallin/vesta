@@ -28,8 +28,7 @@ class MealService {
 
         // Then filter in memory to avoid unsupported predicate
         return allMeals.filter { meal in
-            guard let uid = meal.uid else { return false }
-            return uids.contains(uid)
+            return uids.contains(meal.uid)
         }
     }
 

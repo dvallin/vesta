@@ -100,7 +100,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
             "uid": todoUID,
             "title": "Owned Todo",
             "details": "This todo has an owner",
-            "ownerId": owner.uid!,
+            "ownerId": owner.uid,
         ]
 
         // When we process the entity
@@ -127,19 +127,19 @@ class TodoItemEntityProcessorTests: XCTestCase {
 
         // And updated entity data
         let updatedData: [String: Any] = [
-            "uid": todoItem.uid!,
+            "uid": todoItem.uid,
             "title": "Updated Title",
             "details": "Updated Details",
             "isCompleted": true,
             "priority": 1,
-            "ownerId": currentUser.uid!,
+            "ownerId": currentUser.uid,
         ]
 
         // When we process the entity
         try await processor.process(entities: [updatedData], currentUser: currentUser)
 
         // Then the todo item should be updated
-        let updatedTodo = try todoItemService.fetchUnique(withUID: todoItem.uid!)
+        let updatedTodo = try todoItemService.fetchUnique(withUID: todoItem.uid)
         XCTAssertNotNil(updatedTodo)
         XCTAssertEqual(updatedTodo?.title, "Updated Title")
         XCTAssertEqual(updatedTodo?.details, "Updated Details")
@@ -188,7 +188,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
             "uid": todoUID,
             "title": "Meal Todo",
             "details": "This todo is linked to a meal",
-            "mealId": meal.uid!,
+            "mealId": meal.uid,
         ]
 
         // When we process the entity
@@ -213,7 +213,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
             "uid": todoUID,
             "title": "Shopping Todo",
             "details": "This todo is linked to a shopping item",
-            "shoppingListItemId": shoppingItem.uid!,
+            "shoppingListItemId": shoppingItem.uid,
         ]
 
         // When we process the entity
@@ -281,7 +281,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
 
         // And updated entity data without relationships
         let updatedData: [String: Any] = [
-            "uid": todoItem.uid!,
+            "uid": todoItem.uid,
             "title": "Todo without Relationships",
             "details": "All relationships have been removed",
         ]
@@ -290,7 +290,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         try await processor.process(entities: [updatedData], currentUser: currentUser)
 
         // Then the todo item should have all relationships removed
-        let updatedTodo = try todoItemService.fetchUnique(withUID: todoItem.uid!)
+        let updatedTodo = try todoItemService.fetchUnique(withUID: todoItem.uid)
         XCTAssertNotNil(updatedTodo)
         XCTAssertNil(updatedTodo?.owner)
         XCTAssertNil(updatedTodo?.meal)
@@ -346,7 +346,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
 
         // And updated entity data with a different category
         let updatedData: [String: Any] = [
-            "uid": todoItem.uid!,
+            "uid": todoItem.uid,
             "title": "Categorized Todo",
             "details": "Has a category",
             "categoryName": "New Category",
@@ -356,7 +356,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         try await processor.process(entities: [updatedData], currentUser: currentUser)
 
         // Then the todo item should have the new category
-        let updatedTodo = try todoItemService.fetchUnique(withUID: todoItem.uid!)
+        let updatedTodo = try todoItemService.fetchUnique(withUID: todoItem.uid)
         XCTAssertNotNil(updatedTodo)
         XCTAssertEqual(updatedTodo?.category?.name, "New Category")
 

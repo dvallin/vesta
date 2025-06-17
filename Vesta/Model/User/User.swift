@@ -3,7 +3,7 @@ import SwiftData
 
 @Model
 class User: SyncableEntity {
-    @Attribute(.unique) var uid: String?
+    @Attribute(.unique) var uid: String
 
     var email: String?
     var displayName: String?

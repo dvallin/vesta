@@ -32,12 +32,7 @@ class EntitySharingService: ObservableObject {
     /// - Returns: The number of entities that were updated
     @discardableResult
     func updateEntitySharingStatus(for user: User) -> Int {
-        guard let userId = user.uid else {
-            logger.error("Cannot update sharing status: User has no UID")
-            return 0
-        }
-
-        logger.info("Updating sharing status for entities owned by user: \(userId)")
+        logger.info("Updating sharing status for entities owned by user: \(user.uid)")
 
         var updatedCount = 0
 
@@ -47,17 +42,17 @@ class EntitySharingService: ObservableObject {
         let todoCategoriesToShare = Set(user.shareTodoItemCategories.compactMap { $0.id })
 
         // Update meals
-        updatedCount += updateMealSharing(ownerId: userId, isShared: shareMeals)
+        updatedCount += updateMealSharing(ownerId: user.uid, isShared: shareMeals)
 
         // Update recipes
-        updatedCount += updateRecipeSharing(ownerId: userId, isShared: shareMeals)
+        updatedCount += updateRecipeSharing(ownerId: user.uid, isShared: shareMeals)
 
         // Update shopping list items
-        updatedCount += updateShoppingItemSharing(ownerId: userId, isShared: shareShoppingItems)
+        updatedCount += updateShoppingItemSharing(ownerId: user.uid, isShared: shareShoppingItems)
 
         // Update todo items by category
         updatedCount += updateTodoItemSharing(
-            ownerId: userId, categoriesToShare: todoCategoriesToShare, shareMeals: shareMeals,
+            ownerId: user.uid, categoriesToShare: todoCategoriesToShare, shareMeals: shareMeals,
             shareShoppingItems: shareShoppingItems)
 
         // Save changes
