@@ -183,3 +183,46 @@
 "Today" = "Oggi";
 "Meals" = "Pasti";
 "Shopping" = "Spesa";
+
+// User Profile
+"Profile" = "Profilo";
+"Not signed in" = "Non hai effettuato l'accesso";
+"Friends" = "Amici";
+"No friends added yet" = "Nessun amico aggiunto";
+"Sharing Preferences" = "Preferenze di condivisione";
+"Share Meal Plans" = "Condividi piani pasto";
+"Share Shopping List" = "Condividi lista della spesa";
+"Share Todo Categories" = "Condividi categorie attività";
+"No categories available" = "Nessuna categoria disponibile";
+"Default display name" = "Nessun nome";
+"Default friend display name" = "Nessun nome";
+
+// Friend Management
+"Add Friend" = "Aggiungi amico";
+"Invites" = "Inviti";
+"Enter email or username to find friends" = "Inserisci email o nome utente per trovare amici";
+"Email or username" = "Email o nome utente";
+"No Results" = "Nessun risultato";
+"No users found with that email or username" = "Nessun utente trovato con questa email o nome utente";
+"Search for Friends" = "Cerca amici";
+"Enter an email or username to find friends" = "Inserisci un'email o un nome utente per trovare amici";
+"Invite Sent" = "Invito inviato";
+"Your invite has been sent successfully" = "Il tuo invito è stato inviato con successo";
+"You need to be logged in to send invites" = "Devi effettuare l'accesso per inviare inviti";
+"Invite service not available" = "Servizio inviti non disponibile";
+"This user is already in your friends list" = "Questo utente è già nella tua lista di amici";
+"You've already sent an invite to this user" = "Hai già inviato un invito a questo utente";
+"Failed to send invite" = "Invio invito fallito";
+"Error searching users" = "Errore nella ricerca di utenti";
+
+// Invites View
+"Received" = "Ricevuti";
+"Sent" = "Inviati";
+"No Invites" = "Nessun invito";
+"You don't have any received invites" = "Non hai ricevuto inviti";
+"You haven't sent any invites" = "Non hai inviato alcun invito";
+"Sent %@" = "Inviato %@";
+"Failed to accept invite" = "Impossibile accettare l'invito";
+"Failed to decline invite" = "Impossibile rifiutare l'invito";
+"Error" = "Errore";
+"Only Today" = "Solo oggi";

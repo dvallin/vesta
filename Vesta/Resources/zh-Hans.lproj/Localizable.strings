@@ -183,3 +183,46 @@
 "Today" = "今天";
 "Meals" = "餐食";
 "Shopping" = "购物";
+
+// User Profile
+"Profile" = "个人资料";
+"Not signed in" = "未登录";
+"Friends" = "好友";
+"No friends added yet" = "尚未添加好友";
+"Sharing Preferences" = "共享设置";
+"Share Meal Plans" = "共享膳食计划";
+"Share Shopping List" = "共享购物清单";
+"Share Todo Categories" = "共享待办类别";
+"No categories available" = "没有可用类别";
+"Default display name" = "无名称";
+"Default friend display name" = "无名称";
+
+// Friend Management
+"Add Friend" = "添加好友";
+"Invites" = "邀请";
+"Enter email or username to find friends" = "输入电子邮件或用户名查找好友";
+"Email or username" = "电子邮件或用户名";
+"No Results" = "无结果";
+"No users found with that email or username" = "未找到使用该电子邮件或用户名的用户";
+"Search for Friends" = "查找好友";
+"Enter an email or username to find friends" = "输入电子邮件或用户名查找好友";
+"Invite Sent" = "邀请已发送";
+"Your invite has been sent successfully" = "您的邀请已成功发送";
+"You need to be logged in to send invites" = "您需要登录才能发送邀请";
+"Invite service not available" = "邀请服务不可用";
+"This user is already in your friends list" = "该用户已在您的好友列表中";
+"You've already sent an invite to this user" = "您已向该用户发送过邀请";
+"Failed to send invite" = "发送邀请失败";
+"Error searching users" = "搜索用户时出错";
+
+// Invites View
+"Received" = "已接收";
+"Sent" = "已发送";
+"No Invites" = "无邀请";
+"You don't have any received invites" = "您没有收到任何邀请";
+"You haven't sent any invites" = "您尚未发送任何邀请";
+"Sent %@" = "发送于 %@";
+"Failed to accept invite" = "接受邀请失败";
+"Failed to decline invite" = "拒绝邀请失败";
+"Error" = "错误";
+"Only Today" = "仅今天";

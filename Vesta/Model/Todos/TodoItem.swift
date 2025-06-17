@@ -33,7 +33,9 @@ enum RecurrenceType: String, Codable, CaseIterable {
 }
 
 @Model
-class TodoItem {
+class TodoItem: SyncableEntity {
+    @Attribute(.unique) var uid: String
+
     var title: String
     var details: String
     var dueDate: Date?
@@ -44,16 +46,19 @@ class TodoItem {
     var ignoreTimeComponent: Bool
     var priority: Int
 
-    @Relationship(deleteRule: .cascade)
-    var events: [TodoItemEvent]
+    var isShared: Bool = false
+    var dirty: Bool = true
 
-    @Relationship(inverse: \Meal.todoItem)
+    @Relationship(deleteRule: .noAction)
+    var owner: User?
+
+    @Relationship
     var meal: Meal?
 
-    @Relationship(inverse: \ShoppingListItem.todoItem)
+    @Relationship
     var shoppingListItem: ShoppingListItem?
 
-    @Relationship()
+    @Relationship
     var category: TodoItemCategory?
 
     init(
@@ -66,11 +71,12 @@ class TodoItem {
         recurrenceInterval: Int? = nil,
         ignoreTimeComponent: Bool = true,
         priority: Int = 4,
-        events: [TodoItemEvent] = [],
         meal: Meal? = nil,
         shoppingListItem: ShoppingListItem? = nil,
-        category: TodoItemCategory? = nil
+        category: TodoItemCategory? = nil,
+        owner: User?
     ) {
+        self.uid = UUID().uuidString
         self.title = title
         self.details = details
         self.dueDate = dueDate
@@ -82,8 +88,8 @@ class TodoItem {
         self.priority = priority
         self.meal = meal
         self.shoppingListItem = shoppingListItem
-        self.events = events
         self.category = category
+        self.owner = owner
     }
 
     static func create(
@@ -94,23 +100,17 @@ class TodoItem {
         recurrenceInterval: Int? = nil,
         ignoreTimeComponent: Bool = true,
         priority: Int = 4,
-        events: [TodoItemEvent] = [],
         meal: Meal? = nil,
         shoppingListItem: ShoppingListItem? = nil,
-        category: TodoItemCategory? = nil
+        category: TodoItemCategory? = nil,
+        owner: User
     ) -> TodoItem {
         let item = TodoItem(
             title: title, details: details, dueDate: dueDate,
             recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType,
             recurrenceInterval: recurrenceInterval, ignoreTimeComponent: ignoreTimeComponent,
-            priority: priority, category: category)
-        item.recordCreationEvent()
+            priority: priority, category: category, owner: owner)
         return item
-    }
-
-    func recordCreationEvent() {
-        let event = TodoItemEvent(type: .created, date: Date(), todoItem: self)
-        self.events.append(event)
     }
 
     var isToday: Bool {
@@ -136,67 +136,63 @@ class TodoItem {
         return self.isOverdue && !self.isToday
     }
 
-    func markAsDone() {
-        let event = createEvent(
-            type: .markAsDone, previousDueDate: dueDate, previousIsCompleted: isCompleted)
-
+    func markAsDone(currentUser: User) {
+        let now = Date()
         if let frequency = recurrenceFrequency {
-            let baseDate = recurrenceType == .fixed ? (dueDate ?? event.date) : event.date
+            let baseDate = recurrenceType == .fixed ? (dueDate ?? now) : now
             let baseDateWithTime = DateUtils.preserveTime(from: dueDate, applying: baseDate)
-            updateDueDate(for: frequency, basedOn: baseDateWithTime ?? baseDate)
+            updateDueDate(
+                for: frequency, basedOn: baseDateWithTime ?? baseDate, currentUser: currentUser)
         } else {
             isCompleted.toggle()
         }
 
         NotificationManager.shared.scheduleNotification(for: self)
+        self.markAsDirty()
     }
 
-    func setDetails(details: String) {
-        let _ = createEvent(type: .editDetails, previousDetails: self.details)
+    func setDetails(details: String, currentUser: User) {
         self.details = details
+        self.markAsDirty()
     }
 
-    func setTitle(title: String) {
-        let _ = createEvent(type: .editTitle, previousTitle: self.title)
+    func setTitle(title: String, currentUser: User) {
         self.title = title
+        self.markAsDirty()
     }
 
-    func setDueDate(dueDate: Date?) {
-        let _ = createEvent(type: .editDueDate, previousDueDate: self.dueDate)
+    func setDueDate(dueDate: Date?, currentUser: User) {
         self.dueDate = dueDate
 
         NotificationManager.shared.scheduleNotification(for: self)
+        self.markAsDirty()
     }
 
-    func setIsCompleted(isCompleted: Bool) {
-        let _ = createEvent(type: .editIsCompleted, previousIsCompleted: self.isCompleted)
+    func setIsCompleted(isCompleted: Bool, currentUser: User) {
         self.isCompleted = isCompleted
 
         NotificationManager.shared.scheduleNotification(for: self)
+        self.markAsDirty()
     }
 
     func setRecurrenceFrequency(
-        recurrenceFrequency: RecurrenceFrequency?
+        recurrenceFrequency: RecurrenceFrequency?, currentUser: User
     ) {
-        let _ = createEvent(
-            type: .editRecurrenceFrequency, previousRecurrenceFrequency: self.recurrenceFrequency)
         self.recurrenceFrequency = recurrenceFrequency
+        self.markAsDirty()
     }
 
-    func setRecurrenceInterval(recurrenceInterval: Int?) {
-        let _ = createEvent(
-            type: .editRecurrenceInterval, previousRecurrenceInterval: self.recurrenceInterval)
+    func setRecurrenceInterval(recurrenceInterval: Int?, currentUser: User) {
         self.recurrenceInterval = recurrenceInterval
+        self.markAsDirty()
     }
 
-    func setRecurrenceType(recurrenceType: RecurrenceType?) {
-        let _ = createEvent(type: .editRecurrenceType, previousRecurrenceType: self.recurrenceType)
+    func setRecurrenceType(recurrenceType: RecurrenceType?, currentUser: User) {
         self.recurrenceType = recurrenceType
+        self.markAsDirty()
     }
 
-    func setIgnoreTimeComponent(ignoreTimeComponent: Bool) {
-        let _ = createEvent(
-            type: .editIgnoreTimeComponent, previousIgnoreTimeComponent: self.ignoreTimeComponent)
+    func setIgnoreTimeComponent(ignoreTimeComponent: Bool, currentUser: User) {
         self.ignoreTimeComponent = ignoreTimeComponent
 
         if ignoreTimeComponent, let dueDate = self.dueDate {
@@ -205,55 +201,22 @@ class TodoItem {
 
         // Reschedule notification with new time component setting
         NotificationManager.shared.scheduleNotification(for: self)
+        self.markAsDirty()
     }
 
-    func setPriority(priority: Int) {
-        let _ = createEvent(type: .editPriority, previousPriority: self.priority)
+    func setPriority(priority: Int, currentUser: User) {
         self.priority = priority
+        self.markAsDirty()
     }
 
-    func setCategory(category: TodoItemCategory?) {
-        let _ = createEvent(type: .editCategory, previousCategory: self.category?.name)
+    func setCategory(category: TodoItemCategory?, currentUser: User) {
         self.category = category
+        self.markAsDirty()
     }
 
-    func undoLastEvent() -> TodoItemEvent? {
-        guard let lastEvent = events.popLast() else { return nil }
-
-        switch lastEvent.type {
-        case .markAsDone:
-            self.isCompleted = lastEvent.previousIsCompleted ?? self.isCompleted
-            self.dueDate = lastEvent.previousDueDate
-        case .editTitle:
-            self.title = lastEvent.previousTitle ?? self.title
-        case .editDetails:
-            self.details = lastEvent.previousDetails ?? self.details
-        case .editIsCompleted:
-            self.isCompleted = lastEvent.previousIsCompleted ?? self.isCompleted
-        case .editDueDate:
-            self.dueDate = lastEvent.previousDueDate
-        case .editRecurrenceFrequency:
-            self.recurrenceFrequency = lastEvent.previousRecurrenceFrequency
-        case .editRecurrenceType:
-            self.recurrenceType = lastEvent.previousRecurrenceType
-        case .editRecurrenceInterval:
-            self.recurrenceInterval = lastEvent.previousRecurrenceInterval
-        case .editIgnoreTimeComponent:
-            self.ignoreTimeComponent =
-                lastEvent.previousIgnoreTimeComponent ?? self.ignoreTimeComponent
-        case .editPriority:
-            self.priority = lastEvent.previousPriority ?? self.priority
-        case .editCategory:
-            // TODO: somehow fetch the category by name or create it.
-            self.category = self.category
-        case .created:
-            break
-        }
-
-        return lastEvent
-    }
-
-    private func updateDueDate(for frequency: RecurrenceFrequency, basedOn baseDate: Date) {
+    private func updateDueDate(
+        for frequency: RecurrenceFrequency, basedOn baseDate: Date, currentUser: User
+    ) {
         let calendar = Calendar.current
         let interval = recurrenceInterval ?? 1
 
@@ -271,37 +234,7 @@ class TodoItem {
         if ignoreTimeComponent, let dueDate = dueDate {
             self.dueDate = DateUtils.calendar.startOfDay(for: dueDate)
         }
-    }
 
-    private func createEvent(
-        type: TodoItemEventType,
-        previousTitle: String? = nil,
-        previousDetails: String? = nil,
-        previousDueDate: Date? = nil,
-        previousIsCompleted: Bool? = nil,
-        previousRecurrenceFrequency: RecurrenceFrequency? = nil,
-        previousRecurrenceType: RecurrenceType? = nil,
-        previousRecurrenceInterval: Int? = nil,
-        previousIgnoreTimeComponent: Bool? = nil,
-        previousPriority: Int? = nil,
-        previousCategory: String? = nil
-    ) -> TodoItemEvent {
-        let event = TodoItemEvent(
-            type: type,
-            date: Date(),
-            todoItem: self,
-            previousTitle: previousTitle,
-            previousDetails: previousDetails,
-            previousDueDate: previousDueDate,
-            previousIsCompleted: previousIsCompleted,
-            previousRecurrenceFrequency: previousRecurrenceFrequency,
-            previousRecurrenceType: previousRecurrenceType,
-            previousRecurrenceInterval: previousRecurrenceInterval,
-            previousIgnoreTimeComponent: previousIgnoreTimeComponent,
-            previousPriority: previousPriority,
-            previousCategory: previousCategory
-        )
-        events.append(event)
-        return event
+        self.markAsDirty()
     }
 }

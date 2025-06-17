@@ -2,6 +2,8 @@ import SwiftData
 import SwiftUI
 
 struct TodoListView: View {
+    @EnvironmentObject private var auth: UserAuthService
+    @EnvironmentObject private var syncService: SyncService
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
 
@@ -26,12 +28,9 @@ struct TodoListView: View {
                     ? DateUtils.calendar.startOfDay(for: Date()) : nil
             )
         }
-        .sheet(isPresented: $viewModel.isPresentingTodoEventsView) {
-            TodoEventsView()
-        }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
-            viewModel.configureContext(modelContext)
+            viewModel.configureContext(modelContext, auth, syncService)
             viewModel.reset()
         }
         .onChange(of: scenePhase) { newPhase, _ in
@@ -50,15 +49,23 @@ struct TodoListView: View {
         let d = Date()
         // Sample items with different dates and titles
         let todoItems = [
-            TodoItem(title: "Z Task", details: "Details", dueDate: nil),
-            TodoItem(title: "A Task", details: "Details", dueDate: d.addingTimeInterval(3600)),
-            TodoItem(title: "B Task", details: "Details", dueDate: d.addingTimeInterval(3600)),
+            TodoItem(
+                title: "Z Task", details: "Details", dueDate: nil,
+                owner: Fixtures.createUser()),
+            TodoItem(
+                title: "A Task", details: "Details", dueDate: d.addingTimeInterval(3600),
+                owner: Fixtures.createUser()),
+            TodoItem(
+                title: "B Task", details: "Details", dueDate: d.addingTimeInterval(3600),
+                owner: Fixtures.createUser()),
             TodoItem(
                 title: "D Task", details: "Details", dueDate: d.addingTimeInterval(3600),
-                priority: 2),
+                priority: 2, owner: Fixtures.createUser()),
             TodoItem(
-                title: "B Task", details: "Details", dueDate: d.addingTimeInterval(-24 * 3600)),
-            TodoItem(title: "C Task", details: "Details", dueDate: nil),
+                title: "B Task", details: "Details", dueDate: d.addingTimeInterval(-24 * 3600),
+                owner: Fixtures.createUser()),
+            TodoItem(
+                title: "C Task", details: "Details", dueDate: nil, owner: Fixtures.createUser()),
         ]
 
         for item in todoItems {

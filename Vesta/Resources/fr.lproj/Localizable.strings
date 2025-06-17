@@ -173,6 +173,7 @@
 "Filter Criteria" = "Critères de filtrage";
 "Show Completed Items" = "Afficher les éléments terminés";
 "Today" = "Aujourd'hui";
+"Only Today" = "Seulement aujourd'hui";
 "This Week" = "Cette semaine";
 "No Due Date" = "Sans échéance";
 "Overdue" = "En retard";
@@ -184,3 +185,45 @@
 "Today" = "Aujourd'hui";
 "Meals" = "Repas";
 "Shopping" = "Courses";
+
+// User Profile
+"Profile" = "Profil";
+"Not signed in" = "Non connecté";
+"Friends" = "Amis";
+"No friends added yet" = "Aucun ami ajouté";
+"Sharing Preferences" = "Préférences de partage";
+"Share Meal Plans" = "Partager les plans de repas";
+"Share Shopping List" = "Partager la liste de courses";
+"Share Todo Categories" = "Partager les catégories de tâches";
+"No categories available" = "Aucune catégorie disponible";
+"Default display name" = "Sans nom";
+"Default friend display name" = "Sans nom";
+
+// Friend Management
+"Add Friend" = "Ajouter un ami";
+"Invites" = "Invitations";
+"Enter email or username to find friends" = "Entrez un email ou nom d'utilisateur pour trouver des amis";
+"Email or username" = "Email ou nom d'utilisateur";
+"No Results" = "Aucun résultat";
+"No users found with that email or username" = "Aucun utilisateur trouvé avec cet email ou nom d'utilisateur";
+"Search for Friends" = "Rechercher des amis";
+"Enter an email or username to find friends" = "Entrez un email ou nom d'utilisateur pour trouver des amis";
+"Invite Sent" = "Invitation envoyée";
+"Your invite has been sent successfully" = "Votre invitation a été envoyée avec succès";
+"You need to be logged in to send invites" = "Vous devez être connecté pour envoyer des invitations";
+"Invite service not available" = "Service d'invitation non disponible";
+"This user is already in your friends list" = "Cet utilisateur est déjà dans votre liste d'amis";
+"You've already sent an invite to this user" = "Vous avez déjà envoyé une invitation à cet utilisateur";
+"Failed to send invite" = "Échec de l'envoi de l'invitation";
+"Error searching users" = "Erreur lors de la recherche d'utilisateurs";
+
+// Invites View
+"Received" = "Reçues";
+"Sent" = "Envoyées";
+"No Invites" = "Aucune invitation";
+"You don't have any received invites" = "Vous n'avez aucune invitation reçue";
+"You haven't sent any invites" = "Vous n'avez envoyé aucune invitation";
+"Sent %@" = "Envoyé %@";
+"Failed to accept invite" = "Échec de l'acceptation de l'invitation";
+"Failed to decline invite" = "Échec du refus de l'invitation";
+"Error" = "Erreur";

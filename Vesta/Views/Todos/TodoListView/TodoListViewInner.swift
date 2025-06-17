@@ -37,16 +37,6 @@ struct TodoListViewInner: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .frame(maxWidth: 200)
             }
-            #if os(iOS)
-                ToolbarItem(placement: .automatic) {
-                    Button(action: {
-                        viewModel.isPresentingTodoEventsView = true
-                        HapticFeedbackManager.shared.generateSelectionFeedback()
-                    }) {
-                        Image(systemName: "clock.arrow.circlepath")
-                    }
-                }
-            #endif
         }
     }
 }

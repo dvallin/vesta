@@ -172,6 +172,7 @@
 "Filter Mode" = "Filter Mode";
 "Filter Criteria" = "Filter Criteria";
 "Today" = "Today";
+"Only Today" = "Only Today";
 "This Week" = "This Week";
 "No Due Date" = "No Due Date";
 "Overdue" = "Overdue";
@@ -183,3 +184,46 @@
 "Today" = "Today";
 "Meals" = "Meals";
 "Shopping" = "Shopping";
+
+// User Profile
+"Profile" = "Profile";
+"Not signed in" = "Not signed in";
+"Friends" = "Friends";
+"No friends added yet" = "No friends added yet";
+"Sharing Preferences" = "Sharing Preferences";
+"Share Meal Plans" = "Share Meal Plans";
+"Share Shopping List" = "Share Shopping List";
+"Share Todo Categories" = "Share Todo Categories";
+"No categories available" = "No categories available";
+"Default display name" = "No Name";
+"Default friend display name" = "No Name";
+
+// Friend Management
+"Add Friend" = "Add Friend";
+"Invites" = "Invites";
+"Enter email or username to find friends" = "Enter email or username to find friends";
+"Email or username" = "Email or username";
+"No Results" = "No Results";
+"No users found with that email or username" = "No users found with that email or username";
+"Search for Friends" = "Search for Friends";
+"Enter an email or username to find friends" = "Enter an email or username to find friends";
+"Invite Sent" = "Invite Sent";
+"Your invite has been sent successfully" = "Your invite has been sent successfully";
+"You need to be logged in to send invites" = "You need to be logged in to send invites";
+"Invite service not available" = "Invite service not available";
+"This user is already in your friends list" = "This user is already in your friends list";
+"You've already sent an invite to this user" = "You've already sent an invite to this user";
+"Failed to send invite" = "Failed to send invite";
+"Error searching users" = "Error searching users";
+
+// Invites View
+"Received" = "Received";
+"Sent" = "Sent";
+"No Invites" = "No Invites";
+"You don't have any received invites" = "You don't have any received invites";
+"You haven't sent any invites" = "You haven't sent any invites";
+"Sent %@" = "Sent %@";
+"Failed to accept invite" = "Failed to accept invite";
+"Failed to decline invite" = "Failed to decline invite";
+"Error" = "Error";
+"Default display name" = "No Name";

@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct MealDetailView: View {
+    @EnvironmentObject private var auth: UserAuthService
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: MealDetailViewModel
 
@@ -20,7 +21,13 @@ struct MealDetailView: View {
                 Text(NSLocalizedString("Scaling Factor:", comment: "Scaling factor label"))
                 TextField(
                     NSLocalizedString("Scaling Factor", comment: "Scaling factor input field"),
-                    value: $viewModel.meal.scalingFactor,
+                    value: Binding(
+                        get: { viewModel.meal.scalingFactor },
+                        set: { newValue in
+                            guard let currentUser = auth.currentUser else { return }
+                            viewModel.meal.setScalingFactor(newValue, currentUser: currentUser)
+                        }
+                    ),
                     formatter: NumberFormatter()
                 )
                 #if os(iOS)
@@ -34,7 +41,13 @@ struct MealDetailView: View {
                 Text(NSLocalizedString("Meal Type:", comment: "Meal type label"))
                 Picker(
                     NSLocalizedString("Meal Type", comment: "Meal type picker label"),
-                    selection: $viewModel.meal.mealType
+                    selection: Binding(
+                        get: { viewModel.meal.mealType },
+                        set: { newValue in
+                            guard let currentUser = auth.currentUser else { return }
+                            viewModel.meal.setMealType(newValue, currentUser: currentUser)
+                        }
+                    )
                 ) {
                     ForEach(MealType.allCases, id: \.self) { mealType in
                         Text(mealType.displayName).tag(mealType)
@@ -54,7 +67,8 @@ struct MealDetailView: View {
                     selection: Binding(
                         get: { viewModel.meal.todoItem?.dueDate ?? Date() },
                         set: { newValue in
-                            viewModel.meal.updateDueDate(newValue)
+                            guard let currentUser = auth.currentUser else { return }
+                            viewModel.meal.setDueDate(newValue, currentUser: currentUser)
                         }
                     ),
                     displayedComponents: .date
@@ -73,7 +87,7 @@ struct MealDetailView: View {
             #endif
         }
         .onAppear {
-            viewModel.configureEnvironment(modelContext)
+            viewModel.configureEnvironment(modelContext, auth)
         }
     }
 }
@@ -83,31 +97,25 @@ struct MealDetailView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
 
+        let user = Fixtures.createUser()
+
         // Create sample recipe with ingredients
-        let recipe = Recipe(
-            title: "Spaghetti Bolognese",
-            details: "Classic Italian pasta dish with meat sauce"
-        )
-        let ingredients = [
-            Ingredient(name: "Spaghetti", order: 1, quantity: 500, unit: .gram, recipe: recipe),
-            Ingredient(name: "Ground Beef", order: 2, quantity: 400, unit: .gram, recipe: recipe),
-            Ingredient(name: "Tomato Sauce", order: 3, quantity: 2, unit: .cup, recipe: recipe),
-            Ingredient(name: "Onion", order: 4, quantity: 1, unit: .piece, recipe: recipe),
-        ]
-        recipe.ingredients = ingredients
+        let recipe = Fixtures.bolognese(owner: user)
 
         // Create todo item
         let todoItem = TodoItem(
             title: "Cook Spaghetti Bolognese",
             details: "Make dinner",
-            dueDate: Date().addingTimeInterval(3600)
+            dueDate: Date().addingTimeInterval(3600),
+            owner: user
         )
 
         // Create meal
         let meal = Meal(
             scalingFactor: 1.0,
             todoItem: todoItem,
-            recipe: recipe
+            recipe: recipe,
+            owner: user
         )
 
         // Insert objects into context

@@ -3,6 +3,8 @@ import SwiftUI
 
 struct ShoppingListView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var auth: UserAuthService
+    @EnvironmentObject private var syncService: SyncService
     @Query(sort: \ShoppingListItem.todoItem?.dueDate) var shoppingItems: [ShoppingListItem]
 
     @StateObject var viewModel: ShoppingListViewModel
@@ -58,7 +60,7 @@ struct ShoppingListView: View {
         }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
-            viewModel.configureContext(modelContext)
+            viewModel.configureContext(modelContext, auth, syncService)
         }
     }
 }
@@ -68,15 +70,26 @@ struct ShoppingListView: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
 
         let context = container.mainContext
-        let todoItem1 = TodoItem(title: "Grocery Shopping", details: "Weekly groceries")
-        let todoItem2 = TodoItem(title: "Special Items", details: "For dinner party")
+        let todoItem1 = TodoItem(
+            title: "Grocery Shopping", details: "Weekly groceries",
+            owner: Fixtures.createUser())
+        let todoItem2 = TodoItem(
+            title: "Special Items", details: "For dinner party",
+            owner: Fixtures.createUser())
 
         let items = [
-            ShoppingListItem(name: "Milk", quantity: 1, unit: .liter, todoItem: todoItem1),
-            ShoppingListItem(name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem1),
-            ShoppingListItem(name: "Eggs", quantity: 12, unit: .piece, todoItem: todoItem1),
             ShoppingListItem(
-                name: "Wine", quantity: 2, unit: .piece, todoItem: todoItem2),
+                name: "Milk", quantity: 1, unit: .liter, todoItem: todoItem1,
+                owner: Fixtures.createUser()),
+            ShoppingListItem(
+                name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem1,
+                owner: Fixtures.createUser()),
+            ShoppingListItem(
+                name: "Eggs", quantity: 12, unit: .piece, todoItem: todoItem1,
+                owner: Fixtures.createUser()),
+            ShoppingListItem(
+                name: "Wine", quantity: 2, unit: .piece, todoItem: todoItem2,
+                owner: Fixtures.createUser()),
         ]
 
         for item in items {

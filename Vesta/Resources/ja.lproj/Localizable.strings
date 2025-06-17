@@ -183,3 +183,46 @@
 "Today" = "今日";
 "Meals" = "食事";
 "Shopping" = "買い物";
+
+// User Profile
+"Profile" = "プロフィール";
+"Not signed in" = "サインインしていません";
+"Friends" = "友達";
+"No friends added yet" = "まだ友達が追加されていません";
+"Sharing Preferences" = "共有設定";
+"Share Meal Plans" = "食事プランを共有";
+"Share Shopping List" = "買い物リストを共有";
+"Share Todo Categories" = "ToDoカテゴリを共有";
+"No categories available" = "利用可能なカテゴリがありません";
+"Default display name" = "名前なし";
+"Default friend display name" = "名前なし";
+
+// Friend Management
+"Add Friend" = "友達を追加";
+"Invites" = "招待";
+"Enter email or username to find friends" = "友達を探すにはメールアドレスまたはユーザー名を入力";
+"Email or username" = "メールアドレスまたはユーザー名";
+"No Results" = "結果なし";
+"No users found with that email or username" = "そのメールアドレスまたはユーザー名のユーザーが見つかりません";
+"Search for Friends" = "友達を検索";
+"Enter an email or username to find friends" = "友達を探すにはメールアドレスまたはユーザー名を入力";
+"Invite Sent" = "招待を送信しました";
+"Your invite has been sent successfully" = "招待が正常に送信されました";
+"You need to be logged in to send invites" = "招待を送信するにはログインする必要があります";
+"Invite service not available" = "招待サービスは利用できません";
+"This user is already in your friends list" = "このユーザーはすでに友達リストにいます";
+"You've already sent an invite to this user" = "このユーザーにすでに招待を送信しています";
+"Failed to send invite" = "招待の送信に失敗しました";
+"Error searching users" = "ユーザー検索中のエラー";
+
+// Invites View
+"Received" = "受信済み";
+"Sent" = "送信済み";
+"No Invites" = "招待なし";
+"You don't have any received invites" = "受信した招待はありません";
+"You haven't sent any invites" = "送信した招待はありません";
+"Sent %@" = "送信 %@";
+"Failed to accept invite" = "招待の承認に失敗しました";
+"Failed to decline invite" = "招待の拒否に失敗しました";
+"Error" = "エラー";
+"Only Today" = "今日のみ";

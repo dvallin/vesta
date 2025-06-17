@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if a user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user is accessing their own document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper function to check if the current user is in the friend list of the owner
+    function isFriend(userId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/users/$(userId)) &&
+             request.auth.uid in get(/databases/$(database)/documents/users/$(userId)).data.friendIds;
+    }
+
+    // Helper function to check if an entity is shared
+    function isShared(data) {
+      return data.isShared == true;
+    }
+
+    // Allow any authenticated user to list/query users for search functionality
+    match /users/{userId} {
+      // Allow queries on the users collection for search
+      allow list: if isAuthenticated();
+      
+      // Allow reading specific user profiles
+      allow get: if isAuthenticated() && (
+        // Full access for owner and friends
+        isOwner(userId) || isFriend(userId) || 
+        // Limited fields for other authenticated users (for search)
+        (request.resource == null && 
+         (resource.data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'isShared']) ||
+          resource.data.keys().hasAll(['uid', 'email', 'displayName'])))
+      );
+      
+      // Allow owner to modify their profile
+      // Also allow authenticated users to update specific fields for invite/friend operations
+      allow update: if isOwner(userId) || 
+                    (isAuthenticated() && 
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friendIds', 'sentInvites', 'receivedInvites', 'lastModified']));
+      
+      // Only owner can create or delete their profile
+      allow create, delete: if isOwner(userId);
+
+      // Entities subcollection
+      match /entities/{entityId} {
+        // Owner has full access
+        allow read, write: if isOwner(userId);
+
+        // Friends can read shared entities
+        allow read: if isFriend(userId) && isShared(resource.data);
+
+        // Friends can update shared entities if:
+        // 1. The entity is already shared
+        // 2. The update maintains the shared status
+        // 3. The ownerId remains unchanged
+        allow update: if isFriend(userId) &&
+                       isShared(resource.data) &&
+                       request.resource.data.isShared == true &&
+                       request.resource.data.ownerId == resource.data.ownerId;
+
+        // No one can delete entities from friends' collections
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // Additional utility rules
+    match /{document=**} {
+      // Default deny
+      allow read, write: if false;
+    }
+  }
+}

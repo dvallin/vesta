@@ -2,6 +2,21 @@ import SwiftData
 import SwiftUI
 
 class ShoppingListGeneratorViewModel: ObservableObject {
+    private var auth: UserAuthService?
+    private var modelContext: ModelContext?
+    private var categoryService: TodoItemCategoryService?
+    private var syncService: SyncService?
+
+    func configureContext(
+        _ context: ModelContext, _ auth: UserAuthService,
+        _ syncService: SyncService
+    ) {
+        self.modelContext = context
+        self.auth = auth
+        self.categoryService = TodoItemCategoryService(modelContext: context)
+        self.syncService = syncService
+    }
+
     struct IngredientSelection: Identifiable {
         let id = UUID()
         let ingredient: Ingredient
@@ -45,8 +60,11 @@ class ShoppingListGeneratorViewModel: ObservableObject {
         }.sorted { l, r in l.earliestDueDate < r.earliestDueDate }
     }
 
-    func generateShoppingList(modelContext: ModelContext) {
-        let categoryService = TodoItemCategoryService(modelContext: modelContext)
+    func generateShoppingList() {
+        guard let currentUser = auth?.currentUser else { return }
+        guard let categoryService = categoryService else { return }
+        guard let modelContext = modelContext else { return }
+
         let shoppingCategory = categoryService.fetchOrCreate(
             named: NSLocalizedString("Shopping", comment: "Shopping category name")
         )
@@ -65,7 +83,8 @@ class ShoppingListGeneratorViewModel: ObservableObject {
                 details: todoDetails,
                 dueDate: selection.earliestDueDate,
                 ignoreTimeComponent: false,
-                category: shoppingCategory
+                category: shoppingCategory,
+                owner: currentUser
             )
             modelContext.insert(todoItem)
 
@@ -74,12 +93,15 @@ class ShoppingListGeneratorViewModel: ObservableObject {
                 quantity: selection.quantity,
                 unit: selection.unit,
                 todoItem: todoItem,
-                meals: selection.meals
+                owner: currentUser
             )
+            shoppingListItem.meals = selection.meals
+
             modelContext.insert(shoppingListItem)
         }
         do {
             try modelContext.save()
+            _ = syncService?.pushLocalChanges()
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
         } catch {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)

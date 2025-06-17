@@ -5,6 +5,8 @@ class TodoItemDetailViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
+    private var auth: UserAuthService?
+    private var syncService: SyncService?
 
     @Published var item: TodoItem
 
@@ -40,10 +42,15 @@ class TodoItemDetailViewModel: ObservableObject {
         self.tempCategory = item.category?.name ?? ""
     }
 
-    func configureEnvironment(_ context: ModelContext, _ dismiss: DismissAction) {
+    func configureEnvironment(
+        _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService,
+        _ syncService: SyncService
+    ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.dismiss = dismiss
+        self.auth = auth
+        self.syncService = syncService
     }
 
     var isDirty: Bool {
@@ -58,14 +65,16 @@ class TodoItemDetailViewModel: ObservableObject {
     }
 
     func markAsDone() {
+        guard let currentUser = auth?.currentUser else { return }
         withAnimation {
-            item.markAsDone()
+            item.markAsDone(currentUser: currentUser)
             saveContext()
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
         }
     }
 
     func save() {
+        guard let currentUser = auth?.currentUser else { return }
         guard !tempTitle.isEmpty else {
             validationMessage = NSLocalizedString(
                 "Please enter a todo title", comment: "Validation error for empty todo title")
@@ -81,35 +90,38 @@ class TodoItemDetailViewModel: ObservableObject {
         }
 
         if tempTitle != item.title {
-            item.setTitle(title: tempTitle)
+            item.setTitle(title: tempTitle, currentUser: currentUser)
         }
         if tempDetails != item.details {
-            item.setDetails(details: tempDetails)
+            item.setDetails(details: tempDetails, currentUser: currentUser)
         }
         if tempDueDate != item.dueDate {
-            item.setDueDate(dueDate: tempDueDate)
+            item.setDueDate(dueDate: tempDueDate, currentUser: currentUser)
         }
         if tempRecurrenceFrequency != item.recurrenceFrequency {
-            item.setRecurrenceFrequency(recurrenceFrequency: tempRecurrenceFrequency)
+            item.setRecurrenceFrequency(
+                recurrenceFrequency: tempRecurrenceFrequency, currentUser: currentUser)
         }
         if tempRecurrenceInterval != item.recurrenceInterval {
-            item.setRecurrenceInterval(recurrenceInterval: tempRecurrenceInterval)
+            item.setRecurrenceInterval(
+                recurrenceInterval: tempRecurrenceInterval, currentUser: currentUser)
         }
         if tempRecurrenceType != item.recurrenceType {
-            item.setRecurrenceType(recurrenceType: tempRecurrenceType)
+            item.setRecurrenceType(recurrenceType: tempRecurrenceType, currentUser: currentUser)
         }
         if tempIgnoreTimeComponent != item.ignoreTimeComponent {
-            item.setIgnoreTimeComponent(ignoreTimeComponent: tempIgnoreTimeComponent)
+            item.setIgnoreTimeComponent(
+                ignoreTimeComponent: tempIgnoreTimeComponent, currentUser: currentUser)
         }
         if tempIsCompleted != item.isCompleted {
-            item.setIsCompleted(isCompleted: tempIsCompleted)
+            item.setIsCompleted(isCompleted: tempIsCompleted, currentUser: currentUser)
         }
         if tempPriority != item.priority {
-            item.setPriority(priority: tempPriority)
+            item.setPriority(priority: tempPriority, currentUser: currentUser)
         }
         if tempCategory != item.category?.name {
             let categoryEntity = categoryService?.fetchOrCreate(named: tempCategory)
-            item.setCategory(category: categoryEntity)
+            item.setCategory(category: categoryEntity, currentUser: currentUser)
         }
         saveContext()
     }
@@ -120,6 +132,8 @@ class TodoItemDetailViewModel: ObservableObject {
         isSaving = true
         do {
             try modelContext.save()
+
+            _ = syncService?.pushLocalChanges()
 
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
             dismiss!()

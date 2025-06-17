@@ -31,6 +31,8 @@ enum FilterMode: String, CaseIterable {
 class TodoListViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
+    private var auth: UserAuthService?
+    private var syncService: SyncService?
 
     @Published var currentDay: Date = Date()
     @Published var toastMessages: [ToastMessage] = []
@@ -44,11 +46,15 @@ class TodoListViewModel: ObservableObject {
     @Published var selectedTodoItem: TodoItem? = nil
 
     @Published var isPresentingAddTodoItemView = false
-    @Published var isPresentingTodoEventsView = false
 
-    func configureContext(_ context: ModelContext) {
+    func configureContext(
+        _ context: ModelContext, _ auth: UserAuthService,
+        _ syncService: SyncService
+    ) {
         self.modelContext = context
         self.categoryService = TodoItemCategoryService(modelContext: context)
+        self.auth = auth
+        self.syncService = syncService
     }
 
     func fetchCategories() -> [TodoItemCategory] {
@@ -73,9 +79,11 @@ class TodoListViewModel: ObservableObject {
     }
 
     func markAsDone(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
-        item.markAsDone()
+        guard let currentUser = auth?.currentUser else { return }
+        item.markAsDone(currentUser: currentUser)
 
         if saveContext() {
+            _ = syncService?.pushLocalChanges()
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
 
             let id = UUID()
@@ -96,10 +104,11 @@ class TodoListViewModel: ObservableObject {
     }
 
     func undoMarkAsDone(_ item: TodoItem, id: UUID) {
-        if let lastEvent = item.undoLastEvent() {
-            modelContext!.delete(lastEvent)
-        }
+        guard let currentUser = auth?.currentUser else { return }
+        item.setIsCompleted(isCompleted: false, currentUser: currentUser)
+
         if saveContext() {
+            _ = syncService?.pushLocalChanges()
             NotificationManager.shared.scheduleNotification(for: item)
 
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
@@ -133,18 +142,20 @@ class TodoListViewModel: ObservableObject {
     }
 
     func rescheduleOverdueTasks(todoItems: [TodoItem]) {
+        guard let currentUser = auth?.currentUser else { return }
         let today = DateUtils.calendar.startOfDay(for: Date())
 
         for item in todoItems {
             if item.isOverdue && !item.isCompleted {
                 if let dueDate = item.dueDate {
                     let newDueDate = DateUtils.preserveTime(from: dueDate, applying: today)
-                    item.setDueDate(dueDate: newDueDate)
+                    item.setDueDate(dueDate: newDueDate, currentUser: currentUser)
                 }
             }
         }
 
         if saveContext() {
+            _ = syncService?.pushLocalChanges()
             filterMode = .today
 
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)

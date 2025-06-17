@@ -172,6 +172,7 @@
 "Filter Mode" = "Modo de filtro";
 "Filter Criteria" = "Criterios de filtro";
 "Today" = "Hoy";
+"Only Today" = "Solo Hoy";
 "This Week" = "Esta semana";
 "No Due Date" = "Sin fecha límite";
 "Overdue" = "Vencido";
@@ -183,3 +184,46 @@
 "Today" = "Hoy";
 "Meals" = "Comidas";
 "Shopping" = "Compras";
+
+// User Profile
+"Profile" = "Perfil";
+"Not signed in" = "No has iniciado sesión";
+"Friends" = "Amigos";
+"No friends added yet" = "Aún no has añadido amigos";
+"Sharing Preferences" = "Preferencias de compartir";
+"Share Meal Plans" = "Compartir planes de comida";
+"Share Shopping List" = "Compartir lista de la compra";
+"Share Todo Categories" = "Compartir categorías de tareas";
+"No categories available" = "No hay categorías disponibles";
+"Default display name" = "Sin nombre";
+"Default friend display name" = "Sin nombre";
+
+// Friend Management
+"Add Friend" = "Añadir amigo";
+"Invites" = "Invitaciones";
+"Enter email or username to find friends" = "Introduce email o nombre de usuario para encontrar amigos";
+"Email or username" = "Email o nombre de usuario";
+"No Results" = "Sin resultados";
+"No users found with that email or username" = "No se encontraron usuarios con ese email o nombre de usuario";
+"Search for Friends" = "Buscar amigos";
+"Enter an email or username to find friends" = "Introduce un email o nombre de usuario para encontrar amigos";
+"Invite Sent" = "Invitación enviada";
+"Your invite has been sent successfully" = "Tu invitación ha sido enviada correctamente";
+"You need to be logged in to send invites" = "Necesitas iniciar sesión para enviar invitaciones";
+"Invite service not available" = "Servicio de invitaciones no disponible";
+"This user is already in your friends list" = "Este usuario ya está en tu lista de amigos";
+"You've already sent an invite to this user" = "Ya has enviado una invitación a este usuario";
+"Failed to send invite" = "Error al enviar la invitación";
+"Error searching users" = "Error al buscar usuarios";
+
+// Invites View
+"Received" = "Recibidas";
+"Sent" = "Enviadas";
+"No Invites" = "Sin invitaciones";
+"You don't have any received invites" = "No tienes invitaciones recibidas";
+"You haven't sent any invites" = "No has enviado invitaciones";
+"Sent %@" = "Enviado %@";
+"Failed to accept invite" = "Error al aceptar la invitación";
+"Failed to decline invite" = "Error al rechazar la invitación";
+"Error" = "Error";
+"Only Today" = "Solo Hoy";

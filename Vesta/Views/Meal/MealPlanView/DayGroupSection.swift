@@ -60,6 +60,7 @@ struct DayGroupSectionView: View {
 }
 
 #Preview {
+    let user = Fixtures.createUser()
     List {
         // Preview with multiple meals on a single day
         DayGroupSectionView(
@@ -72,13 +73,16 @@ struct DayGroupSectionView: View {
                             title: "Cook Spaghetti Carbonara",
                             details: "Classic Italian pasta dish",
                             dueDate: Date(),
-                            isCompleted: false
+                            isCompleted: false,
+                            owner: user
                         ),
                         recipe: Recipe(
                             title: "Spaghetti Carbonara",
-                            details: "Traditional Roman pasta"
+                            details: "Traditional Roman pasta",
+                            owner: user
                         ),
-                        mealType: .dinner
+                        mealType: .dinner,
+                        owner: user
                     ),
                     Meal(
                         scalingFactor: 1.0,
@@ -86,13 +90,16 @@ struct DayGroupSectionView: View {
                             title: "Make Pancakes",
                             details: "Fluffy breakfast pancakes",
                             dueDate: Date(),
-                            isCompleted: true
+                            isCompleted: true,
+                            owner: user
                         ),
                         recipe: Recipe(
                             title: "Classic Pancakes",
-                            details: "American style pancakes"
+                            details: "American style pancakes",
+                            owner: user
                         ),
-                        mealType: .breakfast
+                        mealType: .breakfast,
+                        owner: user
                     ),
                     Meal(
                         scalingFactor: 1.0,
@@ -100,13 +107,16 @@ struct DayGroupSectionView: View {
                             title: "Prepare Caesar Salad",
                             details: "Fresh lunch salad",
                             dueDate: Date(),
-                            isCompleted: false
+                            isCompleted: false,
+                            owner: user
                         ),
                         recipe: Recipe(
                             title: "Caesar Salad",
-                            details: "Classic Caesar salad"
+                            details: "Classic Caesar salad",
+                            owner: user
                         ),
-                        mealType: .lunch
+                        mealType: .lunch,
+                        owner: user
                     ),
                 ],
                 weekTitle: "This Week"
