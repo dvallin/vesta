@@ -33,9 +33,9 @@ struct TodoListView: View {
             viewModel.configureContext(modelContext, auth, syncService)
             viewModel.reset()
         }
-        .onChange(of: scenePhase) { newPhase, _ in
+        .onChange(of: scenePhase) { oldPhase, newPhase in
             if newPhase == .active {
-                viewModel.reset()
+                viewModel.updateCurrentDay()
             }
         }
     }

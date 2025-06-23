@@ -23,13 +23,12 @@ class MealService {
 
     /// Fetch a meal by its unique identifier
     func fetchMany(withUIDs uids: [String]) throws -> [Meal] {
-        // Fetch all users first
-        let allMeals = try fetchAll()
-
-        // Then filter in memory to avoid unsupported predicate
-        return allMeals.filter { meal in
-            return uids.contains(meal.uid)
-        }
+        let descriptor = FetchDescriptor<Meal>(
+            predicate: #Predicate<Meal> { meal in
+                uids.contains(meal.uid)
+            }
+        )
+        return try modelContext.fetch(descriptor)
     }
 
     /// Fetch all meals owned by a specific user
