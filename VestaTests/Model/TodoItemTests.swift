@@ -409,6 +409,7 @@ final class TodoItemTests: XCTestCase {
     func testMarkAsDoneWithFixedRecurrence() throws {
         // Arrange
         let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
         let todoItem = TodoItem(
             title: "Fixed Task",
             details: "Details",
@@ -429,11 +430,12 @@ final class TodoItemTests: XCTestCase {
         let today = Calendar.current.date(byAdding: .day, value: 1, to: yesterday)!
         let dueDateComponents = Calendar.current.dateComponents(
             [.year, .month, .day], from: todoItem.dueDate!)
-        let todayComponents = Calendar.current.dateComponents([.year, .month, .day], from: today)
+        let tomorrowComponents = Calendar.current.dateComponents(
+            [.year, .month, .day], from: tomorrow)
 
-        XCTAssertEqual(dueDateComponents.year, todayComponents.year)
-        XCTAssertEqual(dueDateComponents.month, todayComponents.month)
-        XCTAssertEqual(dueDateComponents.day, todayComponents.day)
+        XCTAssertEqual(dueDateComponents.year, tomorrowComponents.year)
+        XCTAssertEqual(dueDateComponents.month, tomorrowComponents.month)
+        XCTAssertEqual(dueDateComponents.day, tomorrowComponents.day)
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after being marked as done")
     }
 
@@ -503,5 +505,114 @@ final class TodoItemTests: XCTestCase {
 
         // Assert
         XCTAssertTrue(todoItem.dirty, "Item should be marked as dirty after another modification")
+    }
+
+    func testFixedRecurrenceWithReschedule() throws {
+        // Arrange
+        let calendar = Calendar.current
+        let today = Date()
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today)!
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
+        let nextWeek = Calendar.current.date(byAdding: .day, value: 7, to: yesterday)!
+
+        let item = TodoItem(
+            title: "Weekly Task",
+            details: "Weekly recurring task",
+            dueDate: yesterday,
+            isCompleted: false,
+            recurrenceFrequency: .weekly,
+            recurrenceType: .fixed,
+            recurrenceInterval: 1,
+            owner: user
+        )
+
+        // Act - Reschedule from yesterday to tomorrow
+        item.setRescheduleDate(rescheduleDate: tomorrow, currentUser: user)
+
+        // Complete the task
+        item.markAsDone(currentUser: user)
+
+        // Assert - Next occurrence should maintain weekly pattern from original date
+        XCTAssertNotNil(item.dueDate)
+
+        // The next occurrence should be scheduled for next week (7 days from yesterday)
+        let dueComponents = calendar.dateComponents([.year, .month, .day], from: item.dueDate!)
+        let expectedComponents = calendar.dateComponents(
+            [.year, .month, .day], from: nextWeek)
+
+        XCTAssertEqual(dueComponents.year, expectedComponents.year)
+        XCTAssertEqual(dueComponents.month, expectedComponents.month)
+        XCTAssertEqual(dueComponents.day, expectedComponents.day)
+
+        // Reschedule date should be cleared after completion
+        XCTAssertNil(item.rescheduleDate)
+    }
+
+    func testMarkAsDoneWithOldFixedRecurrence() throws {
+        // Arrange
+        let calendar = Calendar.current
+
+        // Create a reference date for stable testing
+        let now = Date()
+
+        // Create a specific day in the current month
+        let dayOfMonth = 15
+        var currentMonthComponents = calendar.dateComponents([.year, .month], from: now)
+        currentMonthComponents.day = dayOfMonth
+        let currentMonthDate = calendar.date(from: currentMonthComponents)!
+
+        // Create a due date that's very old (6 months ago)
+        // but with the same day of month to maintain the pattern
+        let oldDueDate = calendar.date(byAdding: .month, value: -6, to: currentMonthDate)!
+
+        let todoItem = TodoItem(
+            title: "Very Old Monthly Task",
+            details: "This task is very overdue",
+            dueDate: oldDueDate,
+            recurrenceFrequency: .monthly,
+            recurrenceType: .fixed,
+            recurrenceInterval: 1,
+            owner: user!
+        )
+        context.insert(todoItem)
+
+        // Act
+        todoItem.markAsDone(currentUser: user)
+
+        // Assert
+        XCTAssertNotNil(todoItem.dueDate)
+        // The next due date should be in the future, not just one interval from the old date
+        XCTAssertTrue(todoItem.dueDate! > now, "The next due date should be in the future")
+
+        // It should be on the same day of month as the original date
+        // (maintaining the pattern, but in the future)
+        let oldComponents = calendar.dateComponents([.day], from: oldDueDate)
+        let newComponents = calendar.dateComponents([.day], from: todoItem.dueDate!)
+
+        XCTAssertEqual(
+            oldComponents.day, newComponents.day,
+            "The day of month should be preserved in the recurrence pattern")
+
+        // Calculate what the next occurrence should be (next month after current date)
+        var expectedComponents = calendar.dateComponents([.year, .month], from: now)
+        expectedComponents.month = (expectedComponents.month ?? 0) + 1
+        // Handle December -> January transition
+        if expectedComponents.month! > 12 {
+            expectedComponents.month = 1
+            expectedComponents.year = (expectedComponents.year ?? 0) + 1
+        }
+        expectedComponents.day = dayOfMonth
+
+        // The due date should be exactly this next occurrence
+        let expectedDate = calendar.date(from: expectedComponents)!
+        let actualComponents = calendar.dateComponents(
+            [.year, .month, .day], from: todoItem.dueDate!)
+        let expectedDateComponents = calendar.dateComponents(
+            [.year, .month, .day], from: expectedDate)
+
+        XCTAssertEqual(expectedDateComponents.year, actualComponents.year)
+        XCTAssertEqual(expectedDateComponents.month, actualComponents.month)
+        XCTAssertEqual(
+            expectedDateComponents.day, actualComponents.day, "The day of month should match")
     }
 }

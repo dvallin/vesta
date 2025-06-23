@@ -39,6 +39,7 @@ class TodoItem: SyncableEntity {
     var title: String
     var details: String
     var dueDate: Date?
+    var rescheduleDate: Date?
     var isCompleted: Bool
     var recurrenceFrequency: RecurrenceFrequency?
     var recurrenceType: RecurrenceType?
@@ -65,6 +66,7 @@ class TodoItem: SyncableEntity {
         title: String,
         details: String,
         dueDate: Date? = nil,
+        rescheduleDate: Date? = nil,
         isCompleted: Bool = false,
         recurrenceFrequency: RecurrenceFrequency? = nil,
         recurrenceType: RecurrenceType? = nil,
@@ -80,6 +82,7 @@ class TodoItem: SyncableEntity {
         self.title = title
         self.details = details
         self.dueDate = dueDate
+        self.rescheduleDate = rescheduleDate
         self.isCompleted = isCompleted
         self.recurrenceFrequency = recurrenceFrequency
         self.recurrenceType = recurrenceType
@@ -95,6 +98,7 @@ class TodoItem: SyncableEntity {
     static func create(
         title: String, details: String,
         dueDate: Date? = nil,
+        rescheduleDate: Date? = nil,
         recurrenceFrequency: RecurrenceFrequency? = nil,
         recurrenceType: RecurrenceType? = nil,
         recurrenceInterval: Int? = nil,
@@ -106,7 +110,7 @@ class TodoItem: SyncableEntity {
         owner: User
     ) -> TodoItem {
         let item = TodoItem(
-            title: title, details: details, dueDate: dueDate,
+            title: title, details: details, dueDate: dueDate, rescheduleDate: rescheduleDate,
             recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType,
             recurrenceInterval: recurrenceInterval, ignoreTimeComponent: ignoreTimeComponent,
             priority: priority, category: category, owner: owner)
@@ -114,16 +118,16 @@ class TodoItem: SyncableEntity {
     }
 
     var isToday: Bool {
-        guard let dueDate = dueDate else { return false }
+        guard let dueDate = rescheduleDate ?? dueDate else { return false }
         return Calendar.current.isDateInToday(dueDate)
     }
     var isCurrentWeek: Bool {
-        guard let dueDate = dueDate else { return false }
+        guard let dueDate = rescheduleDate ?? dueDate else { return false }
         return Calendar.current.isDate(dueDate, equalTo: Date(), toGranularity: .weekOfYear)
     }
 
     var isOverdue: Bool {
-        guard let dueDate = dueDate else { return false }
+        guard let dueDate = rescheduleDate ?? dueDate else { return false }
         let isInThePast = dueDate < Date()
         if ignoreTimeComponent {
             return !self.isCompleted && isInThePast && !self.isToday
@@ -139,13 +143,21 @@ class TodoItem: SyncableEntity {
     func markAsDone(currentUser: User) {
         let now = Date()
         if let frequency = recurrenceFrequency {
-            let baseDate = recurrenceType == .fixed ? (dueDate ?? now) : now
+            var baseDate: Date
+            if recurrenceType == .fixed {
+                baseDate = dueDate ?? now
+            } else {
+                baseDate = now
+            }
+
             let baseDateWithTime = DateUtils.preserveTime(from: dueDate, applying: baseDate)
             updateDueDate(
                 for: frequency, basedOn: baseDateWithTime ?? baseDate, currentUser: currentUser)
         } else {
             isCompleted.toggle()
         }
+
+        self.rescheduleDate = nil
 
         NotificationManager.shared.scheduleNotification(for: self)
         self.markAsDirty()
@@ -163,6 +175,7 @@ class TodoItem: SyncableEntity {
 
     func setDueDate(dueDate: Date?, currentUser: User) {
         self.dueDate = dueDate
+        self.rescheduleDate = nil
 
         NotificationManager.shared.scheduleNotification(for: self)
         self.markAsDirty()
@@ -214,25 +227,42 @@ class TodoItem: SyncableEntity {
         self.markAsDirty()
     }
 
+    func setRescheduleDate(rescheduleDate: Date?, currentUser: User) {
+        self.rescheduleDate = rescheduleDate
+        self.markAsDirty()
+    }
+
     private func updateDueDate(
         for frequency: RecurrenceFrequency, basedOn baseDate: Date, currentUser: User
     ) {
         let calendar = Calendar.current
         let interval = recurrenceInterval ?? 1
+        let now = Date()
 
-        switch frequency {
-        case .daily:
-            dueDate = calendar.date(byAdding: .day, value: interval, to: baseDate)
-        case .weekly:
-            dueDate = calendar.date(byAdding: .weekOfYear, value: interval, to: baseDate)
-        case .monthly:
-            dueDate = calendar.date(byAdding: .month, value: interval, to: baseDate)
-        case .yearly:
-            dueDate = calendar.date(byAdding: .year, value: interval, to: baseDate)
+        // Get calendar component based on frequency
+        let component: Calendar.Component = {
+            switch frequency {
+            case .daily: return .day
+            case .weekly: return .weekOfYear
+            case .monthly: return .month
+            case .yearly: return .year
+            }
+        }()
+
+        // Calculate initial due date
+        var newDueDate =
+            calendar.date(byAdding: component, value: interval, to: baseDate) ?? baseDate
+
+        // Add intervals until the due date is in the future
+        while newDueDate < now {
+            newDueDate =
+                calendar.date(byAdding: component, value: interval, to: newDueDate) ?? newDueDate
         }
 
-        if ignoreTimeComponent, let dueDate = dueDate {
-            self.dueDate = DateUtils.calendar.startOfDay(for: dueDate)
+        if ignoreTimeComponent {
+            self.dueDate = DateUtils.calendar.startOfDay(for: newDueDate)
+        } else {
+            self.dueDate = newDueDate
         }
 
         self.markAsDirty()
