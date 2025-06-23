@@ -78,6 +78,30 @@ class TodoListViewModel: ObservableObject {
         selectedCategory = nil
     }
 
+    func updateCurrentDay() {
+        let newDate = Date()
+        currentDay = newDate
+
+        // Check if date has changed significantly enough to warrant update
+        if filterMode == .today && !Calendar.current.isDateInToday(currentDay) {
+            // If we're on today's filter but the date has changed, update filter data
+            currentDay = newDate
+        } else if filterMode == .currentWeek {
+            // Re-calculate current week if changed
+            if let oldWeek = Calendar.current.dateComponents([.weekOfYear], from: currentDay)
+                .weekOfYear,
+                let newWeek = Calendar.current.dateComponents([.weekOfYear], from: newDate)
+                    .weekOfYear,
+                oldWeek != newWeek
+            {
+                currentDay = newDate
+            }
+        } else if filterMode == .overdue {
+            // Overdue items need to be recalculated as time passes
+            currentDay = newDate
+        }
+    }
+
     func markAsDone(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
         guard let currentUser = auth?.currentUser else { return }
         item.markAsDone(currentUser: currentUser)
