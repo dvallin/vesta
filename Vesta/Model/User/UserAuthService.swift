@@ -16,11 +16,14 @@ class UserAuthService: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
     private var modelContext: ModelContext?
+    private var userService: UserService
     private var authStateHandler: AuthStateDidChangeListenerHandle?
 
     public init(modelContext: ModelContext) {
         self.modelContext = modelContext
         logger.info("UserAuthService configured with ModelContext")
+        
+        userService = UserService(modelContext: modelContext)
 
         // Listen for Firebase auth state changes
         authStateHandler = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
@@ -47,7 +50,7 @@ class UserAuthService: ObservableObject {
                 // User signed in
                 logger.info("Auth state changed: user signed in with UID: \(firebaseUser.uid)")
 
-                if let existingUser = fetchUserByUID(firebaseUser.uid) {
+                if let existingUser = try userService.fetchUnique(withUID: firebaseUser.uid) {
                     // Update existing user
                     logger.debug("Updating existing user with UID: \(firebaseUser.uid)")
                     existingUser.update(from: firebaseUser)
@@ -72,28 +75,6 @@ class UserAuthService: ObservableObject {
                 logger.info("Auth state changed: user signed out")
                 self.currentUser = nil
             }
-        }
-    }
-
-    private func fetchUserByUID(_ uid: String) -> User? {
-        guard let modelContext = modelContext else {
-            logger.error("Model context not configured when fetching user by UID")
-            return nil
-        }
-
-        let descriptor = FetchDescriptor<User>(predicate: #Predicate { $0.uid == uid })
-        do {
-            let users = try modelContext.fetch(descriptor)
-            if let user = users.first {
-                logger.debug("Found existing user with UID: \(uid)")
-                return user
-            } else {
-                logger.debug("No user found with UID: \(uid)")
-                return nil
-            }
-        } catch {
-            logger.error("Error fetching user: \(error.localizedDescription)")
-            return nil
         }
     }
 
@@ -257,5 +238,12 @@ class UserAuthService: ObservableObject {
     func setCurrentUser(user: User) {
         logger.debug("Manually setting current user: \(user.uid ?? "-")")
         self.currentUser = user
+    }
+    
+    func updateUser() throws {
+        guard let uid = currentUser?.uid else { return }
+        if let user = try userService.fetchUnique(withUID: uid) {
+            self.currentUser = user
+        }
     }
 }

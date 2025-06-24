@@ -22,6 +22,8 @@ class User: SyncableEntity {
     var shareMeals: Bool? = false
     var shareShoppingItems: Bool? = false
     var shareTodoItemCategories: [TodoItemCategory] = []
+    var isOnHoliday: Bool = false
+    var holidayStartDate: Date?
 
     @Relationship(deleteRule: .noAction)
     var owner: User? = nil
@@ -32,7 +34,9 @@ class User: SyncableEntity {
     init(
         uid: String, email: String? = nil, displayName: String? = nil,
         photoURL: String? = nil, isEmailVerified: Bool = false, createdAt: Date = Date(),
-        lastSignInAt: Date = Date()
+        lastSignInAt: Date = Date(),
+        isOnHoliday: Bool = false,
+        holidayStartDate: Date? = nil
     ) {
         self.uid = uid
         self.email = email
@@ -41,6 +45,8 @@ class User: SyncableEntity {
         self.isEmailVerified = isEmailVerified
         self.createdAt = createdAt
         self.lastSignInAt = lastSignInAt
+        self.isOnHoliday = isOnHoliday
+        self.holidayStartDate = holidayStartDate
     }
 }
 

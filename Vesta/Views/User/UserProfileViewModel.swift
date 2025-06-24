@@ -9,6 +9,8 @@ class UserProfileViewModel: ObservableObject {
     @Published var shareMeals: Bool = false
     @Published var shareShoppingItems: Bool = false
     @Published var selectedCategories: [TodoItemCategory] = []
+    @Published var isOnHoliday: Bool = false
+    @Published var holidayStartDate: Date? = nil
 
     private var modelContext: ModelContext?
     private var auth: UserAuthService?
@@ -18,13 +20,13 @@ class UserProfileViewModel: ObservableObject {
     func configureContext(_ context: ModelContext, _ authService: UserAuthService) {
         self.modelContext = context
         self.auth = authService
-        
+
         // Create services needed for EntitySharingService
         let todoItemService = TodoItemService(modelContext: context)
         let mealService = MealService(modelContext: context)
         let recipeService = RecipeService(modelContext: context)
         let shoppingItemService = ShoppingListItemService(modelContext: context)
-        
+
         // Initialize the sharing service
         self.sharingService = EntitySharingService(
             modelContext: context,
@@ -39,26 +41,48 @@ class UserProfileViewModel: ObservableObject {
             self.shareMeals = currentUser.shareMeals ?? false
             self.shareShoppingItems = currentUser.shareShoppingItems ?? false
             self.selectedCategories = currentUser.shareTodoItemCategories
+            self.isOnHoliday = currentUser.isOnHoliday
+            self.holidayStartDate = currentUser.holidayStartDate
         }
     }
 
-    func updateSharingPreferences() {
+    func save() {
         guard let currentUser = auth?.currentUser, let context = modelContext else { return }
 
         // Update user preferences
         currentUser.shareMeals = shareMeals
         currentUser.shareShoppingItems = shareShoppingItems
         currentUser.shareTodoItemCategories = selectedCategories
+
+        // Unfreeze all frozen todo items when coming back from holiday if status changed
+        if !isOnHoliday && currentUser.isOnHoliday {
+            do {
+                let todoItemService = TodoItemService(modelContext: context)
+                let items = try todoItemService.fetchByOwnerId(currentUser.uid)
+                for item in items {
+                    if item.isFrozen {
+                        item.unfreeze(currentUser: currentUser)
+                    }
+                }
+            } catch {
+                logger.error("Failed to unfreeze todo items: \(error.localizedDescription)")
+            }
+        }
+        currentUser.isOnHoliday = isOnHoliday
+        currentUser.holidayStartDate = holidayStartDate
+
         currentUser.dirty = true
-        
+
         do {
             try context.save()
             
+            try auth?.updateUser()
+
             // Update sharing status on all entities
             if let sharingService = self.sharingService {
                 let updatedCount = sharingService.updateEntitySharingStatus(for: currentUser)
                 logger.info("Updated sharing status for \(updatedCount) entities")
-                
+
                 showToast(
                     message: NSLocalizedString(
                         "Sharing preferences updated",
@@ -76,6 +100,17 @@ class UserProfileViewModel: ObservableObject {
                 message: NSLocalizedString(
                     "Failed to update preferences",
                     comment: "Error message for updating sharing preferences"))
+        }
+    }
+
+    func updateHolidayStatus(isOnHoliday: Bool) {
+        let oldValue = self.isOnHoliday
+        self.isOnHoliday = isOnHoliday
+
+        if isOnHoliday && !oldValue {
+            holidayStartDate = Date()
+        } else if !isOnHoliday {
+            holidayStartDate = nil
         }
     }
 

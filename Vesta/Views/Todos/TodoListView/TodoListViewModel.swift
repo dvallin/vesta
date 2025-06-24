@@ -46,6 +46,7 @@ class TodoListViewModel: ObservableObject {
     @Published var selectedTodoItem: TodoItem? = nil
 
     @Published var isPresentingAddTodoItemView = false
+    @Published var isPresentingCategoryManagementView = false
 
     func configureContext(
         _ context: ModelContext, _ auth: UserAuthService,

@@ -117,10 +117,16 @@ class TodoItem: SyncableEntity {
         return item
     }
 
+    var isFrozen: Bool {
+        guard let category = category, let owner = owner else { return false }
+        return category.isFreezable && owner.isOnHoliday
+    }
+
     var isToday: Bool {
         guard let dueDate = rescheduleDate ?? dueDate else { return false }
         return Calendar.current.isDateInToday(dueDate)
     }
+
     var isCurrentWeek: Bool {
         guard let dueDate = rescheduleDate ?? dueDate else { return false }
         return Calendar.current.isDate(dueDate, equalTo: Date(), toGranularity: .weekOfYear)
@@ -148,6 +154,10 @@ class TodoItem: SyncableEntity {
     }
 
     var isOverdue: Bool {
+        if self.isFrozen {
+            return false
+        }
+
         guard let dueDate = rescheduleDate ?? dueDate else { return false }
         let isInThePast = dueDate < Date()
         if ignoreTimeComponent {
@@ -182,6 +192,29 @@ class TodoItem: SyncableEntity {
 
         NotificationManager.shared.scheduleNotification(for: self)
         self.markAsDirty()
+    }
+
+    func unfreeze(currentUser: User) {
+        let now = Date()
+        let startDate = currentUser.holidayStartDate ?? now
+        if let frequency = recurrenceFrequency {
+            if recurrenceType == .fixed {
+                let baseDate = dueDate ?? now
+                let baseDateWithTime = DateUtils.preserveTime(from: dueDate, applying: baseDate)
+                updateDueDate(
+                    for: frequency, basedOn: baseDateWithTime ?? baseDate, currentUser: currentUser)
+            } else {
+                let daysDifference =
+                    Calendar.current.dateComponents([.day], from: startDate, to: now).day ?? 0
+                guard let originalDueDate = dueDate else { return }
+                let newDueDate =
+                    Calendar.current.date(
+                        byAdding: .day, value: daysDifference, to: originalDueDate)
+                    ?? originalDueDate
+                self.dueDate = newDueDate
+                self.markAsDirty()
+            }
+        }
     }
 
     func setDetails(details: String, currentUser: User) {

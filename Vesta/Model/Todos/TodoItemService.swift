@@ -15,7 +15,7 @@ class TodoItemService {
         let items = try modelContext.fetch(descriptor)
         return items.first
     }
-    
+
     /// Fetch all todo items owned by a specific user
     func fetchByOwnerId(_ ownerId: String) throws -> [TodoItem] {
         let descriptor = FetchDescriptor<TodoItem>(
