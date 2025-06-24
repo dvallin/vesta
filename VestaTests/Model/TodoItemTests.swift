@@ -240,6 +240,45 @@ final class TodoItemTests: XCTestCase {
             nextWeekItem.isCurrentWeek, "Item due next week should not be in current week")
     }
 
+    func testIsNext3Days() throws {
+        // Arrange - Today
+        let user = user
+        let todayItem = TodoItem(
+            title: "Today", details: "",
+            dueDate: Date(),
+            owner: user!)
+
+        // Arrange - Tomorrow
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
+        let tomorrowItem = TodoItem(
+            title: "Tomorrow", details: "",
+            dueDate: tomorrow,
+            owner: user!)
+
+        // Arrange - Day After Tomorrow
+        let dayAfterTomorrow = Calendar.current.date(byAdding: .day, value: 2, to: Date())!
+        let dayAfterTomorrowItem = TodoItem(
+            title: "Day After Tomorrow", details: "",
+            dueDate: dayAfterTomorrow,
+            owner: user!)
+
+        // Arrange - Four Days Later (outside the next 3 days)
+        let fourDaysLater = Calendar.current.date(byAdding: .day, value: 4, to: Date())!
+        let fourDaysLaterItem = TodoItem(
+            title: "Four Days Later", details: "",
+            dueDate: fourDaysLater,
+            owner: user!)
+
+        // Assert
+        XCTAssertTrue(todayItem.isNext3Days, "Item due today should be in next 3 days")
+        XCTAssertTrue(tomorrowItem.isNext3Days, "Item due tomorrow should be in next 3 days")
+        XCTAssertTrue(
+            dayAfterTomorrowItem.isNext3Days, "Item due day after tomorrow should be in next 3 days"
+        )
+        XCTAssertFalse(
+            fourDaysLaterItem.isNext3Days, "Item due four days later should not be in next 3 days")
+    }
+
     func testIsOverdue() throws {
         // Arrange - Yesterday with time component ignored
         let user = user
