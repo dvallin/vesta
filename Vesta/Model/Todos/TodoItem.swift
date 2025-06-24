@@ -126,6 +126,27 @@ class TodoItem: SyncableEntity {
         return Calendar.current.isDate(dueDate, equalTo: Date(), toGranularity: .weekOfYear)
     }
 
+    var isNext3Days: Bool {
+        guard let dueDate = rescheduleDate ?? dueDate else { return false }
+        let today = Calendar.current.startOfDay(for: Date())
+        let dueDateDay = Calendar.current.startOfDay(for: dueDate)
+
+        if Calendar.current.isDateInToday(dueDate) {
+            return true
+        }
+
+        guard let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today),
+            let dayAfterTomorrow = Calendar.current.date(byAdding: .day, value: 2, to: today)
+        else {
+            return false
+        }
+
+        let tomorrowDay = Calendar.current.startOfDay(for: tomorrow)
+        let dayAfterTomorrowDay = Calendar.current.startOfDay(for: dayAfterTomorrow)
+
+        return dueDateDay == tomorrowDay || dueDateDay == dayAfterTomorrowDay
+    }
+
     var isOverdue: Bool {
         guard let dueDate = rescheduleDate ?? dueDate else { return false }
         let isInThePast = dueDate < Date()

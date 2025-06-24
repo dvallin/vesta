@@ -28,7 +28,6 @@ class SyncService: ObservableObject {
     private var isSyncing = false
     private var realTimeSubscription: AnyCancellable?
 
-    @Published private(set) var lastSyncTime: Date?
     @Published private(set) var isSyncEnabled: Bool = false
 
     private let logger = Logger(subsystem: "com.app.Vesta", category: "Synchronization")
@@ -97,7 +96,6 @@ class SyncService: ObservableObject {
                 },
                 receiveValue: { _ in
                     self.self.logger.info("Initial pull completed successfully")
-                    self.lastSyncTime = Date()
                 }
             )
             .store(in: &self.cancellables)
@@ -134,7 +132,6 @@ class SyncService: ObservableObject {
                     },
                     receiveValue: { _ in
                         self.self.logger.debug("Real-time update processed successfully")
-                        self.lastSyncTime = Date()
                     }
                 )
                 .store(in: &self.cancellables)
@@ -214,7 +211,6 @@ class SyncService: ObservableObject {
 
                 if case .finished = completion {
                     self?.self.logger.info("Manual sync completed successfully")
-                    self?.lastSyncTime = Date()
                 } else if case .failure(let error) = completion {
                     self?.self.logger.error("Manual sync failed: \(error)")
                 }
@@ -515,14 +511,4 @@ class SyncService: ObservableObject {
 
         return mappedData
     }
-
-    // Entity processing has been refactored into separate processor classes
-
-    // Entity processing has been refactored into separate processor classes
-
-    // Entity processing has been refactored into separate processor classes
-
-    // Entity processing has been refactored into separate processor classes
-
-    // Entity processing has been refactored into separate processor classes
 }
