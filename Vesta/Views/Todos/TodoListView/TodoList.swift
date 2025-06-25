@@ -16,6 +16,25 @@ struct TodoList: View {
                     viewModel: viewModel,
                     item: item
                 )
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    // Existing delete action
+                    Button(role: .destructive) {
+                        viewModel.deleteItem(item)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                    // New skip action for recurring todos
+                    if item.recurrenceFrequency != nil {
+                        Button {
+                            // Call skip via TodoListItem's skip() method
+                            // This will be handled by TodoListItem, not directly here
+                            // (No-op here, skip is handled in TodoListItem)
+                        } label: {
+                            Label("Skip", systemImage: "forward.end")
+                        }
+                        .tint(.yellow)
+                    }
+                }
             }
             .onDelete(perform: deleteTodoItems)
         }

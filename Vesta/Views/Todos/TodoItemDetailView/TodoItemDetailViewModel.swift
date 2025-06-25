@@ -73,6 +73,17 @@ class TodoItemDetailViewModel: ObservableObject {
         }
     }
 
+    func skip() {
+        guard let currentUser = auth?.currentUser else { return }
+        // Only allow skip if the item is recurring (skip is a no-op otherwise)
+        guard item.recurrenceFrequency != nil else { return }
+        withAnimation {
+            item.skip(currentUser: currentUser)
+            saveContext()
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .warning)
+        }
+    }
+
     func save() {
         guard let currentUser = auth?.currentUser else { return }
         guard !tempTitle.isEmpty else {
@@ -81,6 +92,7 @@ class TodoItemDetailViewModel: ObservableObject {
             showingValidationAlert = true
             return
         }
+
         guard modelContext != nil else {
             validationMessage = NSLocalizedString(
                 "Environment not configured",

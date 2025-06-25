@@ -13,7 +13,13 @@ extension User {
             "isEmailVerified": isEmailVerified,
             "createdAt": createdAt,
             "lastSignInAt": lastSignInAt,
+            "isOnHoliday": isOnHoliday,
         ]
+
+        // Add holiday start date if available
+        if let holidayStartDate = holidayStartDate {
+            dto["holidayStartDate"] = holidayStartDate
+        }
 
         // Add optional properties
         if let email = email {
@@ -60,6 +66,20 @@ extension User {
 
         if let photoURL = data["photoURL"] as? String {
             self.photoURL = photoURL
+        }
+
+        if let isOnHoliday = data["isOnHoliday"] as? Bool {
+            self.isOnHoliday = isOnHoliday
+        }
+
+        if let holidayStartDate = data["holidayStartDate"] as? Date {
+            self.holidayStartDate = holidayStartDate
+        } else if self.isOnHoliday && self.holidayStartDate == nil {
+            // If on holiday but no start date, use current date
+            self.holidayStartDate = Date()
+        } else if !self.isOnHoliday {
+            // Clear holiday start date when not on holiday
+            self.holidayStartDate = nil
         }
 
         // Process received invites

@@ -46,6 +46,7 @@ class TodoListViewModel: ObservableObject {
     @Published var selectedTodoItem: TodoItem? = nil
 
     @Published var isPresentingAddTodoItemView = false
+    @Published var isPresentingCategoryManagementView = false
 
     func configureContext(
         _ context: ModelContext, _ auth: UserAuthService,
@@ -104,20 +105,41 @@ class TodoListViewModel: ObservableObject {
             )
             toastMessages.append(toastMessage)
         }
-
     }
 
-    func undoMarkAsDone(_ item: TodoItem, id: UUID) {
+    func skip(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
         guard let currentUser = auth?.currentUser else { return }
-        item.setIsCompleted(isCompleted: false, currentUser: currentUser)
+        guard item.recurrenceFrequency != nil else { return }
+        item.skip(currentUser: currentUser)
 
         if saveContext() {
             _ = syncService?.pushLocalChanges()
-            NotificationManager.shared.scheduleNotification(for: item)
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .warning)
 
+            let id = UUID()
+            let toastMessage = ToastMessage(
+                id: id,
+                message: String(
+                    format: NSLocalizedString(
+                        "%@ skipped", comment: "Toast message for skipping todo"),
+                    item.title
+                ),
+                undoAction: {
+                    undoAction(item, id)
+                }
+            )
+            toastMessages.append(toastMessage)
+        }
+    }
+
+    func undoLastEvent(_ item: TodoItem, id: UUID) {
+        item.undoLastEvent()
+        toastMessages.removeAll { $0.id == id }
+
+        NotificationManager.shared.scheduleNotification(for: item)
+        if saveContext() {
+            _ = syncService?.pushLocalChanges()
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
-
-            toastMessages.removeAll { $0.id == id }
         }
     }
 
