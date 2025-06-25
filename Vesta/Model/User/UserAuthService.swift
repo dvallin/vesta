@@ -22,7 +22,7 @@ class UserAuthService: ObservableObject {
     public init(modelContext: ModelContext) {
         self.modelContext = modelContext
         logger.info("UserAuthService configured with ModelContext")
-        
+
         userService = UserService(modelContext: modelContext)
 
         // Listen for Firebase auth state changes
@@ -210,6 +210,29 @@ class UserAuthService: ObservableObject {
                                 promise(.failure(error))
                                 return
                             }
+
+                            let db = FirebaseAPIClient().db
+                            let userDocRef = db.collection("users").document(firebaseUser.uid)
+                            do {
+                                let document = try await userDocRef.getDocument()
+                                if !document.exists {
+                                    do {
+                                        try await userDocRef.setData(user.toDTO())
+                                        self.logger.info(
+                                            "Firestore user document created for \(firebaseUser.uid)"
+                                        )
+                                    } catch {
+                                        self.logger.error(
+                                            "Failed to create Firestore user document: \(error.localizedDescription)"
+                                        )
+                                    }
+                                }
+                            } catch {
+                                self.logger.error(
+                                    "Failed to check if Firestore user document exists: \(error.localizedDescription)"
+                                )
+                            }
+
                             self.isAuthenticating = false
                             self.logger.info(
                                 "Sign up completed successfully for user: \(user.uid ?? "-")")
@@ -239,7 +262,7 @@ class UserAuthService: ObservableObject {
         logger.debug("Manually setting current user: \(user.uid ?? "-")")
         self.currentUser = user
     }
-    
+
     func updateUser() throws {
         guard let uid = currentUser?.uid else { return }
         if let user = try userService.fetchUnique(withUID: uid) {
