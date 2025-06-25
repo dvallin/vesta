@@ -62,6 +62,9 @@ class TodoItem: SyncableEntity {
     @Relationship
     var category: TodoItemCategory?
 
+    @Relationship
+    var events: [TodoEvent] = []
+
     init(
         title: String,
         details: String,
@@ -172,7 +175,25 @@ class TodoItem: SyncableEntity {
     }
 
     func markAsDone(currentUser: User) {
+        handleEvent(eventType: .completed, currentUser: currentUser)
+    }
+
+    func skip(currentUser: User) {
+        guard recurrenceFrequency != nil else { return }
+        handleEvent(eventType: .skipped, currentUser: currentUser)
+    }
+
+    private func handleEvent(eventType: TodoEventType, currentUser: User) {
         let now = Date()
+        let event = TodoEvent(
+            eventType: eventType,
+            completedAt: now,
+            todoItem: self,
+            previousDueDate: self.dueDate,
+            previousRescheduleDate: self.rescheduleDate
+        )
+        self.events.append(event)
+
         if let frequency = recurrenceFrequency {
             var baseDate: Date
             if recurrenceType == .fixed {
@@ -180,16 +201,14 @@ class TodoItem: SyncableEntity {
             } else {
                 baseDate = now
             }
-
             let baseDateWithTime = DateUtils.preserveTime(from: dueDate, applying: baseDate)
             updateDueDate(
                 for: frequency, basedOn: baseDateWithTime ?? baseDate, currentUser: currentUser)
-        } else {
+        } else if eventType == .completed {
             isCompleted.toggle()
         }
 
         self.rescheduleDate = nil
-
         NotificationManager.shared.scheduleNotification(for: self)
         self.markAsDirty()
     }
@@ -320,5 +339,67 @@ class TodoItem: SyncableEntity {
         }
 
         self.markAsDirty()
+    }
+
+    // MARK: - Undo Last Event
+
+    /// Undo the last event (mark as done, skip, etc.) by restoring previous state and removing the event.
+    func undoLastEvent() {
+        guard let lastEvent = events.last else { return }
+
+        // Restore previous due/reschedule dates if available
+        if let previousDueDate = lastEvent.previousDueDate {
+            self.dueDate = previousDueDate
+        }
+        if let previousRescheduleDate = lastEvent.previousRescheduleDate {
+            self.rescheduleDate = previousRescheduleDate
+        }
+
+        // Restore completion state if the last event was .completed
+        if lastEvent.eventType == .completed {
+            self.isCompleted = false
+        }
+
+        // Remove the last event
+        self.events.removeLast()
+    }
+
+    // MARK: - Completion Analytics
+
+    /// Computes the time intervals between completion and the previous due date for all completed events.
+    var completionDistances: [TimeInterval] {
+        events
+            .filter { $0.eventType == .completed }
+            .compactMap { event in
+                guard let completedAt = event.completedAt as Date?,
+                    let previousDueDate = event.previousDueDate
+                else { return nil }
+                return completedAt.timeIntervalSince(previousDueDate)
+            }
+    }
+
+    var meanCompletionDistance: TimeInterval? {
+        let distances = completionDistances
+        guard !distances.isEmpty else { return nil }
+        return distances.reduce(0, +) / Double(distances.count)
+    }
+
+    var medianCompletionDistance: TimeInterval? {
+        let distances = completionDistances.sorted()
+        guard !distances.isEmpty else { return nil }
+        let mid = distances.count / 2
+        if distances.count % 2 == 0 {
+            return (distances[mid - 1] + distances[mid]) / 2
+        } else {
+            return distances[mid]
+        }
+    }
+
+    var varianceCompletionDistance: TimeInterval? {
+        let distances = completionDistances
+        guard let mean = meanCompletionDistance, !distances.isEmpty else { return nil }
+        let variance =
+            distances.map { pow($0 - mean, 2) }.reduce(0, +) / Double(distances.count)
+        return variance
     }
 }

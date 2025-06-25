@@ -47,6 +47,9 @@ extension TodoItem {
             dto["shoppingListItemId"] = shoppingListItemId
         }
 
+        // Add events for analytics (was completionEvents)
+        dto["events"] = events.map { $0.toDTO() }
+
         return dto
     }
 
@@ -80,6 +83,29 @@ extension TodoItem {
         }
         if let recurrenceInterval = dto["recurrenceInterval"] as? Int {
             self.recurrenceInterval = recurrenceInterval
+        }
+
+        // Update events from DTOs (was completionEvents)
+        if let eventsDTOs = dto["events"] as? [[String: Any]] {
+            self.events.removeAll()
+            for eventDTO in eventsDTOs {
+                let eventType: TodoEventType
+                if let eventTypeRaw = eventDTO["eventType"] as? String,
+                    let parsedType = TodoEventType(rawValue: eventTypeRaw)
+                {
+                    eventType = parsedType
+                } else {
+                    eventType = .completed
+                }
+                let event = TodoEvent(
+                    eventType: eventType,
+                    completedAt: eventDTO["completedAt"] as? Date ?? Date(),
+                    todoItem: self,
+                    previousDueDate: eventDTO["previousDueDate"] as? Date,
+                    previousRescheduleDate: eventDTO["previousRescheduleDate"] as? Date
+                )
+                self.events.append(event)
+            }
         }
     }
 }

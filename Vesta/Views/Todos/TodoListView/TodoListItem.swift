@@ -85,13 +85,19 @@ struct TodoListItem: View {
 
     private func markAsDone() {
         withAnimation {
-            viewModel.markAsDone(item, undoAction: undoMarkAsDone)
+            viewModel.markAsDone(item, undoAction: undoLastEvent)
         }
     }
 
-    private func undoMarkAsDone(item: TodoItem, id: UUID) {
+    private func skip() {
         withAnimation {
-            viewModel.undoMarkAsDone(item, id: id)
+            viewModel.skip(item, undoAction: undoLastEvent)
+        }
+    }
+
+    private func undoLastEvent(item: TodoItem, id: UUID) {
+        withAnimation {
+            viewModel.undoLastEvent(item, id: id)
         }
     }
 }
@@ -99,7 +105,7 @@ struct TodoListItem: View {
 #Preview("Basic Items") {
     let viewModel = TodoListViewModel()
     let user = Fixtures.createUser()
-    
+
     return List {
         // Regular todo item
         TodoListItem(

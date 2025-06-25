@@ -37,12 +37,62 @@ struct TodoItemDetailView: View {
                     updateMatchingCategories: viewModel.updateMatchingCategories
                 )
 
+                // --- Completion Statistics Section ---
+                Section(
+                    NSLocalizedString(
+                        "Completion Statistics", comment: "Completion statistics section header")
+                ) {
+                    if let mean = viewModel.item.meanCompletionDistance {
+                        HStack {
+                            Text(
+                                NSLocalizedString(
+                                    "Mean Completion Time", comment: "Mean completion time label"))
+                            Spacer()
+                            Text(formatDistance(mean))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    if let median = viewModel.item.medianCompletionDistance {
+                        HStack {
+                            Text(
+                                NSLocalizedString(
+                                    "Median Completion Time",
+                                    comment: "Median completion time label"))
+                            Spacer()
+                            Text(formatDistance(median))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    if let variance = viewModel.item.varianceCompletionDistance {
+                        HStack {
+                            Text(NSLocalizedString("Variance", comment: "Variance label"))
+                            Spacer()
+                            Text(formatDistance(variance, isVariance: true))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    if viewModel.item.completionDistances.isEmpty {
+                        Text(
+                            NSLocalizedString(
+                                "No completion data yet.", comment: "No completion data message")
+                        )
+                        .foregroundColor(.secondary)
+                    }
+                }
+
                 Section(NSLocalizedString("Actions", comment: "Actions section header")) {
                     Button(action: { viewModel.markAsDone() }) {
                         Label(
                             NSLocalizedString("Mark as Done", comment: "Mark as done button"),
                             systemImage: "checkmark.circle")
                     }
+
+                    Button(action: { viewModel.skip() }) {
+                        Label(
+                            NSLocalizedString("Skip", comment: "Skip button"),
+                            systemImage: "forward.end")
+                    }
+                    .disabled(viewModel.item.recurrenceFrequency == nil)
 
                     Toggle(
                         NSLocalizedString("Completed", comment: "Completed toggle label"),
@@ -103,6 +153,30 @@ struct TodoItemDetailView: View {
             .onAppear {
                 viewModel.configureEnvironment(modelContext, dismiss, auth, syncService)
             }
+        }
+    }
+
+    func formatDistance(_ interval: TimeInterval, isVariance: Bool = false) -> String {
+        let absInterval = abs(interval)
+        let days = Int(absInterval) / 86400
+        let hours = (Int(absInterval) % 86400) / 3600
+        let minutes = (Int(absInterval) % 3600) / 60
+
+        var components: [String] = []
+        if days > 0 { components.append("\(days)d") }
+        if hours > 0 { components.append("\(hours)h") }
+        if minutes > 0 && days == 0 { components.append("\(minutes)m") }
+
+        let base = components.isEmpty ? "<1m" : components.joined(separator: " ")
+        if isVariance {
+            return base
+        }
+        if interval < 0 {
+            return String(format: NSLocalizedString("%@ early", comment: "Completed early"), base)
+        } else if interval > 0 {
+            return String(format: NSLocalizedString("%@ late", comment: "Completed late"), base)
+        } else {
+            return NSLocalizedString("On time", comment: "Completed on time")
         }
     }
 }
