@@ -77,9 +77,7 @@ class AddTodoItemViewModel: ObservableObject {
 
             modelContext!.insert(todoItem)
 
-            if dueDate != nil {
-                NotificationManager.shared.scheduleNotification(for: todoItem)
-            }
+            NotificationManager.shared.scheduleNotification(for: todoItem)
 
             try modelContext!.save()
 

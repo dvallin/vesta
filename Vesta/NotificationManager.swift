@@ -20,12 +20,13 @@ class NotificationManager {
         // Cancel any existing notification for this item
         cancelNotification(for: item)
 
-        // Now guard if there should be any notifications
-        guard let dueDate = item.dueDate, !item.isCompleted else { return }
+        // Use rescheduleDate if present, otherwise dueDate
+        let effectiveDueDate = item.rescheduleDate ?? item.dueDate
+        guard let dueDate = effectiveDueDate, !item.isCompleted else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "Upcoming Task"
-        content.body = item.title
+        content.title = item.title
+        content.body = Self.notificationBody(for: item, dueDate: dueDate)
         content.sound = .default
 
         let calendar = Calendar.current
@@ -47,12 +48,16 @@ class NotificationManager {
         }
     }
 
+    private func notificationIdentifier(for item: TodoItem) -> String {
+        return "todo_\(item.uid)"
+    }
+
     private func scheduleNotificationRequest(
         for item: TodoItem,
         content: UNNotificationContent,
         trigger: UNNotificationTrigger
     ) {
-        let identifier = "todo_\(item.id)"
+        let identifier = notificationIdentifier(for: item)
         let request = UNNotificationRequest(
             identifier: identifier, content: content, trigger: trigger)
 
@@ -63,8 +68,44 @@ class NotificationManager {
         }
     }
 
+    // Helper to generate a detailed notification body from item data
+    private static func notificationBody(for item: TodoItem, dueDate: Date) -> String {
+        var lines: [String] = []
+
+        // Format due date
+        let dateFormatter = DateFormatter()
+        if item.ignoreTimeComponent {
+            dateFormatter.dateStyle = .medium
+            dateFormatter.timeStyle = .none
+        } else {
+            dateFormatter.dateStyle = .medium
+            dateFormatter.timeStyle = .short
+        }
+        let dueString = dateFormatter.string(from: dueDate)
+        lines.append("Due: \(dueString)")
+
+        // Details
+        if !item.details.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            lines.append("Details: \(item.details)")
+        }
+
+        // Recurrence
+        if let freq = item.recurrenceFrequency {
+            var recurrence = freq.displayName
+            if let interval = item.recurrenceInterval, interval > 1 {
+                recurrence = "Every \(interval) \(freq.displayName.lowercased())"
+            }
+            if let type = item.recurrenceType {
+                recurrence += " (\(type.displayName))"
+            }
+            lines.append("Repeats: \(recurrence)")
+        }
+
+        return lines.joined(separator: "\n")
+    }
+
     func cancelNotification(for item: TodoItem) {
-        let identifier = "todo_\(item.id)"
+        let identifier = notificationIdentifier(for: item)
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [
             identifier
         ])
