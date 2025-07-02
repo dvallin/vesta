@@ -88,6 +88,8 @@ class TodoListViewModel: ObservableObject {
         item.markAsDone(currentUser: currentUser)
 
         if saveContext() {
+            NotificationManager.shared.scheduleNotification(for: item)
+
             _ = syncService?.pushLocalChanges()
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
 
@@ -113,6 +115,8 @@ class TodoListViewModel: ObservableObject {
         item.skip(currentUser: currentUser)
 
         if saveContext() {
+            NotificationManager.shared.scheduleNotification(for: item)
+
             _ = syncService?.pushLocalChanges()
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .warning)
 
@@ -136,25 +140,25 @@ class TodoListViewModel: ObservableObject {
         item.undoLastEvent()
         toastMessages.removeAll { $0.id == id }
 
-        NotificationManager.shared.scheduleNotification(for: item)
         if saveContext() {
+            NotificationManager.shared.scheduleNotification(for: item)
+
             _ = syncService?.pushLocalChanges()
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 
     func deleteItem(_ item: TodoItem) {
-        NotificationManager.shared.cancelNotification(for: item)
+        if item.meal != nil {
+            modelContext!.delete(item.meal!)
+        } else if item.shoppingListItem != nil {
+            modelContext!.delete(item.shoppingListItem!)
+        } else {
+            modelContext!.delete(item)
+        }
 
         if saveContext() {
-
-            if item.meal != nil {
-                modelContext!.delete(item.meal!)
-            } else if item.shoppingListItem != nil {
-                modelContext!.delete(item.shoppingListItem!)
-            } else {
-                modelContext!.delete(item)
-            }
+            NotificationManager.shared.cancelNotification(for: item)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
         }
     }
@@ -183,6 +187,10 @@ class TodoListViewModel: ObservableObject {
         if saveContext() {
             _ = syncService?.pushLocalChanges()
             filterMode = .today
+
+            for item in todoItems {
+                NotificationManager.shared.scheduleNotification(for: item)
+            }
 
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
         }

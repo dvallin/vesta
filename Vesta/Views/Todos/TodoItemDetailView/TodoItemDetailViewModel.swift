@@ -145,6 +145,8 @@ class TodoItemDetailViewModel: ObservableObject {
         do {
             try modelContext.save()
 
+            NotificationManager.shared.scheduleNotification(for: item)
+
             _ = syncService?.pushLocalChanges()
 
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)

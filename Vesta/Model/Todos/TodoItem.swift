@@ -209,7 +209,6 @@ class TodoItem: SyncableEntity {
         }
 
         self.rescheduleDate = nil
-        NotificationManager.shared.scheduleNotification(for: self)
         self.markAsDirty()
     }
 
@@ -250,14 +249,11 @@ class TodoItem: SyncableEntity {
         self.dueDate = dueDate
         self.rescheduleDate = nil
 
-        NotificationManager.shared.scheduleNotification(for: self)
         self.markAsDirty()
     }
 
     func setIsCompleted(isCompleted: Bool, currentUser: User) {
         self.isCompleted = isCompleted
-
-        NotificationManager.shared.scheduleNotification(for: self)
         self.markAsDirty()
     }
 
@@ -285,8 +281,6 @@ class TodoItem: SyncableEntity {
             self.dueDate = DateUtils.calendar.startOfDay(for: dueDate)
         }
 
-        // Reschedule notification with new time component setting
-        NotificationManager.shared.scheduleNotification(for: self)
         self.markAsDirty()
     }
 

@@ -216,21 +216,18 @@ class UserAuthService: ObservableObject {
                             do {
                                 let document = try await userDocRef.getDocument()
                                 if !document.exists {
-                                    do {
-                                        try await userDocRef.setData(user.toDTO())
-                                        self.logger.info(
-                                            "Firestore user document created for \(firebaseUser.uid)"
-                                        )
-                                    } catch {
-                                        self.logger.error(
-                                            "Failed to create Firestore user document: \(error.localizedDescription)"
-                                        )
-                                    }
+                                    try await userDocRef.setData(user.toDTO())
+                                    self.logger.info(
+                                        "Firestore user document created for \(firebaseUser.uid)"
+                                    )
                                 }
                             } catch {
                                 self.logger.error(
-                                    "Failed to check if Firestore user document exists: \(error.localizedDescription)"
+                                    "Failed to create or check Firestore user document: \(error.localizedDescription)"
                                 )
+                                self.isAuthenticating = false
+                                promise(.failure(error))
+                                return
                             }
 
                             self.isAuthenticating = false
