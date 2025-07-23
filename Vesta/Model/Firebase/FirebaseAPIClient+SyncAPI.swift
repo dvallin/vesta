@@ -112,6 +112,7 @@ extension FirebaseAPIClient: SyncAPIClient {
         // First, fetch the user document to get friend IDs
         group.enter()
         let userDocRef = db.collection("users").document(userId)
+        self.logger.debug("Executing query: users/\(userId) document read")
         userDocRef.getDocument { [weak self] (document, error) in
             guard let self = self else {
                 // Create an atomic operation by updating using the notify queue
@@ -238,6 +239,9 @@ extension FirebaseAPIClient: SyncAPIClient {
         let entitiesCollection = db.collection("users").document(userId).collection("entities")
 
         // Fetch all entities from the user's entities collection
+        self.logger.debug(
+            "Executing query: users/\(userId)/entities where lastModified > \(lastSyncTimestamp.dateValue())"
+        )
         entitiesCollection
             .whereField("lastModified", isGreaterThan: lastSyncTimestamp)
             .getDocuments { [weak self] (snapshot, error) in
@@ -298,7 +302,8 @@ extension FirebaseAPIClient: SyncAPIClient {
                 }
 
                 self.logger.debug(
-                    "Fetched \(documents.count) entities from collection for user \(userId)")
+                    "Fetched \(documents.count) entities from collection for user \(userId) - Query read count: ~\(documents.count)"
+                )
                 group.leave()
             }
     }
@@ -366,11 +371,12 @@ extension FirebaseAPIClient: SyncAPIClient {
         errorRef: Error?,
         group: DispatchGroup
     ) {
-        // Get reference to friend's entities collection
+        // Fetch only shared entities from the friend's collection
         let friendEntitiesCollection = db.collection("users").document(friendId).collection(
             "entities")
-
-        // Fetch only shared entities from the friend's collection
+        self.logger.debug(
+            "Executing query: users/\(friendId)/entities where isShared = true AND lastModified > \(lastSyncTimestamp.dateValue())"
+        )
         friendEntitiesCollection
             .whereField("isShared", isEqualTo: true)
             .whereField("lastModified", isGreaterThan: lastSyncTimestamp)
@@ -430,7 +436,8 @@ extension FirebaseAPIClient: SyncAPIClient {
                 }
 
                 self.logger.debug(
-                    "Fetched \(documents.count) shared entities from friend \(friendId)")
+                    "Fetched \(documents.count) shared entities from friend \(friendId) - Query read count: ~\(documents.count)"
+                )
                 group.leave()
             }
     }
@@ -608,12 +615,6 @@ extension FirebaseAPIClient: SyncAPIClient {
     ) -> AnyCancellable {
         logger.info("Setting up real-time subscription for user: \(userId)")
 
-        // Create a set to collect all listener cancellables
-        let cancellables = Set<AnyCancellable>()
-
-        // Create a subject to represent the stream of updates
-        let subject = PassthroughSubject<[String: [[String: Any]]], Never>()
-
         // Subscribe to user document changes
         let userDocRef = db.collection("users").document(userId)
         let userListenerKey = "user_\(userId)"
@@ -650,7 +651,7 @@ extension FirebaseAPIClient: SyncAPIClient {
             userData["ownerId"] = document.documentID
 
             // Create the update payload
-            var entityUpdates: [String: [[String: Any]]] = ["User": [userData]]
+            let entityUpdates: [String: [[String: Any]]] = ["User": [userData]]
 
             self.logger.debug("Emitting real-time update for user document: \(document.documentID)")
 
@@ -658,8 +659,6 @@ extension FirebaseAPIClient: SyncAPIClient {
             DispatchQueue.main.async {
                 onUpdate(entityUpdates)
             }
-
-            subject.send(entityUpdates)
 
             // When the user document changes, we need to check if the friends list has changed
             // If it has, we need to update our subscriptions to friend entities and documents
@@ -683,8 +682,10 @@ extension FirebaseAPIClient: SyncAPIClient {
         var lastProcessedSnapshotTime: Timestamp?
 
         // Set up a new real-time listener for the entities collection
+        let lastSyncTimestamp = getLastSyncTimestamp(for: userId)
         let entitiesListener =
             entitiesCollection
+            .whereField("lastModified", isGreaterThan: lastSyncTimestamp)
             .addSnapshotListener { [weak self] (snapshot, error) in
                 guard let self = self else { return }
 
@@ -754,8 +755,6 @@ extension FirebaseAPIClient: SyncAPIClient {
                     DispatchQueue.main.async {
                         onUpdate(entityUpdates)
                     }
-
-                    subject.send(entityUpdates)
                 }
             }
 
@@ -763,14 +762,19 @@ extension FirebaseAPIClient: SyncAPIClient {
         listeners[entitiesListenerKey] = entitiesListener
 
         // Fetch current friends and set up listeners for their shared entities and documents
+        self.logger.debug("Executing query: users/\(userId) document read for subscription setup")
         userDocRef.getDocument { [weak self] (document, error) in
             guard let self = self, let document = document, document.exists else { return }
 
             let data = self.desanitizeDTO(document.data() ?? [:])
             if let friendIds = data["friendIds"] as? [String] {
                 // Set up listeners for friend entities
+                self.logger.info(
+                    "Setting up entity subscriptions for user \(userId) with \(friendIds.count) friends. lastSyncTimestamp: \(lastSyncTimestamp.dateValue())"
+                )
                 self.setupFriendEntityListeners(
-                    userId: userId, friendIds: friendIds, onUpdate: onUpdate)
+                    userId: userId, friendIds: friendIds, lastSyncTimestamp: lastSyncTimestamp,
+                    onUpdate: onUpdate)
 
                 // Set up listeners for friend user documents
                 self.setupFriendUserDocumentListeners(
@@ -875,10 +879,13 @@ extension FirebaseAPIClient: SyncAPIClient {
     private func setupFriendEntityListeners(
         userId: String,
         friendIds: [String],
+        lastSyncTimestamp: Timestamp,
         onUpdate: @escaping (_ entityData: [String: [[String: Any]]]) -> Void
     ) {
         for friendId in friendIds {
-            setupFriendEntityListener(userId: userId, friendId: friendId, onUpdate: onUpdate)
+            setupFriendEntityListener(
+                userId: userId, friendId: friendId, lastSyncTimestamp: lastSyncTimestamp,
+                onUpdate: onUpdate)
         }
     }
 
@@ -886,6 +893,7 @@ extension FirebaseAPIClient: SyncAPIClient {
     private func setupFriendEntityListener(
         userId: String,
         friendId: String,
+        lastSyncTimestamp: Timestamp,
         onUpdate: @escaping (_ entityData: [String: [[String: Any]]]) -> Void
     ) {
         let listenerKey = "friend_entities_\(userId)_\(friendId)"
@@ -904,8 +912,14 @@ extension FirebaseAPIClient: SyncAPIClient {
         let listener =
             friendEntitiesCollection
             .whereField("isShared", isEqualTo: true)
+            .whereField("lastModified", isGreaterThan: lastSyncTimestamp)
             .addSnapshotListener { [weak self] (snapshot, error) in
                 guard let self = self else { return }
+
+                // Log every time this subscription triggers a read
+                self.logger.info(
+                    "Entity subscription read for friend \(friendId) (user: \(userId)) triggered. lastSyncTimestamp: \(lastSyncTimestamp.dateValue())"
+                )
 
                 if let error = error {
                     self.logger.error(
@@ -1034,10 +1048,16 @@ extension FirebaseAPIClient: SyncAPIClient {
         }
 
         // Add listeners for new friends
+        let lastSyncTimestamp = getLastSyncTimestamp(for: userId)
         for friendId in newFriendIds {
             // Add entity listener if needed
             if !currentFriendEntityIds.contains(friendId) {
-                setupFriendEntityListener(userId: userId, friendId: friendId, onUpdate: onUpdate)
+                logger.info(
+                    "Adding entity subscription for friend \(friendId) (user: \(userId)). lastSyncTimestamp: \(lastSyncTimestamp.dateValue())"
+                )
+                setupFriendEntityListener(
+                    userId: userId, friendId: friendId, lastSyncTimestamp: lastSyncTimestamp,
+                    onUpdate: onUpdate)
                 logger.debug("Added entity listener for new friend: \(friendId)")
             }
 

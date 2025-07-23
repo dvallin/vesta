@@ -68,34 +68,33 @@ class EntityProcessorCoordinator {
     }
 
     @MainActor
-    func processEntities(_ entityData: [String: [[String: Any]]], currentUser: User) async throws {
+    func processEntities(_ entityData: [String: [[String: Any]]]) async throws {
         self.logger.info("Processing entities from received data")
 
         // Process users first since other entities might reference them
         if let userEntities = entityData["users"] {
-            try await userProcessor.process(entities: userEntities, currentUser: currentUser)
+            try await userProcessor.process(entities: userEntities)
         }
 
         // Process recipes before meals because meals can reference recipes
         if let recipeEntities = entityData["recipes"] {
-            try await recipeProcessor.process(entities: recipeEntities, currentUser: currentUser)
+            try await recipeProcessor.process(entities: recipeEntities)
         }
 
         // Process todoItems and meals before shopping items as they might be referenced
         if let todoItemEntities = entityData["todoItems"] {
             try await todoItemProcessor.process(
-                entities: todoItemEntities, currentUser: currentUser)
+                entities: todoItemEntities)
         }
 
         if let mealEntities = entityData["meals"] {
-            try await mealProcessor.process(entities: mealEntities, currentUser: currentUser)
+            try await mealProcessor.process(entities: mealEntities)
         }
 
         // Process shopping items last since they can reference everything else
         if let shoppingListItemEntities = entityData["shoppingListItems"] {
             try await shoppingListItemProcessor.process(
-                entities: shoppingListItemEntities,
-                currentUser: currentUser
+                entities: shoppingListItemEntities
             )
         }
 

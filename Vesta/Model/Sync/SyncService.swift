@@ -71,11 +71,6 @@ class SyncService: ObservableObject {
     func startSync() {
         stopSync()
 
-        guard let currentUser = auth.currentUser, currentUser.uid != nil else {
-            self.logger.error("Cannot start sync: User not authenticated")
-            return
-        }
-
         self.logger.info("Starting sync service")
         isSyncEnabled = true
 
@@ -190,10 +185,6 @@ class SyncService: ObservableObject {
             return Just(())
                 .setFailureType(to: SyncError.self)
                 .eraseToAnyPublisher()
-        }
-
-        guard let currentUser = auth.currentUser, currentUser.uid != nil else {
-            return Fail(error: SyncError.notAuthenticated).eraseToAnyPublisher()
         }
 
         self.logger.info("Starting manual sync")
@@ -451,35 +442,27 @@ class SyncService: ObservableObject {
 
             // Create a task context for processing entities
             Task {
-                do {
-                    // Process each entity type on the MainActor
-                    await MainActor.run {
-                        Task {
-                            do {
-                                // Map the API entity types to our internal structure
-                                let mappedEntityData = self.mapEntityTypes(entityData)
+                // Process each entity type on the MainActor
+                await MainActor.run {
+                    Task {
+                        do {
+                            // Map the API entity types to our internal structure
+                            let mappedEntityData = self.mapEntityTypes(entityData)
 
-                                // Process all entities using the coordinator
-                                try await self.entityProcessorCoordinator.processEntities(
-                                    mappedEntityData,
-                                    currentUser: currentUser
-                                )
+                            // Process all entities using the coordinator
+                            try await self.entityProcessorCoordinator.processEntities(
+                                mappedEntityData
+                            )
 
-                                // Save all changes
-                                try self.modelContext.save()
+                            // Save all changes
+                            try self.modelContext.save()
 
-                                // Complete successfully
-                                promise(.success(()))
-                            } catch {
-                                self.logger.error("Error processing entities: \(error)")
-                                promise(.failure(.unknown))
-                            }
+                            // Complete successfully
+                            promise(.success(()))
+                        } catch {
+                            self.logger.error("Error processing entities: \(error)")
+                            promise(.failure(.unknown))
                         }
-                    }
-                } catch {
-                    self.logger.error("Error in MainActor scheduling: \(error)")
-                    await MainActor.run {
-                        promise(.failure(.unknown))
                     }
                 }
             }

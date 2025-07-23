@@ -58,7 +58,7 @@ struct VestaMainPage: View {
             .onChange(of: scenePhase) { oldPhase, newPhase in
                 if newPhase == .background {
                     // Make sure changes are synced when going to background
-                    syncService.pushLocalChanges()
+                    _ = syncService.pushLocalChanges()
                 }
             }
         } else {

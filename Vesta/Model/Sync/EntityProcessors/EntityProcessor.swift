@@ -6,7 +6,7 @@ protocol EntityProcessor {
     var modelContext: ModelContext { get }
     var logger: Logger { get }
 
-    func process(entities: [[String: Any]], currentUser: User) async throws
+    func process(entities: [[String: Any]]) async throws
 }
 
 class BaseEntityProcessor {

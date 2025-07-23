@@ -70,7 +70,7 @@ struct RescheduleOverdueTaskBanner: View {
             .padding(.vertical)
 
         // Reschedule banner
-        var rescheduleViewModel = TodoListViewModel()
+        let rescheduleViewModel = TodoListViewModel()
         RescheduleOverdueTaskBanner(
             viewModel: rescheduleViewModel,
             todoItems: [
