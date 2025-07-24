@@ -120,7 +120,7 @@ class MockAPIClient: SyncAPIClient {
 
                     case "Meal":
                         // Create mock meal DTOs
-                        for i in 0..<Int(arc4random_uniform(3) + 1) {
+                        for _ in 0..<Int(arc4random_uniform(3) + 1) {
                             entities.append([
                                 "entityType": "Meal",
                                 "uid": UUID().uuidString,

@@ -392,8 +392,11 @@ class TodoItem: SyncableEntity {
     var varianceCompletionDistance: TimeInterval? {
         let distances = completionDistances
         guard let mean = meanCompletionDistance, !distances.isEmpty else { return nil }
+        if distances.count == 1 {
+            return 0
+        }
         let variance =
-            distances.map { pow($0 - mean, 2) }.reduce(0, +) / Double(distances.count)
+            distances.map { pow($0 - mean, 2) }.reduce(0, +) / Double(distances.count - 1)
         return variance
     }
 }

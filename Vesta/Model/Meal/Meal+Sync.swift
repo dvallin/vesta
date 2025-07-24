@@ -6,7 +6,7 @@ extension Meal {
     func toDTO() -> [String: Any] {
         var dto: [String: Any] = [
             "entityType": "Meal",
-            "uid": uid ?? "",
+            "uid": uid,
             "ownerId": owner?.uid ?? "",
             "isShared": isShared,
 

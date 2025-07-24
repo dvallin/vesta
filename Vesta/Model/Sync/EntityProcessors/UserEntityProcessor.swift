@@ -11,7 +11,7 @@ class UserEntityProcessor: BaseEntityProcessor, EntityProcessor {
     }
 
     @MainActor
-    func process(entities: [[String: Any]], currentUser: User) async throws {
+    func process(entities: [[String: Any]]) async throws {
         self.logger.info("Processing \(entities.count) User entities")
 
         for data in entities {

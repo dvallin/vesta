@@ -232,7 +232,7 @@ class UserAuthService: ObservableObject {
 
                             self.isAuthenticating = false
                             self.logger.info(
-                                "Sign up completed successfully for user: \(user.uid ?? "-")")
+                                "Sign up completed successfully for user: \(user.uid)")
                             promise(.success(user))
                         }
                     }
@@ -256,7 +256,7 @@ class UserAuthService: ObservableObject {
     }
 
     func setCurrentUser(user: User) {
-        logger.debug("Manually setting current user: \(user.uid ?? "-")")
+        logger.debug("Manually setting current user: \(user.uid)")
         self.currentUser = user
     }
 

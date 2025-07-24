@@ -10,7 +10,7 @@ import Foundation
 
 // MARK: - Timestamp Extensions
 
-extension Timestamp: Comparable {
+extension Timestamp: @retroactive Comparable {
     public static func < (lhs: Timestamp, rhs: Timestamp) -> Bool {
         if lhs.seconds != rhs.seconds {
             return lhs.seconds < rhs.seconds

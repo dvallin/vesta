@@ -309,7 +309,7 @@ struct SentInviteRow: View {
             uid: "user_from_sender1_123456789",
             createdAt: Date(),
             senderUid: "sender1_uid",
-            recipientUid: user.uid ?? "current_user",
+            recipientUid: user.uid,
             senderEmail: "sender1@example.com",
             senderDisplayName: "Sender One",
             senderPhotoURL: nil,
@@ -322,7 +322,7 @@ struct SentInviteRow: View {
             uid: "user_from_sender2_123456789",
             createdAt: Date().addingTimeInterval(-86400),  // Yesterday
             senderUid: "sender2_uid",
-            recipientUid: user.uid ?? "current_user",
+            recipientUid: user.uid,
             senderEmail: "sender2@example.com",
             senderDisplayName: "Sender Two",
             senderPhotoURL: nil,
