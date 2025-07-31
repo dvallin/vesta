@@ -5,7 +5,6 @@ struct MigrationManager {
 
     static func migrateToSyncableEntities(in context: ModelContext, currentUser: User) {
 
-        // Assign owners to all entities that implement SyncableEntity
         migrateTodoItems(in: context, owner: currentUser)
         migrateRecipes(in: context, owner: currentUser)
         migrateMeals(in: context, owner: currentUser)
@@ -18,7 +17,6 @@ struct MigrationManager {
             print("Error saving migration changes: \(error)")
         }
     }
-
 
     private static func migrateTodoItems(in context: ModelContext, owner: User) {
         let descriptor = FetchDescriptor<TodoItem>()

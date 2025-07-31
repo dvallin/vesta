@@ -149,13 +149,9 @@ class TodoListViewModel: ObservableObject {
     }
 
     func deleteItem(_ item: TodoItem) {
-        if item.meal != nil {
-            modelContext!.delete(item.meal!)
-        } else if item.shoppingListItem != nil {
-            modelContext!.delete(item.shoppingListItem!)
-        } else {
-            modelContext!.delete(item)
-        }
+        item.deletedAt = Date()
+        item.meal?.deletedAt = Date()
+        item.shoppingListItem?.deletedAt = Date()
 
         if saveContext() {
             NotificationManager.shared.cancelNotification(for: item)

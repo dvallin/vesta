@@ -14,6 +14,8 @@ class Recipe: SyncableEntity {
     var isShared: Bool = false
     var dirty: Bool = true
 
+    var deletedAt: Date? = nil
+
     @Relationship(deleteRule: .cascade, inverse: \Ingredient.recipe)
     var ingredients: [Ingredient]
 

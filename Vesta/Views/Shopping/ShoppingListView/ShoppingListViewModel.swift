@@ -73,7 +73,7 @@ class ShoppingListViewModel: ObservableObject {
     func undoTogglePurchased(_ item: ShoppingListItem, id: UUID) {
         guard let currentUser = auth?.currentUser else { return }
         guard let todoItem = item.todoItem else { return }
-        
+
         todoItem.setIsCompleted(isCompleted: false, currentUser: currentUser)
         if saveContext() {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
@@ -83,7 +83,7 @@ class ShoppingListViewModel: ObservableObject {
     }
 
     func deleteItem(_ item: ShoppingListItem) {
-        modelContext!.delete(item)
+        item.deletedAt = Date()
         if saveContext() {
             HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
         }

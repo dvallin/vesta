@@ -15,6 +15,8 @@ class ShoppingListItem: SyncableEntity {
     var isShared: Bool = false
     var dirty: Bool = true
 
+    var deletedAt: Date? = nil
+
     @Relationship(deleteRule: .cascade, inverse: \TodoItem.shoppingListItem)
     var todoItem: TodoItem?
 

@@ -7,17 +7,8 @@ class AddMealViewModel: ObservableObject {
     private var auth: UserAuthService?
     private var categoryService: TodoItemCategoryService?
 
-    @Published var selectedRecipe: Recipe?
-    @Published var selectedDate: Date
-    @Published var scalingFactor: Double = 1.0
-    @Published var selectedMealType: MealType = .dinner
-
-    @Published var showingValidationAlert = false
-    @Published var validationMessage = ""
-
-    init(selectedDate: Date) {
-        self.selectedDate = selectedDate
-    }
+    @Published var showingErrorAlert = false
+    @Published var errorMessage = ""
 
     func configureEnvironment(
         _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
@@ -29,18 +20,16 @@ class AddMealViewModel: ObservableObject {
     }
 
     @MainActor
-    func save() {
-        guard let currentUser = auth?.currentUser else { return }
-        guard let recipe = selectedRecipe else {
-            validationMessage = NSLocalizedString(
-                "Please select a recipe", comment: "Recipe selection validation message")
-            showingValidationAlert = true
+    func createMeal(with recipe: Recipe) async {
+        guard let currentUser = auth?.currentUser else {
+            showError(NSLocalizedString("User not authenticated", comment: "Authentication error"))
             return
         }
-        guard modelContext != nil else {
-            validationMessage = NSLocalizedString(
-                "Environment not configured", comment: "Environment configuration error message")
-            showingValidationAlert = true
+
+        guard let context = modelContext else {
+            showError(
+                NSLocalizedString(
+                    "Environment not configured", comment: "Environment configuration error"))
             return
         }
 
@@ -52,37 +41,38 @@ class AddMealViewModel: ObservableObject {
             let todoItem = TodoItem.create(
                 title: recipe.title,
                 details: recipe.details,
-                dueDate: selectedDate,
+                dueDate: nil,
                 ignoreTimeComponent: false,
                 category: mealCategory,
                 owner: currentUser
             )
 
             let meal = Meal(
-                scalingFactor: scalingFactor, todoItem: todoItem, recipe: recipe,
-                mealType: selectedMealType, owner: currentUser
+                scalingFactor: 1.0,
+                todoItem: todoItem,
+                recipe: recipe,
+                mealType: .dinner,
+                owner: currentUser
             )
-            meal.updateTodoItemDueDate(
-                for: selectedMealType, on: selectedDate, currentUser: currentUser)
 
-            modelContext!.insert(todoItem)
-            modelContext!.insert(meal)
-            try modelContext!.save()
+            context.insert(todoItem)
+            context.insert(meal)
+            try context.save()
+
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
-            dismiss!()
+            dismiss?()
         } catch {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
-            validationMessage = String(
-                format: NSLocalizedString(
-                    "Error saving meal: %@", comment: "Error saving meal message"),
-                error.localizedDescription)
-            showingValidationAlert = true
+            showError(
+                String(
+                    format: NSLocalizedString(
+                        "Error creating meal: %@", comment: "Error creating meal message"),
+                    error.localizedDescription))
         }
     }
 
-    @MainActor
-    func cancel() {
-        modelContext?.rollback()
-        dismiss!()
+    private func showError(_ message: String) {
+        errorMessage = message
+        showingErrorAlert = true
     }
 }

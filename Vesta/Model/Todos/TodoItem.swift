@@ -50,6 +50,8 @@ class TodoItem: SyncableEntity {
     var isShared: Bool = false
     var dirty: Bool = true
 
+    var deletedAt: Date? = nil
+
     @Relationship(deleteRule: .noAction)
     var owner: User?
 

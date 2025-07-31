@@ -6,6 +6,7 @@ protocol SyncableEntity: AnyObject {
     var owner: User? { get set }
     var isShared: Bool { get set }
     var dirty: Bool { get set }
+    var deletedAt: Date? { get set }
 
     func markAsDirty()
 

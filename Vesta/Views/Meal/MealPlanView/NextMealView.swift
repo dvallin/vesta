@@ -25,7 +25,7 @@ struct NextMealView: View {
             }
         } header: {
             Text(NSLocalizedString("Next Meal", comment: "Next meal section header"))
-                .font(.title)
+                .font(.title2)
                 .foregroundColor(.primary)
         }
     }

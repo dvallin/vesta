@@ -5,7 +5,9 @@ struct ShoppingListView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var auth: UserAuthService
     @EnvironmentObject private var syncService: SyncService
-    @Query(sort: \ShoppingListItem.todoItem?.dueDate) var shoppingItems: [ShoppingListItem]
+    @Query<ShoppingListItem>(
+        filter: #Predicate { item in item.deletedAt == nil }
+    ) private var shoppingItems: [ShoppingListItem]
 
     @StateObject var viewModel: ShoppingListViewModel
 

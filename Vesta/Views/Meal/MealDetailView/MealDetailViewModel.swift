@@ -29,4 +29,9 @@ class MealDetailViewModel: ObservableObject {
         guard let currentUser = auth?.currentUser else { return }
         meal.updateTodoItemDueDate(for: mealType, currentUser: currentUser)
     }
+
+    func removeDueDate() {
+        guard let currentUser = auth?.currentUser else { return }
+        meal.removeDueDate(currentUser: currentUser)
+    }
 }

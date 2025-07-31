@@ -1,13 +1,6 @@
 import SwiftData
 import SwiftUI
 
-struct DayGroup: Identifiable {
-    let id = UUID()
-    let date: Date
-    let meals: [Meal]
-    let weekTitle: String?
-}
-
 class MealPlanViewModel: ObservableObject {
     private var auth: UserAuthService?
     private var modelContext: ModelContext?
@@ -16,63 +9,36 @@ class MealPlanViewModel: ObservableObject {
     @Published var isPresentingAddMealView = false
     @Published var isPresentingRecipeListView = false
     @Published var isPresentingShoppingListGenerator = false
+    @Published var toastMessages: [ToastMessage] = []
 
     func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
         self.modelContext = context
         self.auth = auth
     }
 
-    func dayGroups(for meals: [Meal]) -> [DayGroup] {
-        var groups: [DayGroup] = []
-        for week in weeksWithMeals(for: meals) {
-            let sortedDays = week.keys.sorted()
-            for (index, day) in sortedDays.enumerated() {
-                let weekHeader: String? =
-                    (index == 0)
-                    ? String(
-                        format: NSLocalizedString("Week %d", comment: "Week number in meal plan"),
-                        weekNumber(for: day))
-                    : nil
-                groups.append(DayGroup(date: day, meals: week[day] ?? [], weekTitle: weekHeader))
+    func activeMeals(from meals: [Meal]) -> [Meal] {
+        return meals.filter { !$0.isDone }
+    }
+
+    func sortedMeals(from meals: [Meal]) -> [Meal] {
+        return meals.sorted {
+            let dateA = $0.todoItem?.dueDate ?? Date.distantFuture
+            let dateB = $1.todoItem?.dueDate ?? Date.distantFuture
+            if dateA != dateB {
+                return dateA < dateB
             }
-        }
-        return groups.sorted(by: { $0.date < $1.date })
-    }
-
-    func weeksWithMeals(for meals: [Meal]) -> [[Date: [Meal]]] {
-        let calendar = Calendar.current
-        let today = Date()
-        let startOfWeek = calendar.date(
-            from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
-        )!
-        let dates = (0..<14).compactMap {
-            calendar.date(byAdding: .day, value: $0, to: startOfWeek)
-        }
-        let mealsByDate = Dictionary(grouping: meals) { meal in
-            calendar.startOfDay(for: meal.todoItem?.dueDate ?? Date())
-        }
-        let weeks = stride(from: 0, to: dates.count, by: 7).map {
-            Array(dates[$0..<min($0 + 7, dates.count)])
-        }
-        return weeks.map { week in
-            week.reduce(into: [Date: [Meal]]()) { result, date in
-                if let mealsForDate = mealsByDate[date], !mealsForDate.isEmpty {
-                    result[date] = mealsForDate
-                }
-            }
+            let titleA = $0.recipe?.title ?? ""
+            let titleB = $1.recipe?.title ?? ""
+            return titleA.localizedCaseInsensitiveCompare(titleB) == .orderedAscending
         }
     }
 
-    func weekNumber(for date: Date) -> Int {
-        Calendar.current.component(.weekOfYear, from: date)
+    func activeSortedMeals(from meals: [Meal]) -> [Meal] {
+        return sortedMeals(from: activeMeals(from: meals))
     }
 
-    func mealsForDate(meals: [Meal], in date: Date) -> [Meal] {
-        let calendar = Calendar.current
-        return meals.filter { meal in
-            guard let dueDate = meal.todoItem?.dueDate else { return false }
-            return calendar.isDate(dueDate, inSameDayAs: date)
-        }
+    func selectMeal(_ meal: Meal) {
+        selectedMeal = meal
     }
 
     func nextUpcomingMeal(meals: [Meal]) -> Meal? {
@@ -88,38 +54,96 @@ class MealPlanViewModel: ObservableObject {
         }
     }
 
-    func deleteMeal(meals: [Meal], at offsets: IndexSet, for date: Date) {
-        withAnimation {
-            let mealsForDate = mealsForDate(meals: meals, in: date)
-
-            offsets.map { mealsForDate[$0] }.forEach { meal in
-                if let todoItem = meal.todoItem {
-                    NotificationManager.shared.cancelNotification(for: todoItem)
-                }
-                modelContext?.delete(meal)
-            }
-            if saveContext() {
-                HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
-            }
-        }
+    func presentAddMealView() {
+        HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+        isPresentingAddMealView = true
     }
 
-    func markAsDone(_ todoItem: TodoItem) {
-        guard let currentUser = auth?.currentUser else { return }
-        todoItem.markAsDone(currentUser: currentUser)
+    func deleteMeal(_ meal: Meal, undoAction: @escaping (Meal, UUID) -> Void) {
+        if let todoItem = meal.todoItem {
+            NotificationManager.shared.cancelNotification(for: todoItem)
+        }
+        meal.deletedAt = Date()
+        meal.todoItem?.deletedAt = meal.deletedAt
+
         if saveContext() {
-            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+
+            let id = UUID()
+            let toastMessage = ToastMessage(
+                id: id,
+                message: String(
+                    format: NSLocalizedString(
+                        "%@ deleted", comment: "Toast message for deleting meal"),
+                    meal.recipe?.title ?? "Meal"
+                ),
+                undoAction: {
+                    undoAction(meal, id)
+                }
+            )
+            toastMessages.append(toastMessage)
         }
     }
 
-    func isDateInPast(_ date: Date) -> Bool {
-        let calendar = Calendar.current
-        return calendar.compare(date, to: Date(), toGranularity: .day) == .orderedAscending
+    func markMealAsDone(_ meal: Meal) {
+        guard let currentUser = auth?.currentUser,
+            let todoItem = meal.todoItem
+        else { return }
+
+        todoItem.markAsDone(currentUser: currentUser)
+
+        if saveContext() {
+            NotificationManager.shared.scheduleNotification(for: todoItem)
+            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+
+            let id = UUID()
+            let toastMessage = ToastMessage(
+                id: id,
+                message: String(
+                    format: NSLocalizedString(
+                        "%@ marked as done", comment: "Toast message for marking meal as done"),
+                    meal.recipe?.title ?? "Meal"
+                ),
+                undoAction: { [weak self] in
+                    self?.undoMealCompletion(meal, id: id)
+                }
+            )
+            toastMessages.append(toastMessage)
+        }
+    }
+
+    func undoMealDeletion(_ meal: Meal, id: UUID) {
+        // Undo deletion
+        meal.deletedAt = nil
+        meal.todoItem?.deletedAt = nil
+        if let todoItem = meal.todoItem {
+            NotificationManager.shared.scheduleNotification(for: todoItem)
+        }
+
+        toastMessages.removeAll { $0.id == id }
+
+        if saveContext() {
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+        }
+    }
+
+    func undoMealCompletion(_ meal: Meal, id: UUID) {
+        // Undo completion
+        if let todoItem = meal.todoItem {
+            todoItem.undoLastEvent()
+            NotificationManager.shared.scheduleNotification(for: todoItem)
+        }
+
+        toastMessages.removeAll { $0.id == id }
+
+        if saveContext() {
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+        }
     }
 
     private func saveContext() -> Bool {
         do {
-            try modelContext!.save()
+            try modelContext?.save()
             return true
         } catch {
             return false
