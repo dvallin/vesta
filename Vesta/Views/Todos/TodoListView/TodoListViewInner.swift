@@ -28,15 +28,5 @@ struct TodoListViewInner: View {
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                TextField(
-                    NSLocalizedString("Search", comment: "Search text field placeholder"),
-                    text: $viewModel.searchText
-                )
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(maxWidth: 200)
-            }
-        }
     }
 }

@@ -8,13 +8,11 @@ class ShoppingListViewModel: ObservableObject {
 
     @Published var toastMessages: [ToastMessage] = []
 
-    @Published var searchText: String = ""
     @Published var showPurchased: Bool = false
 
     @Published var selectedShoppingItem: ShoppingListItem? = nil
 
     @Published var isPresentingAddShoppingItemView = false
-    @Published var isPresentingFilterCriteriaView = false
 
     init(showPurchased: Bool = false) {
         self.showPurchased = showPurchased
@@ -91,13 +89,9 @@ class ShoppingListViewModel: ObservableObject {
 
     func filterItems(shoppingItems: [ShoppingListItem]) -> [ShoppingListItem] {
         return shoppingItems.filter { item in
-            let matchesSearchText =
-                searchText.isEmpty
-                || item.name.localizedCaseInsensitiveContains(searchText)
-
             let matchesPurchased = showPurchased || !item.isPurchased
 
-            return matchesSearchText && matchesPurchased
+            return matchesPurchased
         }
         .sorted { first, second in
             // First sort by purchased status (non-purchased first)

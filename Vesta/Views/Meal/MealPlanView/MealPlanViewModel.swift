@@ -10,6 +10,7 @@ class MealPlanViewModel: ObservableObject {
     @Published var isPresentingRecipeListView = false
     @Published var isPresentingShoppingListGenerator = false
     @Published var toastMessages: [ToastMessage] = []
+    @Published var filterMode: MealPlanFilterMode = .all
 
     func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
         self.modelContext = context
@@ -35,6 +36,48 @@ class MealPlanViewModel: ObservableObject {
 
     func activeSortedMeals(from meals: [Meal]) -> [Meal] {
         return sortedMeals(from: activeMeals(from: meals))
+    }
+
+    func filteredMeals(from meals: [Meal]) -> [Meal] {
+        let calendar = Calendar.current
+        let now = Date()
+
+        let filteredMeals: [Meal]
+
+        switch filterMode {
+        case .all:
+            filteredMeals = activeMeals(from: meals)
+
+        case .currentWeek:
+            let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? now
+            let endOfWeek = calendar.dateInterval(of: .weekOfYear, for: now)?.end ?? now
+            filteredMeals = meals.filter { meal in
+                guard let dueDate = meal.todoItem?.dueDate else { return false }
+                return dueDate >= startOfWeek && dueDate < endOfWeek
+            }
+
+        case .lastWeek:
+            let lastWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: now) ?? now
+            let startOfLastWeek =
+                calendar.dateInterval(of: .weekOfYear, for: lastWeek)?.start ?? now
+            let endOfLastWeek = calendar.dateInterval(of: .weekOfYear, for: lastWeek)?.end ?? now
+            filteredMeals = meals.filter { meal in
+                guard let dueDate = meal.todoItem?.dueDate else { return false }
+                return dueDate >= startOfLastWeek && dueDate < endOfLastWeek
+            }
+
+        case .nextWeek:
+            let nextWeek = calendar.date(byAdding: .weekOfYear, value: 1, to: now) ?? now
+            let startOfNextWeek =
+                calendar.dateInterval(of: .weekOfYear, for: nextWeek)?.start ?? now
+            let endOfNextWeek = calendar.dateInterval(of: .weekOfYear, for: nextWeek)?.end ?? now
+            filteredMeals = meals.filter { meal in
+                guard let dueDate = meal.todoItem?.dueDate else { return false }
+                return dueDate >= startOfNextWeek && dueDate < endOfNextWeek
+            }
+        }
+
+        return sortedMeals(from: filteredMeals)
     }
 
     func selectMeal(_ meal: Meal) {

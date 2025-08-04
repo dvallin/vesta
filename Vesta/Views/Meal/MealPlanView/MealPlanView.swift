@@ -11,59 +11,11 @@ struct MealPlanView: View {
     @StateObject var viewModel = MealPlanViewModel()
 
     var body: some View {
-        let activeSortedMeals = viewModel.activeSortedMeals(from: meals)
         NavigationView {
-            ZStack {
-                List {
-                    if let nextMeal = viewModel.nextUpcomingMeal(
-                        meals: activeSortedMeals)
-                    {
-                        NextMealView(meal: nextMeal) {
-                            viewModel.selectedMeal = nextMeal
-                        }
-                    }
-                    Section {
-                        ForEach(activeSortedMeals) { meal in
-                            Button(action: {
-                                viewModel.selectMeal(meal)
-                            }) {
-                                MealListItem(meal: meal) {
-                                    if meal.todoItem != nil {
-                                        withAnimation {
-                                            viewModel.markMealAsDone(meal)
-                                        }
-                                    }
-                                }
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                // Delete action
-                                Button(role: .destructive) {
-                                    withAnimation {
-                                        viewModel.deleteMeal(
-                                            meal,
-                                            undoAction: { meal, id in
-                                                withAnimation {
-                                                    viewModel.undoMealDeletion(meal, id: id)
-                                                }
-                                            })
-                                    }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-
-                            }
-                        }
-                    } header: {
-                        Text(NSLocalizedString("Meal Plan", comment: "Meal plan section header"))
-                            .font(.title2)
-                            .foregroundColor(.primary)
-                    }
-                }
-
-                FloatingAddButton {
-                    viewModel.presentAddMealView()
-                }
-            }
+            MealPlanViewInner(
+                viewModel: viewModel,
+                meals: meals
+            )
         }
         .sheet(item: $viewModel.selectedMeal) { meal in
             MealDetailView(meal: meal)
@@ -75,47 +27,13 @@ struct MealPlanView: View {
             RecipeListView()
         }
         .sheet(isPresented: $viewModel.isPresentingShoppingListGenerator) {
-            ShoppingListGeneratorView(meals: activeSortedMeals)
+            ShoppingListGeneratorView(meals: viewModel.filteredMeals(from: meals))
         }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
             viewModel.configureContext(modelContext, auth)
         }
-        .navigationTitle(
-            NSLocalizedString("Meal Plan", comment: "Meal plan screen title")
-        )
-        #if os(iOS)
-            .listStyle(InsetGroupedListStyle())
-            .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
-            #if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        HapticFeedbackManager.shared.generateSelectionFeedback()
-                        viewModel.isPresentingRecipeListView = true
-                    }) {
-                        Label(
-                            NSLocalizedString("Recipes", comment: "Recipes button"),
-                            systemImage: "book")
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        HapticFeedbackManager.shared.generateSelectionFeedback()
-                        viewModel.isPresentingShoppingListGenerator = true
-                    }) {
-                        Label(
-                            NSLocalizedString(
-                                "Generate Shopping List",
-                                comment: "Generate shopping list button"),
-                            systemImage: "cart")
-                    }
-                }
-            #endif
-        }
     }
-
 }
 
 #Preview {

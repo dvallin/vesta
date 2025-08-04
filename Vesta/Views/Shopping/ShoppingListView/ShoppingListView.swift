@@ -17,48 +17,16 @@ struct ShoppingListView: View {
 
     var body: some View {
         NavigationView {
-            ZStack {
-                ShoppingList(
-                    viewModel: viewModel,
-                    shoppingItems: shoppingItems
-                )
-
-                FloatingAddButton {
-                    viewModel.isPresentingAddShoppingItemView = true
-                }
-            }
-            .navigationTitle(
-                NSLocalizedString("Shopping List", comment: "Shopping list view title")
+            ShoppingListViewInner(
+                viewModel: viewModel,
+                shoppingItems: shoppingItems
             )
-            .toolbar {
-                #if os(iOS)
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: {
-                            viewModel.isPresentingFilterCriteriaView = true
-                        }) {
-                            Image(systemName: "line.horizontal.3.decrease.circle")
-                        }
-                    }
-                #endif
-                ToolbarItem(placement: .principal) {
-                    TextField(
-                        NSLocalizedString("Search", comment: "Search text field placeholder"),
-                        text: $viewModel.searchText
-                    )
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .frame(maxWidth: 200)
-                }
-            }
         }
         .sheet(item: $viewModel.selectedShoppingItem) { item in
             ShoppingItemDetailView(item: item)
         }
         .sheet(isPresented: $viewModel.isPresentingAddShoppingItemView) {
             AddShoppingItemView()
-        }
-        .sheet(isPresented: $viewModel.isPresentingFilterCriteriaView) {
-            ShoppingListFilterView(viewModel: viewModel)
-                .presentationDetents([.medium, .large])
         }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {

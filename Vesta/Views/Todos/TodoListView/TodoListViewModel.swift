@@ -37,7 +37,6 @@ class TodoListViewModel: ObservableObject {
     @Published var currentDay: Date = Date()
     @Published var toastMessages: [ToastMessage] = []
 
-    @Published var searchText: String = ""
     @Published var filterMode: FilterMode = .today
     @Published var selectedPriority: Int? = nil
     @Published var selectedCategory: TodoItemCategory? = nil
@@ -74,9 +73,9 @@ class TodoListViewModel: ObservableObject {
     func reset() {
         currentDay = Date()
         filterMode = .today
-        searchText = ""
         selectedPriority = nil
         selectedCategory = nil
+        showNoCategory = false
     }
 
     func updateCurrentDay() {
@@ -194,10 +193,6 @@ class TodoListViewModel: ObservableObject {
 
     func filterItems(todoItems: [TodoItem]) -> [TodoItem] {
         return todoItems.filter { item in
-            let matchesSearchText =
-                searchText.isEmpty
-                || item.title.localizedCaseInsensitiveContains(searchText)
-                || item.details.localizedCaseInsensitiveContains(searchText)
             let matchesPriority = selectedPriority == nil || item.priority == selectedPriority
             var matchesCategory = true
             if showNoCategory {
@@ -207,7 +202,7 @@ class TodoListViewModel: ObservableObject {
                 // exact category
                 matchesCategory = item.category == selectedCategory
             }
-            guard matchesSearchText && matchesPriority && matchesCategory else { return false }
+            guard matchesPriority && matchesCategory else { return false }
 
             switch filterMode {
             case .all:
