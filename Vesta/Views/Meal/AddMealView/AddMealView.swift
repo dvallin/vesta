@@ -5,79 +5,157 @@ struct AddMealView: View {
     @EnvironmentObject private var auth: UserAuthService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Query private var recipes: [Recipe]
+    @Query<Recipe>(
+        filter: #Predicate { recipe in recipe.deletedAt == nil },
+    ) private var recipes: [Recipe]
+    @Query<Meal>(
+        filter: #Predicate { recipe in recipe.deletedAt == nil },
+    ) private var meals: [Meal]
 
-    @StateObject var viewModel: AddMealViewModel
+    @StateObject private var viewModel = AddMealViewModel()
+    @State private var searchText = ""
+    @State private var showOnlyAvailable = false
+    @State private var selectedMealTypeFilter: MealType? = nil
 
-    init(selectedDate: Date) {
-        _viewModel = StateObject(wrappedValue: AddMealViewModel(selectedDate: selectedDate))
+    private var filteredRecipes: [Recipe] {
+        var filtered = recipes
+
+        // Apply search filter
+        if !searchText.isEmpty {
+            filtered = filtered.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+        }
+
+        // Apply availability filter
+        if showOnlyAvailable {
+            filtered = filtered.filter { recipe in
+                viewModel.getRecipeStatus(recipe) != .planned
+            }
+        }
+
+        return filtered
     }
 
     var body: some View {
         NavigationView {
-            Form {
-                DatePicker(
-                    NSLocalizedString("Date", comment: "Date picker label"),
-                    selection: $viewModel.selectedDate, displayedComponents: .date)
-                Picker(
-                    NSLocalizedString("Recipe", comment: "Recipe picker label"),
-                    selection: $viewModel.selectedRecipe
-                ) {
-                    ForEach(recipes) { recipe in
-                        Text(recipe.title).tag(recipe as Recipe?)
+            List {
+                if !searchText.isEmpty {
+                    // Show filtered results when searching
+                    ForEach(filteredRecipes) { recipe in
+                        recipeButton(for: recipe)
                     }
-                }
-                TextField(
-                    NSLocalizedString("Scaling Factor", comment: "Scaling factor input field"),
-                    value: $viewModel.scalingFactor, formatter: NumberFormatter()
-                )
-                #if os(iOS)
-                    .keyboardType(.decimalPad)
-                #endif
+                } else {
+                    // Show organized sections when not searching
+                    if showOnlyAvailable {
+                        // When filtering for available, show simplified sections
+                        Section("Available Recipes") {
+                            ForEach(filteredRecipes) { recipe in
+                                recipeButton(for: recipe)
+                            }
+                        }
+                    } else {
+                        // Full organized view
+                        if viewModel.recipeSections.hasRecentRecipes {
+                            Section("Recently Made") {
+                                ForEach(viewModel.recipeSections.recent) { recipe in
+                                    recipeButton(for: recipe)
+                                }
+                            }
+                        }
 
-                Picker(
-                    NSLocalizedString("Meal Type", comment: "Meal type picker label"),
-                    selection: $viewModel.selectedMealType
-                ) {
-                    ForEach(MealType.allCases, id: \.self) { mealType in
-                        Text(mealType.displayName).tag(mealType)
+                        if viewModel.recipeSections.hasFrequentRecipes {
+                            Section("Frequently Made") {
+                                ForEach(viewModel.recipeSections.frequent) { recipe in
+                                    recipeButton(for: recipe)
+                                }
+                            }
+                        }
+
+                        if viewModel.recipeSections.hasNotPlannedRecipes {
+                            Section("Not Planned") {
+                                ForEach(viewModel.recipeSections.notPlanned) { recipe in
+                                    recipeButton(for: recipe)
+                                }
+                            }
+                        }
+
+                        Section("All Recipes") {
+                            ForEach(recipes) { recipe in
+                                recipeButton(for: recipe)
+                            }
+                        }
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
             }
+            .searchable(text: $searchText, prompt: "Search recipes...")
             .navigationTitle(NSLocalizedString("Add Meal", comment: "Add meal screen title"))
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                #if os(iOS)
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
-                            Task {
-                                viewModel.cancel()
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu("Filter") {
+                        Button(showOnlyAvailable ? "Show All" : "Show Only Available") {
+                            showOnlyAvailable.toggle()
+                        }
+
+                        Divider()
+
+                        Menu("Meal Type") {
+                            Button("All Types") {
+                                selectedMealTypeFilter = nil
+                            }
+
+                            ForEach(MealType.allCases, id: \.self) { mealType in
+                                Button(mealType.displayName) {
+                                    selectedMealTypeFilter =
+                                        selectedMealTypeFilter == mealType ? nil : mealType
+                                }
                             }
                         }
                     }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(NSLocalizedString("Save", comment: "Save button")) {
-                            Task {
-                                viewModel.save()
-                            }
-                        }
-                    }
-                #endif
+                }
             }
             .alert(
-                NSLocalizedString("Validation Error", comment: "Validation error alert title"),
-                isPresented: $viewModel.showingValidationAlert
+                NSLocalizedString("Error", comment: "Error alert title"),
+                isPresented: $viewModel.showingErrorAlert
             ) {
                 Button(
-                    NSLocalizedString("OK", comment: "Validation error accept button"),
+                    NSLocalizedString("OK", comment: "Error alert OK button"),
                     role: .cancel
                 ) {}
             } message: {
-                Text(viewModel.validationMessage)
+                Text(viewModel.errorMessage)
             }
         }
         .onAppear {
             viewModel.configureEnvironment(modelContext, dismiss, auth)
+            viewModel.organizeRecipes(recipes, meals)
+        }
+        .onChange(of: recipes) { _, newRecipes in
+            viewModel.organizeRecipes(newRecipes, meals)
+        }
+    }
+
+    @ViewBuilder
+    private func recipeButton(for recipe: Recipe) -> some View {
+        Button(action: { selectRecipe(recipe) }) {
+            AddMealRecipeRow(
+                recipe: recipe,
+                status: viewModel.getRecipeStatus(recipe)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    private func selectRecipe(_ recipe: Recipe) {
+        Task {
+            await viewModel.createMeal(with: recipe)
         }
     }
 }
@@ -88,16 +166,20 @@ struct AddMealView: View {
         let context = container.mainContext
 
         let user = Fixtures.createUser()
-        let bolognese = Fixtures.bolognese(owner: user)
-        let curry = Fixtures.curry(owner: user)
+        let recipes = [
+            Fixtures.bolognese(owner: user),
+            Fixtures.curry(owner: user),
+            Recipe(title: "Apple Pie", details: "Classic dessert", owner: user),
+        ]
 
-        for recipe in [bolognese, curry] {
+        for recipe in recipes {
             context.insert(recipe)
         }
 
-        return AddMealView(selectedDate: Date())
+        let authService = UserAuthService(modelContext: context)
+        return AddMealView()
             .modelContainer(container)
-
+            .environmentObject(authService)
     } catch {
         return Text("Failed to create ModelContainer")
     }

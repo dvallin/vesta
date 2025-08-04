@@ -129,6 +129,58 @@ final class MealTests: XCTestCase {
         XCTAssertTrue(meal.dirty, "Meal should be marked as dirty after due date change")
     }
 
+    func testRemoveDueDate() throws {
+        // Arrange
+        let user = try createUser()
+        let meal = Meal(
+            scalingFactor: 1.0,
+            todoItem: todoItem,
+            recipe: recipe,
+            mealType: .dinner,
+            owner: user
+        )
+        context.insert(meal)
+
+        // Set initial due date
+        let initialDate = Date()
+        meal.setDueDate(initialDate, currentUser: user)
+        XCTAssertNotNil(meal.todoItem?.dueDate, "Due date should be set")
+        meal.markAsSynced()  // Reset dirty flag
+
+        // Act
+        meal.removeDueDate(currentUser: user)
+
+        // Assert
+        XCTAssertNil(meal.todoItem?.dueDate, "Due date should be removed")
+        XCTAssertTrue(meal.dirty, "Meal should be marked as dirty after due date removal")
+    }
+
+    func testSetDueDateWithNil() throws {
+        // Arrange
+        let user = try createUser()
+        let meal = Meal(
+            scalingFactor: 1.0,
+            todoItem: todoItem,
+            recipe: recipe,
+            mealType: .dinner,
+            owner: user
+        )
+        context.insert(meal)
+
+        // Set initial due date
+        let initialDate = Date()
+        meal.setDueDate(initialDate, currentUser: user)
+        XCTAssertNotNil(meal.todoItem?.dueDate, "Due date should be set")
+        meal.markAsSynced()  // Reset dirty flag
+
+        // Act
+        meal.setDueDate(nil, currentUser: user)
+
+        // Assert
+        XCTAssertNil(meal.todoItem?.dueDate, "Due date should be nil")
+        XCTAssertTrue(meal.dirty, "Meal should be marked as dirty after due date removal")
+    }
+
     // MARK: - Meal Time Tests
 
     func testUpdateTodoItemDueDate() throws {
@@ -317,7 +369,7 @@ final class MealTests: XCTestCase {
 
         // Act
         meal.setScalingFactor(1.5, currentUser: user)
-        
+
         // Assert
         XCTAssertTrue(meal.dirty, "Meal should be marked as dirty after modification")
 

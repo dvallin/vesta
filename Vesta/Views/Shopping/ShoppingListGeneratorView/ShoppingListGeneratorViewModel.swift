@@ -31,8 +31,7 @@ class ShoppingListGeneratorViewModel: ObservableObject {
 
     func prepareMealsForShoppingList(_ meals: [Meal]) {
         let eligibleMeals = meals.filter { meal in
-            guard let dueDate = meal.todoItem?.dueDate else { return false }
-            return dueDate > Date() && !meal.isDone && meal.shoppingListItems.isEmpty
+            return !meal.isDone && meal.shoppingListItems.isEmpty
         }
 
         let groupedIngredients = Dictionary(

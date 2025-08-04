@@ -15,6 +15,8 @@ class ShoppingListItem: SyncableEntity {
     var isShared: Bool = false
     var dirty: Bool = true
 
+    var deletedAt: Date? = nil
+
     @Relationship(deleteRule: .cascade, inverse: \TodoItem.shoppingListItem)
     var todoItem: TodoItem?
 
@@ -22,7 +24,7 @@ class ShoppingListItem: SyncableEntity {
     var meals: [Meal]
 
     var isPurchased: Bool {
-        guard let todoItem = todoItem else { return true }
+        guard let todoItem = todoItem else { return false }
         return todoItem.isCompleted
     }
 

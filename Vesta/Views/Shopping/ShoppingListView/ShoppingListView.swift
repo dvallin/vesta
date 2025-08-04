@@ -5,7 +5,9 @@ struct ShoppingListView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var auth: UserAuthService
     @EnvironmentObject private var syncService: SyncService
-    @Query(sort: \ShoppingListItem.todoItem?.dueDate) var shoppingItems: [ShoppingListItem]
+    @Query<ShoppingListItem>(
+        filter: #Predicate { item in item.deletedAt == nil }
+    ) private var shoppingItems: [ShoppingListItem]
 
     @StateObject var viewModel: ShoppingListViewModel
 
@@ -15,48 +17,16 @@ struct ShoppingListView: View {
 
     var body: some View {
         NavigationView {
-            ZStack {
-                ShoppingList(
-                    viewModel: viewModel,
-                    shoppingItems: shoppingItems
-                )
-
-                FloatingAddButton {
-                    viewModel.isPresentingAddShoppingItemView = true
-                }
-            }
-            .navigationTitle(
-                NSLocalizedString("Shopping List", comment: "Shopping list view title")
+            ShoppingListViewInner(
+                viewModel: viewModel,
+                shoppingItems: shoppingItems
             )
-            .toolbar {
-                #if os(iOS)
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: {
-                            viewModel.isPresentingFilterCriteriaView = true
-                        }) {
-                            Image(systemName: "line.horizontal.3.decrease.circle")
-                        }
-                    }
-                #endif
-                ToolbarItem(placement: .principal) {
-                    TextField(
-                        NSLocalizedString("Search", comment: "Search text field placeholder"),
-                        text: $viewModel.searchText
-                    )
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .frame(maxWidth: 200)
-                }
-            }
         }
         .sheet(item: $viewModel.selectedShoppingItem) { item in
             ShoppingItemDetailView(item: item)
         }
         .sheet(isPresented: $viewModel.isPresentingAddShoppingItemView) {
             AddShoppingItemView()
-        }
-        .sheet(isPresented: $viewModel.isPresentingFilterCriteriaView) {
-            ShoppingListFilterView(viewModel: viewModel)
-                .presentationDetents([.medium, .large])
         }
         .toast(messages: $viewModel.toastMessages)
         .onAppear {

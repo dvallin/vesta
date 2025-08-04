@@ -4,89 +4,34 @@ import SwiftUI
 struct MealPlanView: View {
     @EnvironmentObject private var auth: UserAuthService
     @Environment(\.modelContext) private var modelContext
-    @Query private var meals: [Meal]
+    @Query<Meal>(
+        filter: #Predicate { meal in meal.deletedAt == nil }
+    ) private var meals: [Meal]
 
     @StateObject var viewModel = MealPlanViewModel()
 
     var body: some View {
         NavigationView {
-            ZStack {
-                List {
-                    if let nextMeal = viewModel.nextUpcomingMeal(meals: meals) {
-                        NextMealView(meal: nextMeal) {
-                            viewModel.selectedMeal = nextMeal
-                        }
-                    }
-
-                    ForEach(viewModel.dayGroups(for: meals)) { group in
-                        DayGroupSectionView(
-                            group: group,
-                            onMealSelect: { meal in
-                                viewModel.selectedMeal = meal
-                            },
-                            onDelete: { indexSet in
-                                viewModel.deleteMeal(meals: meals, at: indexSet, for: group.date)
-                            },
-                            onMarkAsDone: { todoItem in
-                                if let todoItem = todoItem {
-                                    viewModel.markAsDone(todoItem)
-                                }
-                            }
-                        )
-                    }
-                }
-                .navigationTitle(NSLocalizedString("Meal Plan", comment: "Meal plan screen title"))
-                #if os(iOS)
-                    .listStyle(InsetGroupedListStyle())
-                    .navigationBarTitleDisplayMode(.inline)
-                #endif
-                .toolbar {
-                    #if os(iOS)
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: {
-                                HapticFeedbackManager.shared.generateSelectionFeedback()
-                                viewModel.isPresentingRecipeListView = true
-                            }) {
-                                Label(
-                                    NSLocalizedString("Recipes", comment: "Recipes button"),
-                                    systemImage: "book")
-                            }
-                        }
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: {
-                                HapticFeedbackManager.shared.generateSelectionFeedback()
-                                viewModel.isPresentingShoppingListGenerator = true
-                            }) {
-                                Label(
-                                    NSLocalizedString(
-                                        "Generate Shopping List",
-                                        comment: "Generate shopping list button"),
-                                    systemImage: "cart")
-                            }
-                        }
-                    #endif
-                }
-
-                FloatingAddButton {
-                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
-                    viewModel.isPresentingAddMealView = true
-                }
-            }
-            .sheet(item: $viewModel.selectedMeal) { meal in
-                MealDetailView(meal: meal)
-            }
-            .sheet(isPresented: $viewModel.isPresentingAddMealView) {
-                AddMealView(selectedDate: Date())
-            }
-            .sheet(isPresented: $viewModel.isPresentingRecipeListView) {
-                RecipeListView()
-            }
-            .sheet(isPresented: $viewModel.isPresentingShoppingListGenerator) {
-                ShoppingListGeneratorView(meals: meals)
-            }
-            .onAppear {
-                viewModel.configureContext(modelContext, auth)
-            }
+            MealPlanViewInner(
+                viewModel: viewModel,
+                meals: meals
+            )
+        }
+        .sheet(item: $viewModel.selectedMeal) { meal in
+            MealDetailView(meal: meal)
+        }
+        .sheet(isPresented: $viewModel.isPresentingAddMealView) {
+            AddMealView()
+        }
+        .sheet(isPresented: $viewModel.isPresentingRecipeListView) {
+            RecipeListView()
+        }
+        .sheet(isPresented: $viewModel.isPresentingShoppingListGenerator) {
+            ShoppingListGeneratorView(meals: viewModel.filteredMeals(from: meals))
+        }
+        .toast(messages: $viewModel.toastMessages)
+        .onAppear {
+            viewModel.configureContext(modelContext, auth)
         }
     }
 }
@@ -100,6 +45,7 @@ struct MealPlanView: View {
         let recipes = [
             Fixtures.bolognese(owner: user),
             Fixtures.curry(owner: user),
+            Recipe(title: "Apple Pie", details: "Classic dessert", owner: user),
         ]
 
         // Insert recipes
@@ -125,9 +71,9 @@ struct MealPlanView: View {
                 owner: user
             ),
             TodoItem(
-                title: "Weekend Pasta",
-                details: "Family dinner",
-                dueDate: calendar.date(byAdding: .day, value: 5, to: today),
+                title: "Bake Apple Pie",
+                details: "Dessert",
+                dueDate: calendar.date(byAdding: .day, value: 1, to: today),
                 owner: user
             ),
         ]
@@ -137,17 +83,25 @@ struct MealPlanView: View {
         }
 
         let meals = [
-            Meal(scalingFactor: 1.0, todoItem: todoItems[0], recipe: recipes[0], owner: user),
-            Meal(scalingFactor: 2.0, todoItem: todoItems[1], recipe: recipes[1], owner: user),
-            Meal(scalingFactor: 1.5, todoItem: todoItems[2], recipe: recipes[0], owner: user),
+            Meal(
+                scalingFactor: 1.0, todoItem: todoItems[0], recipe: recipes[0], mealType: .dinner,
+                owner: user),
+            Meal(
+                scalingFactor: 2.0, todoItem: todoItems[1], recipe: recipes[1], mealType: .lunch,
+                owner: user),
+            Meal(
+                scalingFactor: 1.5, todoItem: todoItems[2], recipe: recipes[2], mealType: .dinner,
+                owner: user),
         ]
 
         for meal in meals {
             context.insert(meal)
         }
 
+        let authService = UserAuthService(modelContext: context)
         return MealPlanView()
             .modelContainer(container)
+            .environmentObject(authService)
     } catch {
         return Text("Failed to create ModelContainer")
     }

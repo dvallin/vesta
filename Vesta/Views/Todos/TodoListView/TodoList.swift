@@ -65,7 +65,6 @@ struct TodoList: View {
                                     viewModel.filterMode = .all
                                     viewModel.selectedPriority = nil
                                     viewModel.selectedCategory = nil
-                                    viewModel.searchText = ""
                                 }
                             }
                         }

@@ -8,13 +8,11 @@ class ShoppingListViewModel: ObservableObject {
 
     @Published var toastMessages: [ToastMessage] = []
 
-    @Published var searchText: String = ""
     @Published var showPurchased: Bool = false
 
     @Published var selectedShoppingItem: ShoppingListItem? = nil
 
     @Published var isPresentingAddShoppingItemView = false
-    @Published var isPresentingFilterCriteriaView = false
 
     init(showPurchased: Bool = false) {
         self.showPurchased = showPurchased
@@ -73,7 +71,7 @@ class ShoppingListViewModel: ObservableObject {
     func undoTogglePurchased(_ item: ShoppingListItem, id: UUID) {
         guard let currentUser = auth?.currentUser else { return }
         guard let todoItem = item.todoItem else { return }
-        
+
         todoItem.setIsCompleted(isCompleted: false, currentUser: currentUser)
         if saveContext() {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
@@ -83,7 +81,7 @@ class ShoppingListViewModel: ObservableObject {
     }
 
     func deleteItem(_ item: ShoppingListItem) {
-        modelContext!.delete(item)
+        item.deletedAt = Date()
         if saveContext() {
             HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
         }
@@ -91,13 +89,9 @@ class ShoppingListViewModel: ObservableObject {
 
     func filterItems(shoppingItems: [ShoppingListItem]) -> [ShoppingListItem] {
         return shoppingItems.filter { item in
-            let matchesSearchText =
-                searchText.isEmpty
-                || item.name.localizedCaseInsensitiveContains(searchText)
-
             let matchesPurchased = showPurchased || !item.isPurchased
 
-            return matchesSearchText && matchesPurchased
+            return matchesPurchased
         }
         .sorted { first, second in
             // First sort by purchased status (non-purchased first)

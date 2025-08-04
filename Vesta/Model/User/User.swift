@@ -31,6 +31,8 @@ class User: SyncableEntity {
     var isShared: Bool = false
     var dirty: Bool = true
 
+    var deletedAt: Date? = nil
+
     init(
         uid: String, email: String? = nil, displayName: String? = nil,
         photoURL: String? = nil, isEmailVerified: Bool = false, createdAt: Date = Date(),

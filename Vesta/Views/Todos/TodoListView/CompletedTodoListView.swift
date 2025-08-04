@@ -4,7 +4,7 @@ import SwiftUI
 struct CompletedTodoListView: View {
     @ObservedObject var viewModel: TodoListViewModel
     @Query<TodoItem>(
-        filter: #Predicate { item in item.isCompleted == true },
+        filter: #Predicate { item in item.isCompleted == true && item.deletedAt == nil },
         sort: [
             SortDescriptor(\TodoItem.priority, order: .forward),
             SortDescriptor(\TodoItem.dueDate, order: .forward),

@@ -62,17 +62,29 @@ struct MealDetailView: View {
 
             HStack {
                 Text(NSLocalizedString("Due Date:", comment: "Due date label"))
-                DatePicker(
-                    "",
-                    selection: Binding(
-                        get: { viewModel.meal.todoItem?.dueDate ?? Date() },
-                        set: { newValue in
-                            guard let currentUser = auth.currentUser else { return }
-                            viewModel.meal.setDueDate(newValue, currentUser: currentUser)
-                        }
-                    ),
-                    displayedComponents: .date
-                )
+                if viewModel.meal.todoItem?.dueDate != nil {
+                    DatePicker(
+                        "",
+                        selection: Binding(
+                            get: { viewModel.meal.todoItem?.dueDate ?? Date() },
+                            set: { newValue in
+                                guard let currentUser = auth.currentUser else { return }
+                                viewModel.meal.setDueDate(newValue, currentUser: currentUser)
+                            }
+                        ),
+                        displayedComponents: .date
+                    )
+                    Button(NSLocalizedString("Remove", comment: "Remove due date button")) {
+                        viewModel.removeDueDate()
+                    }
+                    .foregroundColor(.red)
+                } else {
+                    Button(NSLocalizedString("Set Due Date", comment: "Set due date button")) {
+                        guard let currentUser = auth.currentUser else { return }
+                        viewModel.meal.setDueDate(Date(), currentUser: currentUser)
+                    }
+                    .foregroundColor(.blue)
+                }
             }
             .padding()
         }

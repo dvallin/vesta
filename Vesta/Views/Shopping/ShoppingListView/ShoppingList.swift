@@ -15,9 +15,6 @@ struct ShoppingList: View {
             }
             .onDelete(perform: deleteShoppingItems)
         }
-        #if os(iOS)
-            .listStyle(.insetGrouped)
-        #endif
         .overlay {
             if filteredShoppingItems.isEmpty {
                 ContentUnavailableView(

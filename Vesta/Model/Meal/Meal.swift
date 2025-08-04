@@ -32,6 +32,8 @@ class Meal: SyncableEntity {
     var isShared: Bool = false
     var dirty: Bool = true
 
+    var deletedAt: Date? = nil
+
     @Relationship(deleteRule: .cascade, inverse: \TodoItem.meal)
     var todoItem: TodoItem?
 
@@ -69,11 +71,20 @@ class Meal: SyncableEntity {
         self.markAsDirty()
     }
 
-    func setDueDate(_ newDate: Date, currentUser: User) {
-        todoItem?.setDueDate(
-            dueDate: DateUtils.preserveTime(from: todoItem?.dueDate, applying: newDate),
-            currentUser: currentUser
-        )
+    func setDueDate(_ newDate: Date?, currentUser: User) {
+        if let newDate = newDate {
+            todoItem?.setDueDate(
+                dueDate: DateUtils.preserveTime(from: todoItem?.dueDate, applying: newDate),
+                currentUser: currentUser
+            )
+        } else {
+            todoItem?.setDueDate(dueDate: nil, currentUser: currentUser)
+        }
+        self.markAsDirty()
+    }
+
+    func removeDueDate(currentUser: User) {
+        todoItem?.setDueDate(dueDate: nil, currentUser: currentUser)
         self.markAsDirty()
     }
 

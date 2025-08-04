@@ -3,7 +3,9 @@ import SwiftUI
 
 struct RecipeListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var recipes: [Recipe]
+    @Query<Recipe>(
+        filter: #Predicate { recipe in recipe.deletedAt == nil },
+    ) private var recipes: [Recipe]
 
     @State private var searchText: String = ""
     @State private var isPresentingAddRecipeView = false
@@ -22,6 +24,9 @@ struct RecipeListView: View {
                 }
             }
             .navigationTitle(NSLocalizedString("Recipes", comment: "Navigation title"))
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     TextField(
@@ -41,8 +46,20 @@ struct RecipeListView: View {
     private func deleteRecipes(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(recipes[index])
+                recipes[index].deletedAt = Date()
             }
+            if saveContext() {
+                HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+            }
+        }
+    }
+
+    private func saveContext() -> Bool {
+        do {
+            try modelContext.save()
+            return true
+        } catch {
+            return false
         }
     }
 }
