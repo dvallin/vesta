@@ -16,6 +16,9 @@ extension TodoItem {
             "ignoreTimeComponent": ignoreTimeComponent,
             "priority": priority,
         ]
+        if let timestamp = deletedAt {
+            dto["deletedAt"] = timestamp
+        }
 
         // Add optional properties
         if let dueDate = dueDate {
@@ -55,6 +58,9 @@ extension TodoItem {
 
     // Method to update properties directly from a DTO during sync operations without triggering events
     func update(from dto: [String: Any]) {
+        if let deletedAt = dto["deletedAt"] as? Date {
+            self.deletedAt = deletedAt
+        }
         self.isShared = dto["isShared"] as? Bool ?? false
 
         if let title = dto["title"] as? String {

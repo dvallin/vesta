@@ -63,7 +63,7 @@ class Meal: SyncableEntity {
     }
 
     func updateTodoItemDueDate(for mealType: MealType, on date: Date? = nil, currentUser: User) {
-        let baseDate = date ?? todoItem?.dueDate ?? Date()
+        guard let baseDate = date ?? todoItem?.dueDate else { return }
         let (hour, minute) = DateUtils.mealTime(for: mealType)
         if let newDueDate = DateUtils.setTime(hour: hour, minute: minute, for: baseDate) {
             todoItem?.setDueDate(dueDate: newDueDate, currentUser: currentUser)
@@ -95,6 +95,29 @@ class Meal: SyncableEntity {
 
     func setMealType(_ newMealType: MealType, currentUser: User) {
         self.mealType = newMealType
+        self.updateTodoItemDueDate(for: newMealType, currentUser: currentUser)
         self.markAsDirty()
+    }
+
+    // MARK: - Soft Delete Operations
+
+    func softDelete(currentUser: User) {
+        self.deletedAt = Date()
+        self.markAsDirty()
+
+        // Soft delete related todo item only if it's not already deleted
+        if let todoItem = self.todoItem, todoItem.deletedAt == nil {
+            todoItem.softDelete(currentUser: currentUser)
+        }
+    }
+
+    func restore(currentUser: User) {
+        self.deletedAt = nil
+        self.markAsDirty()
+
+        // Restore related todo item only if it's currently deleted
+        if let todoItem = self.todoItem, todoItem.deletedAt != nil {
+            todoItem.restore(currentUser: currentUser)
+        }
     }
 }

@@ -13,6 +13,9 @@ extension Recipe {
             "title": title,
             "details": details,
         ]
+        if let timestamp = deletedAt {
+            dto["deletedAt"] = timestamp
+        }
 
         dto["ingredients"] = ingredients.map { $0.toDTO() }
         dto["steps"] = steps.map { $0.toDTO() }
@@ -23,6 +26,9 @@ extension Recipe {
 
     /// Updates the entity's properties from a dictionary of values
     func update(from data: [String: Any]) {
+        if let deletedAt = data["deletedAt"] as? Date {
+            self.deletedAt = deletedAt
+        }
         self.isShared = data["isShared"] as? Bool ?? false
 
         if let title = data["title"] as? String {

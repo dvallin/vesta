@@ -28,7 +28,7 @@ struct AddMealView: View {
         // Apply availability filter
         if showOnlyAvailable {
             filtered = filtered.filter { recipe in
-                viewModel.getRecipeStatus(recipe) != .planned
+                recipe.status != .planned
             }
         }
 
@@ -145,9 +145,8 @@ struct AddMealView: View {
     @ViewBuilder
     private func recipeButton(for recipe: Recipe) -> some View {
         Button(action: { selectRecipe(recipe) }) {
-            AddMealRecipeRow(
-                recipe: recipe,
-                status: viewModel.getRecipeStatus(recipe)
+            RecipeRow(
+                recipe: recipe
             )
         }
         .buttonStyle(PlainButtonStyle())

@@ -147,14 +147,39 @@ class TodoListViewModel: ObservableObject {
         }
     }
 
-    func deleteItem(_ item: TodoItem) {
-        item.deletedAt = Date()
-        item.meal?.deletedAt = Date()
-        item.shoppingListItem?.deletedAt = Date()
+    func deleteItem(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
+        guard let currentUser = auth?.currentUser else { return }
+        item.softDelete(currentUser: currentUser)
 
         if saveContext() {
             NotificationManager.shared.cancelNotification(for: item)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+
+            let id = UUID()
+            let toastMessage = ToastMessage(
+                id: id,
+                message: String(
+                    format: NSLocalizedString(
+                        "%@ deleted", comment: "Toast message for deleting todo item"),
+                    item.title
+                ),
+                undoAction: {
+                    undoAction(item, id)
+                }
+            )
+            toastMessages.append(toastMessage)
+        }
+    }
+
+    func undoDeleteItem(_ item: TodoItem, id: UUID) {
+        guard let currentUser = auth?.currentUser else { return }
+        item.restore(currentUser: currentUser)
+        toastMessages.removeAll { $0.id == id }
+
+        if saveContext() {
+            NotificationManager.shared.scheduleNotification(for: item)
+            _ = syncService?.pushLocalChanges()
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 

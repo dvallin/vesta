@@ -12,8 +12,10 @@ extension Meal {
 
             "scalingFactor": scalingFactor,
             "mealType": mealType.rawValue,
-            "isDone": isDone,
         ]
+        if let timestamp = deletedAt {
+            dto["deletedAt"] = timestamp
+        }
 
         // Add related entity IDs for references
         if let todoItemId = todoItem?.uid {
@@ -33,6 +35,9 @@ extension Meal {
     }
 
     func update(from dto: [String: Any]) {
+        if let deletedAt = dto["deletedAt"] as? Date {
+            self.deletedAt = deletedAt
+        }
         self.isShared = dto["isShared"] as? Bool ?? false
 
         if let scalingFactor = dto["scalingFactor"] as? Double {

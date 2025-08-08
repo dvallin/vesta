@@ -70,6 +70,44 @@ class Recipe: SyncableEntity {
         preparationDuration + cookingDuration + maturingDuration
     }
 
+    var timesCookedRecently: Int {
+        meals.filter { meal in
+            meal.deletedAt == nil && meal.isDone
+        }.count
+    }
+
+    var status: RecipeStatus {
+        let now = Date()
+        let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
+        let nextWeek = Calendar.current.date(byAdding: .day, value: 7, to: now) ?? now
+
+        // Check if already planned
+        let hasUpcomingMeal = meals.contains { meal in
+            guard let todoItem = meal.todoItem,
+                let dueDate = todoItem.dueDate
+            else { return false }
+            return dueDate > now && dueDate <= nextWeek && !meal.isDone
+        }
+
+        if hasUpcomingMeal {
+            return .planned
+        }
+
+        // Check if recently made
+        let wasRecentlyMade = meals.contains { meal in
+            guard let todoItem = meal.todoItem,
+                let dueDate = todoItem.dueDate
+            else { return false }
+            return dueDate >= oneWeekAgo && dueDate <= now && meal.isDone
+        }
+
+        if wasRecentlyMade {
+            return .recent
+        }
+
+        return .normal
+    }
+
     // Mutation methods
 
     func addIngredient(name: String, quantity: Double?, unit: Unit?, currentUser: User) {
@@ -136,6 +174,32 @@ class Recipe: SyncableEntity {
         details = newDetails
         markAsDirty()
     }
+
+    // MARK: - Soft Delete Operations
+
+    func softDelete(currentUser: User) {
+        self.deletedAt = Date()
+        self.markAsDirty()
+
+        // Soft delete related meals only if they're not already deleted
+        for meal in meals {
+            if meal.deletedAt == nil {
+                meal.softDelete(currentUser: currentUser)
+            }
+        }
+    }
+
+    func restore(currentUser: User) {
+        self.deletedAt = nil
+        self.markAsDirty()
+
+        // Restore related meals only if they're currently deleted
+        for meal in meals {
+            if meal.deletedAt != nil {
+                meal.restore(currentUser: currentUser)
+            }
+        }
+    }
 }
 
 @Model
@@ -194,6 +258,12 @@ enum StepType: String, Codable, CaseIterable {
             return NSLocalizedString("Maturing", comment: "Maturing step type")
         }
     }
+}
+
+enum RecipeStatus {
+    case normal
+    case planned
+    case recent
 }
 
 enum Unit: String, Codable, CaseIterable {

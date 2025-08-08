@@ -52,7 +52,9 @@ struct ShoppingList: View {
     private func deleteShoppingItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                viewModel.deleteItem(filteredShoppingItems[index])
+                viewModel.deleteItem(filteredShoppingItems[index]) { item, id in
+                    viewModel.undoDeleteItem(item, id: id)
+                }
             }
         }
     }

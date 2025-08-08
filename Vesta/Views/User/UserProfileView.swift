@@ -21,6 +21,10 @@ struct UserProfileView: View {
                     Divider()
 
                     sharingPreferencesSection
+
+                    Divider()
+
+                    systemSection
                 }
                 .padding()
             }
@@ -211,6 +215,32 @@ struct UserProfileView: View {
                     )
                 }
             }
+        }
+    }
+
+    private var systemSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(
+                NSLocalizedString("System", comment: "System section header")
+            )
+            .font(.headline)
+
+            NavigationLink(destination: TrashBinView()) {
+                HStack {
+                    Image(systemName: "trash.circle")
+                        .foregroundColor(.orange)
+                    Text(
+                        NSLocalizedString(
+                            "Trash Bin", comment: "Trash Bin navigation link")
+                    )
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                }
+                .padding(.vertical, 5)
+            }
+            .buttonStyle(PlainButtonStyle())
         }
     }
 

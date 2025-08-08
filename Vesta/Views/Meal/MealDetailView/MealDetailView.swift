@@ -4,6 +4,7 @@ import SwiftUI
 struct MealDetailView: View {
     @EnvironmentObject private var auth: UserAuthService
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: MealDetailViewModel
 
     init(meal: Meal) {
@@ -11,95 +12,101 @@ struct MealDetailView: View {
     }
 
     var body: some View {
-        VStack {
-            if let recipe = viewModel.meal.recipe {
-                ReadOnlyRecipeDetailView(
-                    recipe: recipe, scalingFactor: viewModel.meal.scalingFactor
-                )
-            }
-            HStack {
-                Text(NSLocalizedString("Scaling Factor:", comment: "Scaling factor label"))
-                TextField(
-                    NSLocalizedString("Scaling Factor", comment: "Scaling factor input field"),
-                    value: Binding(
-                        get: { viewModel.meal.scalingFactor },
-                        set: { newValue in
-                            guard let currentUser = auth.currentUser else { return }
-                            viewModel.meal.setScalingFactor(newValue, currentUser: currentUser)
-                        }
-                    ),
-                    formatter: NumberFormatter()
-                )
-                #if os(iOS)
-                    .keyboardType(.decimalPad)
-                #endif
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-            }
-            .padding()
-
-            HStack {
-                Text(NSLocalizedString("Meal Type:", comment: "Meal type label"))
-                Picker(
-                    NSLocalizedString("Meal Type", comment: "Meal type picker label"),
-                    selection: Binding(
-                        get: { viewModel.meal.mealType },
-                        set: { newValue in
-                            guard let currentUser = auth.currentUser else { return }
-                            viewModel.meal.setMealType(newValue, currentUser: currentUser)
-                        }
+        NavigationView {
+            VStack {
+                if let recipe = viewModel.meal.recipe {
+                    ReadOnlyRecipeDetailView(
+                        recipe: recipe, scalingFactor: viewModel.meal.scalingFactor
                     )
-                ) {
-                    ForEach(MealType.allCases, id: \.self) { mealType in
-                        Text(mealType.displayName).tag(mealType)
-                    }
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .onChange(of: viewModel.meal.mealType) { newMealType, _ in
-                    viewModel.updateTodoItemDueDate(for: newMealType)
-                }
-            }
-            .padding(.horizontal)
-
-            HStack {
-                Text(NSLocalizedString("Due Date:", comment: "Due date label"))
-                if viewModel.meal.todoItem?.dueDate != nil {
-                    DatePicker(
-                        "",
-                        selection: Binding(
-                            get: { viewModel.meal.todoItem?.dueDate ?? Date() },
+                HStack {
+                    Text(NSLocalizedString("Scaling Factor:", comment: "Scaling factor label"))
+                    TextField(
+                        NSLocalizedString("Scaling Factor", comment: "Scaling factor input field"),
+                        value: Binding(
+                            get: { viewModel.meal.scalingFactor },
                             set: { newValue in
                                 guard let currentUser = auth.currentUser else { return }
-                                viewModel.meal.setDueDate(newValue, currentUser: currentUser)
+                                viewModel.meal.setScalingFactor(newValue, currentUser: currentUser)
                             }
                         ),
-                        displayedComponents: .date
+                        formatter: NumberFormatter()
                     )
-                    Button(NSLocalizedString("Remove", comment: "Remove due date button")) {
-                        viewModel.removeDueDate()
-                    }
-                    .foregroundColor(.red)
-                } else {
-                    Button(NSLocalizedString("Set Due Date", comment: "Set due date button")) {
-                        guard let currentUser = auth.currentUser else { return }
-                        viewModel.meal.setDueDate(Date(), currentUser: currentUser)
-                    }
-                    .foregroundColor(.blue)
+                    #if os(iOS)
+                        .keyboardType(.decimalPad)
+                    #endif
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
+                .padding()
+
+                HStack {
+                    Text(NSLocalizedString("Meal Type:", comment: "Meal type label"))
+                    Picker(
+                        NSLocalizedString("Meal Type", comment: "Meal type picker label"),
+                        selection: Binding(
+                            get: { viewModel.meal.mealType },
+                            set: { newValue in
+                                viewModel.setMealType(newValue)
+                            }
+                        )
+                    ) {
+                        ForEach(MealType.allCases, id: \.self) { mealType in
+                            Text(mealType.displayName).tag(mealType)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                }
+                .padding(.horizontal)
+
+                HStack {
+                    Text(NSLocalizedString("Due Date:", comment: "Due date label"))
+                    if viewModel.meal.todoItem?.dueDate != nil {
+                        DatePicker(
+                            "",
+                            selection: Binding(
+                                get: { viewModel.meal.todoItem?.dueDate ?? Date() },
+                                set: { newValue in
+                                    guard let currentUser = auth.currentUser else { return }
+                                    viewModel.meal.setDueDate(newValue, currentUser: currentUser)
+                                }
+                            ),
+                            displayedComponents: .date
+                        )
+                        Button(NSLocalizedString("Remove", comment: "Remove due date button")) {
+                            viewModel.removeDueDate()
+                        }
+                        .foregroundColor(.red)
+                    } else {
+                        Button(NSLocalizedString("Set Due Date", comment: "Set due date button")) {
+                            guard let currentUser = auth.currentUser else { return }
+                            viewModel.meal.setDueDate(Date(), currentUser: currentUser)
+                        }
+                        .foregroundColor(.blue)
+                    }
+                }
+                .padding()
             }
-            .padding()
-        }
-        .navigationTitle(NSLocalizedString("Meal Details", comment: "Meal details screen title"))
-        .toolbar {
-            #if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(NSLocalizedString("Save", comment: "Save button")) {
-                        viewModel.save()
+            .navigationTitle(
+                NSLocalizedString("Meal Details", comment: "Meal details screen title")
+            )
+            .toolbar {
+                #if os(iOS)
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
+                            viewModel.cancel()
+                        }
                     }
-                }
-            #endif
-        }
-        .onAppear {
-            viewModel.configureEnvironment(modelContext, auth)
+
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(NSLocalizedString("Save", comment: "Save button")) {
+                            viewModel.save()
+                        }
+                    }
+                #endif
+            }
+            .onAppear {
+                viewModel.configureEnvironment(modelContext, dismiss, auth)
+            }
         }
     }
 }

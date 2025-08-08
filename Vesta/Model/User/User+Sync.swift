@@ -15,6 +15,9 @@ extension User {
             "lastSignInAt": lastSignInAt,
             "isOnHoliday": isOnHoliday,
         ]
+        if let timestamp = deletedAt {
+            dto["deletedAt"] = timestamp
+        }
 
         // Add holiday start date if available
         if let holidayStartDate = holidayStartDate {
@@ -42,6 +45,9 @@ extension User {
     }
 
     func update(from data: [String: Any]) {
+        if let deletedAt = data["deletedAt"] as? Date {
+            self.deletedAt = deletedAt
+        }
         self.isShared = data["isShared"] as? Bool ?? false
 
         if let isEmailVerified = data["isEmailVerified"] as? Bool {

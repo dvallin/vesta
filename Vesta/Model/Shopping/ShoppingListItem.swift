@@ -51,4 +51,26 @@ class ShoppingListItem: SyncableEntity {
         self.unit = newUnit
         self.markAsDirty()
     }
+
+    // MARK: - Soft Delete Operations
+
+    func softDelete(currentUser: User) {
+        self.deletedAt = Date()
+        self.markAsDirty()
+
+        // Soft delete related todo item only if it's not already deleted
+        if let todoItem = self.todoItem, todoItem.deletedAt == nil {
+            todoItem.softDelete(currentUser: currentUser)
+        }
+    }
+
+    func restore(currentUser: User) {
+        self.deletedAt = nil
+        self.markAsDirty()
+
+        // Restore related todo item only if it's currently deleted
+        if let todoItem = self.todoItem, todoItem.deletedAt != nil {
+            todoItem.restore(currentUser: currentUser)
+        }
+    }
 }

@@ -86,38 +86,6 @@ class AddMealViewModel: ObservableObject {
         }
     }
 
-    func getRecipeStatus(_ recipe: Recipe) -> RecipeStatus {
-        let now = Date()
-        let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
-        let nextWeek = Calendar.current.date(byAdding: .day, value: 7, to: now) ?? now
-
-        // Check if already planned
-        let hasUpcomingMeal = recipe.meals.contains { meal in
-            guard let todoItem = meal.todoItem,
-                let dueDate = todoItem.dueDate
-            else { return false }
-            return dueDate > now && dueDate <= nextWeek && !meal.isDone
-        }
-
-        if hasUpcomingMeal {
-            return .planned
-        }
-
-        // Check if recently made
-        let wasRecentlyMade = recipe.meals.contains { meal in
-            guard let todoItem = meal.todoItem,
-                let dueDate = todoItem.dueDate
-            else { return false }
-            return dueDate >= oneWeekAgo && dueDate <= now && meal.isDone
-        }
-
-        if wasRecentlyMade {
-            return .recent
-        }
-
-        return .normal
-    }
-
     @MainActor
     func createMeal(with recipe: Recipe) async {
         guard let currentUser = auth?.currentUser else {
@@ -159,6 +127,7 @@ class AddMealViewModel: ObservableObject {
             try context.save()
 
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+
             dismiss?()
         } catch {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
@@ -174,10 +143,4 @@ class AddMealViewModel: ObservableObject {
         errorMessage = message
         showingErrorAlert = true
     }
-}
-
-enum RecipeStatus {
-    case normal
-    case planned
-    case recent
 }

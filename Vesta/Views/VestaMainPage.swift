@@ -5,6 +5,7 @@ struct VestaMainPage: View {
     @EnvironmentObject var auth: UserAuthService
     @EnvironmentObject var syncService: SyncService
     @EnvironmentObject var entitySharingService: EntitySharingService
+    @EnvironmentObject var cleanupService: CleanupService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
 
@@ -51,9 +52,13 @@ struct VestaMainPage: View {
 
                 // Start synchronization with remote server
                 syncService.startSync()
+
+                // Start periodic cleanup of old deleted entities
+                cleanupService.startPeriodicCleanup()
             }
             .onDisappear {
                 syncService.stopSync()
+                cleanupService.stopPeriodicCleanup()
             }
             .onChange(of: scenePhase) { oldPhase, newPhase in
                 if newPhase == .background {
