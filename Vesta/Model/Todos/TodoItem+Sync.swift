@@ -15,11 +15,16 @@ extension TodoItem {
             "isCompleted": isCompleted,
             "ignoreTimeComponent": ignoreTimeComponent,
             "priority": priority,
+            "deletedAt": deletedAt as Any,
+            "expireAt": expireAt as Any,
         ]
 
         // Add optional properties
         if let dueDate = dueDate {
             dto["dueDate"] = dueDate
+        }
+        if let rescheduleDate = rescheduleDate {
+            dto["rescheduleDate"] = rescheduleDate
         }
 
         if let recurrenceFrequency = recurrenceFrequency {
@@ -55,6 +60,12 @@ extension TodoItem {
 
     // Method to update properties directly from a DTO during sync operations without triggering events
     func update(from dto: [String: Any]) {
+        if dto.keys.contains("deletedAt") {
+            self.deletedAt = dto["deletedAt"] as? Date
+        }
+        if dto.keys.contains("expireAt") {
+            self.expireAt = dto["expireAt"] as? Date
+        }
         self.isShared = dto["isShared"] as? Bool ?? false
 
         if let title = dto["title"] as? String {
@@ -63,8 +74,11 @@ extension TodoItem {
         if let details = dto["details"] as? String {
             self.details = details
         }
-        if let dueDate = dto["dueDate"] as? Date {
-            self.dueDate = dueDate
+        if dto.keys.contains("dueDate") {
+            self.dueDate = dto["dueDate"] as? Date
+        }
+        if dto.keys.contains("rescheduleDate") {
+            self.rescheduleDate = dto["rescheduleDate"] as? Date
         }
         if let isCompleted = dto["isCompleted"] as? Bool {
             self.isCompleted = isCompleted
@@ -75,14 +89,22 @@ extension TodoItem {
         if let priority = dto["priority"] as? Int {
             self.priority = priority
         }
-        if let recurrenceFrequencyRaw = dto["recurrenceFrequency"] as? String {
-            self.recurrenceFrequency = RecurrenceFrequency(rawValue: recurrenceFrequencyRaw)
+        if dto.keys.contains("recurrenceFrequency") {
+            if let recurrenceFrequencyRaw = dto["recurrenceFrequency"] as? String {
+                self.recurrenceFrequency = RecurrenceFrequency(rawValue: recurrenceFrequencyRaw)
+            } else {
+                self.recurrenceFrequency = nil
+            }
         }
-        if let recurrenceTypeRaw = dto["recurrenceType"] as? String {
-            self.recurrenceType = RecurrenceType(rawValue: recurrenceTypeRaw)
+        if dto.keys.contains("recurrenceType") {
+            if let recurrenceTypeRaw = dto["recurrenceType"] as? String {
+                self.recurrenceType = RecurrenceType(rawValue: recurrenceTypeRaw)
+            } else {
+                self.recurrenceType = nil
+            }
         }
-        if let recurrenceInterval = dto["recurrenceInterval"] as? Int {
-            self.recurrenceInterval = recurrenceInterval
+        if dto.keys.contains("recurrenceInterval") {
+            self.recurrenceInterval = dto["recurrenceInterval"] as? Int
         }
 
         // Update events from DTOs (was completionEvents)

@@ -41,6 +41,7 @@ class TodoListViewModel: ObservableObject {
     @Published var selectedPriority: Int? = nil
     @Published var selectedCategory: TodoItemCategory? = nil
     @Published var showNoCategory: Bool = false
+    @Published var searchText: String = ""
 
     @Published var selectedTodoItem: TodoItem? = nil
 
@@ -76,6 +77,7 @@ class TodoListViewModel: ObservableObject {
         selectedPriority = nil
         selectedCategory = nil
         showNoCategory = false
+        searchText = ""
     }
 
     func updateCurrentDay() {
@@ -147,14 +149,39 @@ class TodoListViewModel: ObservableObject {
         }
     }
 
-    func deleteItem(_ item: TodoItem) {
-        item.deletedAt = Date()
-        item.meal?.deletedAt = Date()
-        item.shoppingListItem?.deletedAt = Date()
+    func deleteItem(_ item: TodoItem, undoAction: @escaping (TodoItem, UUID) -> Void) {
+        guard let currentUser = auth?.currentUser else { return }
+        item.softDelete(currentUser: currentUser)
 
         if saveContext() {
             NotificationManager.shared.cancelNotification(for: item)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+
+            let id = UUID()
+            let toastMessage = ToastMessage(
+                id: id,
+                message: String(
+                    format: NSLocalizedString(
+                        "%@ deleted", comment: "Toast message for deleting todo item"),
+                    item.title
+                ),
+                undoAction: {
+                    undoAction(item, id)
+                }
+            )
+            toastMessages.append(toastMessage)
+        }
+    }
+
+    func undoDeleteItem(_ item: TodoItem, id: UUID) {
+        guard let currentUser = auth?.currentUser else { return }
+        item.restore(currentUser: currentUser)
+        toastMessages.removeAll { $0.id == id }
+
+        if saveContext() {
+            NotificationManager.shared.scheduleNotification(for: item)
+            _ = syncService?.pushLocalChanges()
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 
@@ -202,7 +229,12 @@ class TodoListViewModel: ObservableObject {
                 // exact category
                 matchesCategory = item.category == selectedCategory
             }
-            guard matchesPriority && matchesCategory else { return false }
+
+            let matchesSearch =
+                searchText.isEmpty || item.title.localizedCaseInsensitiveContains(searchText)
+                || item.details.localizedCaseInsensitiveContains(searchText)
+
+            guard matchesPriority && matchesCategory && matchesSearch else { return false }
 
             switch filterMode {
             case .all:

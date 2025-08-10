@@ -51,6 +51,7 @@ class TodoItem: SyncableEntity {
     var dirty: Bool = true
 
     var deletedAt: Date? = nil
+    var expireAt: Date? = nil
 
     @Relationship(deleteRule: .noAction)
     var owner: User?
@@ -391,6 +392,14 @@ class TodoItem: SyncableEntity {
         }
     }
 
+    /// Returns the date of the last completion event, or nil if never completed
+    var lastCompletionDate: Date? {
+        events
+            .filter { $0.eventType == .completed }
+            .compactMap { $0.completedAt }
+            .max()
+    }
+
     var varianceCompletionDistance: TimeInterval? {
         let distances = completionDistances
         guard let mean = meanCompletionDistance, !distances.isEmpty else { return nil }
@@ -400,5 +409,35 @@ class TodoItem: SyncableEntity {
         let variance =
             distances.map { pow($0 - mean, 2) }.reduce(0, +) / Double(distances.count - 1)
         return variance
+    }
+
+    // MARK: - Soft Delete Operations
+
+    func softDelete(currentUser: User) {
+        self.deletedAt = Date()
+        self.setExpiration()
+        self.markAsDirty()
+
+        // Soft delete related entities only if they're not already deleted
+        if let meal = self.meal, meal.deletedAt == nil {
+            meal.softDelete(currentUser: currentUser)
+        }
+        if let shoppingListItem = self.shoppingListItem, shoppingListItem.deletedAt == nil {
+            shoppingListItem.softDelete(currentUser: currentUser)
+        }
+    }
+
+    func restore(currentUser: User) {
+        self.deletedAt = nil
+        self.clearExpiration()
+        self.markAsDirty()
+
+        // Restore related entities only if they're currently deleted
+        if let meal = self.meal, meal.deletedAt != nil {
+            meal.restore(currentUser: currentUser)
+        }
+        if let shoppingListItem = self.shoppingListItem, shoppingListItem.deletedAt != nil {
+            shoppingListItem.restore(currentUser: currentUser)
+        }
     }
 }

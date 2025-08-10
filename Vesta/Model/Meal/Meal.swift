@@ -33,6 +33,7 @@ class Meal: SyncableEntity {
     var dirty: Bool = true
 
     var deletedAt: Date? = nil
+    var expireAt: Date? = nil
 
     @Relationship(deleteRule: .cascade, inverse: \TodoItem.meal)
     var todoItem: TodoItem?
@@ -46,6 +47,11 @@ class Meal: SyncableEntity {
     var isDone: Bool {
         guard let todoItem = todoItem else { return true }
         return todoItem.isCompleted
+    }
+
+    /// Returns the date when this meal was last completed, or nil if never completed
+    var lastCompletionDate: Date? {
+        return todoItem?.lastCompletionDate
     }
 
     init(
@@ -63,7 +69,7 @@ class Meal: SyncableEntity {
     }
 
     func updateTodoItemDueDate(for mealType: MealType, on date: Date? = nil, currentUser: User) {
-        let baseDate = date ?? todoItem?.dueDate ?? Date()
+        guard let baseDate = date ?? todoItem?.dueDate else { return }
         let (hour, minute) = DateUtils.mealTime(for: mealType)
         if let newDueDate = DateUtils.setTime(hour: hour, minute: minute, for: baseDate) {
             todoItem?.setDueDate(dueDate: newDueDate, currentUser: currentUser)
@@ -95,6 +101,31 @@ class Meal: SyncableEntity {
 
     func setMealType(_ newMealType: MealType, currentUser: User) {
         self.mealType = newMealType
+        self.updateTodoItemDueDate(for: newMealType, currentUser: currentUser)
         self.markAsDirty()
+    }
+
+    // MARK: - Soft Delete Operations
+
+    func softDelete(currentUser: User) {
+        self.deletedAt = Date()
+        self.setExpiration()
+        self.markAsDirty()
+
+        // Soft delete related todo item only if it's not already deleted
+        if let todoItem = self.todoItem, todoItem.deletedAt == nil {
+            todoItem.softDelete(currentUser: currentUser)
+        }
+    }
+
+    func restore(currentUser: User) {
+        self.deletedAt = nil
+        self.clearExpiration()
+        self.markAsDirty()
+
+        // Restore related todo item only if it's currently deleted
+        if let todoItem = self.todoItem, todoItem.deletedAt != nil {
+            todoItem.restore(currentUser: currentUser)
+        }
     }
 }

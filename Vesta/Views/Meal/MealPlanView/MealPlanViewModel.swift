@@ -103,11 +103,13 @@ class MealPlanViewModel: ObservableObject {
     }
 
     func deleteMeal(_ meal: Meal, undoAction: @escaping (Meal, UUID) -> Void) {
+        guard let currentUser = auth?.currentUser else { return }
+
         if let todoItem = meal.todoItem {
             NotificationManager.shared.cancelNotification(for: todoItem)
         }
-        meal.deletedAt = Date()
-        meal.todoItem?.deletedAt = meal.deletedAt
+
+        meal.softDelete(currentUser: currentUser)
 
         if saveContext() {
             HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
@@ -156,9 +158,11 @@ class MealPlanViewModel: ObservableObject {
     }
 
     func undoMealDeletion(_ meal: Meal, id: UUID) {
+        guard let currentUser = auth?.currentUser else { return }
+
         // Undo deletion
-        meal.deletedAt = nil
-        meal.todoItem?.deletedAt = nil
+        meal.restore(currentUser: currentUser)
+
         if let todoItem = meal.todoItem {
             NotificationManager.shared.scheduleNotification(for: todoItem)
         }

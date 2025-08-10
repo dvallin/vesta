@@ -15,18 +15,6 @@ struct TodoListView: View {
                 CompletedTodoListView(viewModel: viewModel)
             } else {
                 ActiveTodoListView(viewModel: viewModel)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: {
-                                viewModel.isPresentingCategoryManagementView = true
-                            }) {
-                                Label("Manage Categories", systemImage: "folder")
-                            }
-                            .sheet(isPresented: $viewModel.isPresentingCategoryManagementView) {
-                                CategoryManagementView()
-                            }
-                        }
-                    }
             }
         }
         .sheet(item: $viewModel.selectedTodoItem) { item in

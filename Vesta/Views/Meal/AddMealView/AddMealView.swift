@@ -12,142 +12,139 @@ struct AddMealView: View {
         filter: #Predicate { recipe in recipe.deletedAt == nil },
     ) private var meals: [Meal]
 
-    @StateObject private var viewModel = AddMealViewModel()
-    @State private var searchText = ""
-    @State private var showOnlyAvailable = false
-    @State private var selectedMealTypeFilter: MealType? = nil
+    @StateObject private var recipeViewModel = RecipeListViewModel()
+    @StateObject private var mealViewModel = AddMealViewModel()
+    @State private var isSearchActive = false
+    @FocusState private var isSearchFocused: Bool
 
     private var filteredRecipes: [Recipe] {
-        var filtered = recipes
-
-        // Apply search filter
-        if !searchText.isEmpty {
-            filtered = filtered.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
-        }
-
-        // Apply availability filter
-        if showOnlyAvailable {
-            filtered = filtered.filter { recipe in
-                viewModel.getRecipeStatus(recipe) != .planned
-            }
-        }
-
-        return filtered
+        recipeViewModel.filteredAndSortedRecipes(from: recipes)
     }
 
     var body: some View {
         NavigationView {
-            List {
-                if !searchText.isEmpty {
-                    // Show filtered results when searching
-                    ForEach(filteredRecipes) { recipe in
-                        recipeButton(for: recipe)
+            VStack(spacing: 0) {
+                RecipeQuickFilterView(viewModel: recipeViewModel, recipes: recipes)
+                    .padding(.top, 8)
+
+                if filteredRecipes.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(
+                            systemName: recipeViewModel.searchText.isEmpty
+                                ? "book.closed" : "magnifyingglass"
+                        )
+                        .font(.system(size: 48))
+                        .foregroundColor(.secondary)
+
+                        Text(
+                            recipeViewModel.searchText.isEmpty
+                                ? "No recipes yet" : "No recipes found"
+                        )
+                        .font(.title2)
+                        .fontWeight(.medium)
+
+                        Text(
+                            recipeViewModel.searchText.isEmpty
+                                ? "Add some recipes first to create meals"
+                                : "Try adjusting your search terms or filters"
+                        )
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
                     }
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    // Show organized sections when not searching
-                    if showOnlyAvailable {
-                        // When filtering for available, show simplified sections
-                        Section("Available Recipes") {
-                            ForEach(filteredRecipes) { recipe in
-                                recipeButton(for: recipe)
-                            }
-                        }
-                    } else {
-                        // Full organized view
-                        if viewModel.recipeSections.hasRecentRecipes {
-                            Section("Recently Made") {
-                                ForEach(viewModel.recipeSections.recent) { recipe in
-                                    recipeButton(for: recipe)
-                                }
-                            }
-                        }
-
-                        if viewModel.recipeSections.hasFrequentRecipes {
-                            Section("Frequently Made") {
-                                ForEach(viewModel.recipeSections.frequent) { recipe in
-                                    recipeButton(for: recipe)
-                                }
-                            }
-                        }
-
-                        if viewModel.recipeSections.hasNotPlannedRecipes {
-                            Section("Not Planned") {
-                                ForEach(viewModel.recipeSections.notPlanned) { recipe in
-                                    recipeButton(for: recipe)
-                                }
-                            }
-                        }
-
-                        Section("All Recipes") {
-                            ForEach(recipes) { recipe in
-                                recipeButton(for: recipe)
-                            }
+                    List {
+                        ForEach(filteredRecipes) { recipe in
+                            recipeButton(for: recipe)
                         }
                     }
                 }
             }
-            .searchable(text: $searchText, prompt: "Search recipes...")
-            .navigationTitle(NSLocalizedString("Add Meal", comment: "Add meal screen title"))
-            #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
-            #endif
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
-                        dismiss()
-                    }
-                }
+                ToolbarItem(placement: .principal) {
+                    HStack {
+                        if isSearchActive {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.secondary)
+                                    .font(.system(size: 16))
 
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu("Filter") {
-                        Button(showOnlyAvailable ? "Show All" : "Show Only Available") {
-                            showOnlyAvailable.toggle()
-                        }
+                                TextField("Search recipes...", text: $recipeViewModel.searchText)
+                                    .focused($isSearchFocused)
+                                    .textFieldStyle(PlainTextFieldStyle())
+                                    .font(.headline)
 
-                        Divider()
-
-                        Menu("Meal Type") {
-                            Button("All Types") {
-                                selectedMealTypeFilter = nil
-                            }
-
-                            ForEach(MealType.allCases, id: \.self) { mealType in
-                                Button(mealType.displayName) {
-                                    selectedMealTypeFilter =
-                                        selectedMealTypeFilter == mealType ? nil : mealType
+                                Button("Cancel") {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        isSearchActive = false
+                                        recipeViewModel.searchText = ""
+                                        isSearchFocused = false
+                                    }
                                 }
+                                .font(.system(size: 16))
+                                .foregroundColor(.accentColor)
                             }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                            .transition(.scale.combined(with: .opacity))
+                        } else {
+                            HStack {
+                                Text(
+                                    NSLocalizedString("Add Meal", comment: "Add meal screen title")
+                                )
+                                .font(.headline)
+                                .fontWeight(.semibold)
+
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        isSearchActive = true
+                                        isSearchFocused = true
+                                    }
+                                } label: {
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.accentColor)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                            .transition(.scale.combined(with: .opacity))
                         }
                     }
+                    .frame(maxWidth: .infinity)
                 }
             }
             .alert(
                 NSLocalizedString("Error", comment: "Error alert title"),
-                isPresented: $viewModel.showingErrorAlert
+                isPresented: $mealViewModel.showingErrorAlert
             ) {
                 Button(
                     NSLocalizedString("OK", comment: "Error alert OK button"),
                     role: .cancel
                 ) {}
             } message: {
-                Text(viewModel.errorMessage)
+                Text(mealViewModel.errorMessage)
             }
         }
         .onAppear {
-            viewModel.configureEnvironment(modelContext, dismiss, auth)
-            viewModel.organizeRecipes(recipes, meals)
-        }
-        .onChange(of: recipes) { _, newRecipes in
-            viewModel.organizeRecipes(newRecipes, meals)
+            recipeViewModel.configureContext(modelContext, auth)
+            mealViewModel.configureEnvironment(modelContext, dismiss, auth)
+
+            // Set default filter to show recipes that aren't already planned
+            recipeViewModel.filterMode = .notPlanned
         }
     }
 
     @ViewBuilder
     private func recipeButton(for recipe: Recipe) -> some View {
         Button(action: { selectRecipe(recipe) }) {
-            AddMealRecipeRow(
-                recipe: recipe,
-                status: viewModel.getRecipeStatus(recipe)
+            RecipeRow(
+                recipe: recipe
             )
         }
         .buttonStyle(PlainButtonStyle())
@@ -155,7 +152,7 @@ struct AddMealView: View {
 
     private func selectRecipe(_ recipe: Recipe) {
         Task {
-            await viewModel.createMeal(with: recipe)
+            await mealViewModel.createMeal(with: recipe)
         }
     }
 }

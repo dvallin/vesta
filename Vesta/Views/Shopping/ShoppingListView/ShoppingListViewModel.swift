@@ -80,10 +80,39 @@ class ShoppingListViewModel: ObservableObject {
         }
     }
 
-    func deleteItem(_ item: ShoppingListItem) {
-        item.deletedAt = Date()
+    func deleteItem(
+        _ item: ShoppingListItem, undoAction: @escaping (ShoppingListItem, UUID) -> Void
+    ) {
+        guard let currentUser = auth?.currentUser else { return }
+        item.softDelete(currentUser: currentUser)
+
         if saveContext() {
             HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+
+            let id = UUID()
+            let toastMessage = ToastMessage(
+                id: id,
+                message: String(
+                    format: NSLocalizedString(
+                        "%@ deleted", comment: "Toast message for deleting shopping item"),
+                    item.name
+                ),
+                undoAction: {
+                    undoAction(item, id)
+                }
+            )
+            toastMessages.append(toastMessage)
+        }
+    }
+
+    func undoDeleteItem(_ item: ShoppingListItem, id: UUID) {
+        guard let currentUser = auth?.currentUser else { return }
+        item.restore(currentUser: currentUser)
+        toastMessages.removeAll { $0.id == id }
+
+        if saveContext() {
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+            _ = syncService?.pushLocalChanges()
         }
     }
 

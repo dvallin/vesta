@@ -12,7 +12,20 @@ extension Recipe {
 
             "title": title,
             "details": details,
+            "deletedAt": deletedAt as Any,
+            "expireAt": expireAt as Any,
         ]
+
+        // Add optional seasonality
+        if let seasonality = seasonality {
+            dto["seasonality"] = seasonality.rawValue
+        }
+
+        // Add meal types
+        dto["mealTypes"] = mealTypes.map { $0.rawValue }
+
+        // Add tags
+        dto["tags"] = tags
 
         dto["ingredients"] = ingredients.map { $0.toDTO() }
         dto["steps"] = steps.map { $0.toDTO() }
@@ -23,6 +36,14 @@ extension Recipe {
 
     /// Updates the entity's properties from a dictionary of values
     func update(from data: [String: Any]) {
+        // Handle deletedAt - can be nil when restored
+        if data.keys.contains("deletedAt") {
+            self.deletedAt = data["deletedAt"] as? Date
+        }
+        // Handle expireAt - can be nil when restored
+        if data.keys.contains("expireAt") {
+            self.expireAt = data["expireAt"] as? Date
+        }
         self.isShared = data["isShared"] as? Bool ?? false
 
         if let title = data["title"] as? String {
@@ -31,6 +52,23 @@ extension Recipe {
 
         if let details = data["details"] as? String {
             self.details = details
+        }
+
+        // Handle seasonality
+        if let seasonalityRaw = data["seasonality"] as? String {
+            self.seasonality = Seasonality(rawValue: seasonalityRaw)
+        } else if data.keys.contains("seasonality") {
+            self.seasonality = nil
+        }
+
+        // Handle meal types
+        if let mealTypesRaw = data["mealTypes"] as? [String] {
+            self.mealTypes = mealTypesRaw.compactMap { MealType(rawValue: $0) }
+        }
+
+        // Handle tags
+        if let tags = data["tags"] as? [String] {
+            self.tags = tags
         }
 
         // Process ingredients from data

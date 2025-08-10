@@ -19,7 +19,9 @@ struct TodoList: View {
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     // Existing delete action
                     Button(role: .destructive) {
-                        viewModel.deleteItem(item)
+                        viewModel.deleteItem(item) { item, id in
+                            viewModel.undoDeleteItem(item, id: id)
+                        }
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
@@ -84,7 +86,9 @@ struct TodoList: View {
     private func deleteTodoItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                viewModel.deleteItem(filteredTodoItems[index])
+                viewModel.deleteItem(filteredTodoItems[index]) { item, id in
+                    viewModel.undoDeleteItem(item, id: id)
+                }
             }
         }
     }

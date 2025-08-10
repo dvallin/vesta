@@ -19,6 +19,7 @@ struct VestaApp: App {
     let syncService: SyncService
     let inviteService: UserInviteService
     let entitySharingService: EntitySharingService
+    let cleanupService: CleanupService
 
     init() {
         FirebaseApp.configure()
@@ -38,7 +39,7 @@ struct VestaApp: App {
         todoItems = TodoItemService(modelContext: modelContext)
         recipes = RecipeService(modelContext: modelContext)
         shoppingItems = ShoppingListItemService(modelContext: modelContext)
-        
+
         // Create Firebase API client for use with invite service
         let firebaseApi = FirebaseAPIClient()
         inviteService = UserInviteService(modelContext: modelContext, apiClient: firebaseApi)
@@ -57,6 +58,10 @@ struct VestaApp: App {
             meals: meals, todoItems: todoItems, recipes: recipes, shoppingItems: shoppingItems,
             modelContext: modelContext)
 
+        // Create cleanup service
+        cleanupService = CleanupService(
+            modelContext: modelContext, userAuth: auth, syncService: syncService)
+
         NotificationManager.shared.requestAuthorization()
     }
 
@@ -69,5 +74,6 @@ struct VestaApp: App {
         .environmentObject(syncService)
         .environmentObject(inviteService)
         .environmentObject(entitySharingService)
+        .environmentObject(cleanupService)
     }
 }

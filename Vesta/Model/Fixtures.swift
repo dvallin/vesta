@@ -20,7 +20,7 @@ struct Fixtures {
     }
 
     static func bolognese(owner: User = Fixtures.createUser()) -> Recipe {
-        return Recipe(
+        let recipe = Recipe(
             title: "Spaghetti Bolognese",
             details:
                 "A classic Italian pasta dish. [link to original recipe](https://www.youtube.com/watch?v=0O2Xd-Yw\\_cQ)",
@@ -53,10 +53,17 @@ struct Fixtures {
             ],
             owner: owner
         )
+
+        // Set sample data for new fields
+        recipe.setSeasonality(.yearRound, currentUser: owner)
+        recipe.setMealTypes([.lunch, .dinner], currentUser: owner)
+        recipe.setTags(["Italian", "Pasta", "Comfort Food"], currentUser: owner)
+
+        return recipe
     }
 
     static func curry(owner: User = Fixtures.createUser()) -> Recipe {
-        return Recipe(
+        let recipe = Recipe(
             title: "Chicken Curry",
             details: "Spicy Indian curry",
             ingredients: [
@@ -66,6 +73,13 @@ struct Fixtures {
             ],
             owner: owner
         )
+
+        // Set sample data for new fields
+        recipe.setSeasonality(.winter, currentUser: owner)
+        recipe.setMealTypes([.dinner], currentUser: owner)
+        recipe.setTags(["Indian", "Spicy", "Comfort Food"], currentUser: owner)
+
+        return recipe
     }
 
     // MARK: - Meal Factories

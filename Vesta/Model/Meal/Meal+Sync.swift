@@ -12,7 +12,8 @@ extension Meal {
 
             "scalingFactor": scalingFactor,
             "mealType": mealType.rawValue,
-            "isDone": isDone,
+            "deletedAt": deletedAt as Any,
+            "expireAt": expireAt as Any,
         ]
 
         // Add related entity IDs for references
@@ -33,6 +34,14 @@ extension Meal {
     }
 
     func update(from dto: [String: Any]) {
+        // Handle deletedAt - can be nil when restored
+        if dto.keys.contains("deletedAt") {
+            self.deletedAt = dto["deletedAt"] as? Date
+        }
+        // Handle expireAt - can be nil when restored
+        if dto.keys.contains("expireAt") {
+            self.expireAt = dto["expireAt"] as? Date
+        }
         self.isShared = dto["isShared"] as? Bool ?? false
 
         if let scalingFactor = dto["scalingFactor"] as? Double {

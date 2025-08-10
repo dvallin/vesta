@@ -15,6 +15,7 @@ class Recipe: SyncableEntity {
     var dirty: Bool = true
 
     var deletedAt: Date? = nil
+    var expireAt: Date? = nil
 
     @Relationship(deleteRule: .cascade, inverse: \Ingredient.recipe)
     var ingredients: [Ingredient]
@@ -24,6 +25,10 @@ class Recipe: SyncableEntity {
 
     @Relationship(deleteRule: .cascade)
     var meals: [Meal]
+
+    var seasonality: Seasonality?
+    var mealTypes: [MealType] = []
+    var tags: [String] = []
 
     init(
         title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = [],
@@ -68,6 +73,44 @@ class Recipe: SyncableEntity {
 
     var totalDuration: TimeInterval {
         preparationDuration + cookingDuration + maturingDuration
+    }
+
+    var timesCookedRecently: Int {
+        meals.filter { meal in
+            meal.deletedAt == nil && meal.isDone
+        }.count
+    }
+
+    var status: RecipeStatus {
+        let now = Date()
+        let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
+        let nextWeek = Calendar.current.date(byAdding: .day, value: 7, to: now) ?? now
+
+        // Check if already planned
+        let hasUpcomingMeal = meals.contains { meal in
+            guard let todoItem = meal.todoItem,
+                let dueDate = todoItem.dueDate
+            else { return false }
+            return dueDate > now && dueDate <= nextWeek && !meal.isDone
+        }
+
+        if hasUpcomingMeal {
+            return .planned
+        }
+
+        // Check if recently made
+        let wasRecentlyMade = meals.contains { meal in
+            guard let todoItem = meal.todoItem,
+                let dueDate = todoItem.dueDate
+            else { return false }
+            return dueDate >= oneWeekAgo && dueDate <= now && meal.isDone
+        }
+
+        if wasRecentlyMade {
+            return .recent
+        }
+
+        return .normal
     }
 
     // Mutation methods
@@ -136,6 +179,49 @@ class Recipe: SyncableEntity {
         details = newDetails
         markAsDirty()
     }
+
+    func setSeasonality(_ newSeasonality: Seasonality?, currentUser: User) {
+        seasonality = newSeasonality
+        markAsDirty()
+    }
+
+    func setMealTypes(_ newMealTypes: [MealType], currentUser: User) {
+        mealTypes = newMealTypes
+        markAsDirty()
+    }
+
+    func addTag(_ tag: String, currentUser: User) {
+        if !tags.contains(tag) {
+            tags.append(tag)
+            markAsDirty()
+        }
+    }
+
+    func removeTag(_ tag: String, currentUser: User) {
+        if let index = tags.firstIndex(of: tag) {
+            tags.remove(at: index)
+            markAsDirty()
+        }
+    }
+
+    func setTags(_ newTags: [String], currentUser: User) {
+        tags = newTags
+        markAsDirty()
+    }
+
+    // MARK: - Soft Delete Operations
+
+    func softDelete(currentUser: User) {
+        self.deletedAt = Date()
+        self.setExpiration()
+        self.markAsDirty()
+    }
+
+    func restore(currentUser: User) {
+        self.deletedAt = nil
+        self.clearExpiration()
+        self.markAsDirty()
+    }
 }
 
 @Model
@@ -196,6 +282,12 @@ enum StepType: String, Codable, CaseIterable {
     }
 }
 
+enum RecipeStatus {
+    case normal
+    case planned
+    case recent
+}
+
 enum Unit: String, Codable, CaseIterable {
     case teaspoon
     case tablespoon
@@ -230,6 +322,93 @@ enum Unit: String, Codable, CaseIterable {
             return NSLocalizedString("lb", comment: "Pound unit abbreviation")
         case .piece:
             return NSLocalizedString("pc", comment: "Piece unit abbreviation")
+        }
+    }
+}
+
+enum Seasonality: String, Codable, CaseIterable {
+    case spring
+    case summer
+    case autumn
+    case winter
+    case yearRound
+
+    var displayName: String {
+        switch self {
+        case .spring:
+            return NSLocalizedString("Spring", comment: "Spring season")
+        case .summer:
+            return NSLocalizedString("Summer", comment: "Summer season")
+        case .autumn:
+            return NSLocalizedString("Autumn", comment: "Autumn season")
+        case .winter:
+            return NSLocalizedString("Winter", comment: "Winter season")
+        case .yearRound:
+            return NSLocalizedString("Year Round", comment: "Year round availability")
+        }
+    }
+
+    /// Returns the date interval for this season in the northern hemisphere for a given year
+    /// - Parameter year: The year to get the season interval for (defaults to current year)
+    /// - Returns: DateInterval representing the season's start and end dates
+    func dateInterval(for year: Int = Calendar.current.component(.year, from: Date()))
+        -> DateInterval
+    {
+        let calendar = Calendar.current
+        var dateComponents = DateComponents()
+        dateComponents.year = year
+
+        switch self {
+        case .spring:
+            // March 20 - June 20
+            dateComponents.month = 3
+            dateComponents.day = 20
+            let start = calendar.date(from: dateComponents)!
+            dateComponents.month = 6
+            dateComponents.day = 20
+            let end = calendar.date(from: dateComponents)!
+            return DateInterval(start: start, end: end)
+
+        case .summer:
+            // June 21 - September 22
+            dateComponents.month = 6
+            dateComponents.day = 21
+            let start = calendar.date(from: dateComponents)!
+            dateComponents.month = 9
+            dateComponents.day = 22
+            let end = calendar.date(from: dateComponents)!
+            return DateInterval(start: start, end: end)
+
+        case .autumn:
+            // September 23 - December 20
+            dateComponents.month = 9
+            dateComponents.day = 23
+            let start = calendar.date(from: dateComponents)!
+            dateComponents.month = 12
+            dateComponents.day = 20
+            let end = calendar.date(from: dateComponents)!
+            return DateInterval(start: start, end: end)
+
+        case .winter:
+            // December 21 - March 19 (next year)
+            dateComponents.month = 12
+            dateComponents.day = 21
+            let start = calendar.date(from: dateComponents)!
+            dateComponents.year = year + 1
+            dateComponents.month = 3
+            dateComponents.day = 19
+            let end = calendar.date(from: dateComponents)!
+            return DateInterval(start: start, end: end)
+
+        case .yearRound:
+            // January 1 - December 31
+            dateComponents.month = 1
+            dateComponents.day = 1
+            let start = calendar.date(from: dateComponents)!
+            dateComponents.month = 12
+            dateComponents.day = 31
+            let end = calendar.date(from: dateComponents)!
+            return DateInterval(start: start, end: end)
         }
     }
 }
