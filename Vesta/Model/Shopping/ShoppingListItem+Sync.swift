@@ -12,10 +12,9 @@ extension ShoppingListItem {
 
             "name": name,
             "isPurchased": isPurchased,
+            "deletedAt": deletedAt as Any,
+            "expireAt": expireAt as Any,
         ]
-        if let timestamp = deletedAt {
-            dto["deletedAt"] = timestamp
-        }
 
         // Handle optional values
         if let quantity = quantity {
@@ -39,8 +38,13 @@ extension ShoppingListItem {
 
     /// Updates the entity's properties from a dictionary of values
     func update(from data: [String: Any]) {
-        if let deletedAt = data["deletedAt"] as? Date {
-            self.deletedAt = deletedAt
+        // Handle deletedAt - can be nil when restored
+        if data.keys.contains("deletedAt") {
+            self.deletedAt = data["deletedAt"] as? Date
+        }
+        // Handle expireAt - can be nil when restored
+        if data.keys.contains("expireAt") {
+            self.expireAt = data["expireAt"] as? Date
         }
         self.isShared = data["isShared"] as? Bool ?? false
 

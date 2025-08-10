@@ -33,6 +33,11 @@ struct AddRecipeView: View {
     @State private var stepType: StepType = .cooking
     @State private var stepDuration: TimeInterval? = nil
 
+    @State private var seasonality: Seasonality? = nil
+    @State private var selectedMealTypes: Set<MealType> = []
+    @State private var tags: [String] = []
+    @State private var newTag: String = ""
+
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
     @State private var showingDiscardAlert = false
@@ -48,6 +53,95 @@ struct AddRecipeView: View {
                     details: $details,
                     focusedField: $focusedField
                 )
+
+                // Seasonality Section
+                Section(
+                    header: Text(
+                        NSLocalizedString("Seasonality", comment: "Section header for seasonality"))
+                ) {
+                    Picker(
+                        NSLocalizedString("Season", comment: "Seasonality picker label"),
+                        selection: $seasonality
+                    ) {
+                        Text(NSLocalizedString("None", comment: "No seasonality selected"))
+                            .tag(Seasonality?.none)
+                        ForEach(Seasonality.allCases, id: \.self) { season in
+                            Text(season.displayName).tag(season as Seasonality?)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+
+                // Meal Types Section
+                Section(
+                    header: Text(
+                        NSLocalizedString("Meal Types", comment: "Section header for meal types"))
+                ) {
+                    ForEach(MealType.allCases, id: \.self) { mealType in
+                        HStack {
+                            Text(mealType.displayName)
+                            Spacer()
+                            if selectedMealTypes.contains(mealType) {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.accentColor)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            if selectedMealTypes.contains(mealType) {
+                                selectedMealTypes.remove(mealType)
+                            } else {
+                                selectedMealTypes.insert(mealType)
+                            }
+                        }
+                    }
+                }
+
+                // Tags Section
+                Section(
+                    header: Text(NSLocalizedString("Tags", comment: "Section header for tags"))
+                ) {
+                    if !tags.isEmpty {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 8) {
+                            ForEach(tags, id: \.self) { tag in
+                                HStack(spacing: 4) {
+                                    Text(tag)
+                                        .font(.caption)
+                                    Button(action: {
+                                        withAnimation {
+                                            tags.removeAll { $0 == tag }
+                                        }
+                                    }) {
+                                        Image(systemName: "xmark")
+                                            .font(.caption2)
+                                    }
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.accentColor.opacity(0.1))
+                                .foregroundColor(.accentColor)
+                                .cornerRadius(8)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+
+                    HStack {
+                        TextField(
+                            NSLocalizedString("Add tag", comment: "Add tag placeholder"),
+                            text: $newTag
+                        )
+                        .onSubmit {
+                            addTag()
+                        }
+
+                        Button(action: addTag) {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundColor(.accentColor)
+                        }
+                        .disabled(newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
 
                 IngredientsSection(
                     header: NSLocalizedString(
@@ -106,7 +200,10 @@ struct AddRecipeView: View {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
-                            if !title.isEmpty || !details.isEmpty || !tempIngredients.isEmpty {
+                            if !title.isEmpty || !details.isEmpty || !tempIngredients.isEmpty
+                                || !tempSteps.isEmpty || seasonality != nil
+                                || !selectedMealTypes.isEmpty || !tags.isEmpty
+                            {
                                 showingDiscardAlert = true
                             } else {
                                 dismiss()
@@ -254,6 +351,11 @@ struct AddRecipeView: View {
 
             let newRecipe = Recipe(title: title, details: details, owner: currentUser)
 
+            // Set new fields
+            newRecipe.setSeasonality(seasonality, currentUser: currentUser)
+            newRecipe.setMealTypes(Array(selectedMealTypes), currentUser: currentUser)
+            newRecipe.setTags(tags, currentUser: currentUser)
+
             // Save ingredients
             for (index, temp) in tempIngredients.enumerated() {
                 let ingredient = Ingredient(
@@ -292,6 +394,16 @@ struct AddRecipeView: View {
             showingValidationAlert = true
         }
         isSaving = false
+    }
+
+    private func addTag() {
+        let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTag.isEmpty && !tags.contains(trimmedTag) else { return }
+
+        withAnimation {
+            tags.append(trimmedTag)
+            newTag = ""
+        }
     }
 }
 

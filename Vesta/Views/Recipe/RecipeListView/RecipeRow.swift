@@ -31,18 +31,27 @@ struct RecipeRow: View {
                             .foregroundColor(.secondary)
                     }
 
-                    // Ingredients count
-                    if !recipe.ingredients.isEmpty {
-                        Label("\(recipe.ingredients.count)", systemImage: "list.bullet")
+                    // Seasonality
+                    if let seasonality = recipe.seasonality {
+                        Label(seasonality.displayName, systemImage: "leaf")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
 
-                    // Steps count
-                    if !recipe.steps.isEmpty {
-                        Label("\(recipe.steps.count)", systemImage: "number")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    // Meal types
+                    if !recipe.mealTypes.isEmpty {
+                        HStack(spacing: 2) {
+                            ForEach(recipe.mealTypes.prefix(2), id: \.self) { mealType in
+                                Image(systemName: mealTypeIcon(for: mealType))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            if recipe.mealTypes.count > 2 {
+                                Text("+\(recipe.mealTypes.count - 2)")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
                     }
 
                     Spacer()
@@ -72,6 +81,17 @@ struct RecipeRow: View {
                     .foregroundColor(.secondary)
                     .labelStyle(.titleAndIcon)
             }
+        }
+    }
+
+    private func mealTypeIcon(for mealType: MealType) -> String {
+        switch mealType {
+        case .breakfast:
+            return "sunrise"
+        case .lunch:
+            return "sun.max"
+        case .dinner:
+            return "moon"
         }
     }
 

@@ -32,6 +32,7 @@ class User: SyncableEntity {
     var dirty: Bool = true
 
     var deletedAt: Date? = nil
+    var expireAt: Date? = nil
 
     init(
         uid: String, email: String? = nil, displayName: String? = nil,
@@ -49,6 +50,20 @@ class User: SyncableEntity {
         self.lastSignInAt = lastSignInAt
         self.isOnHoliday = isOnHoliday
         self.holidayStartDate = holidayStartDate
+    }
+
+    // MARK: - Soft Delete Operations
+
+    func softDelete(currentUser: User) {
+        self.deletedAt = Date()
+        self.setExpiration()
+        self.markAsDirty()
+    }
+
+    func restore(currentUser: User) {
+        self.deletedAt = nil
+        self.clearExpiration()
+        self.markAsDirty()
     }
 }
 

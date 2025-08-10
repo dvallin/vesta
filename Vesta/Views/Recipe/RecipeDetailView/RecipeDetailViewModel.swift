@@ -87,4 +87,35 @@ class RecipeDetailViewModel: ObservableObject {
         guard let currentUser = auth?.currentUser else { return }
         recipe.moveStep(from: source, to: destination, currentUser: currentUser)
     }
+
+    func setSeasonality(_ seasonality: Seasonality?) {
+        guard let currentUser = auth?.currentUser else { return }
+        recipe.setSeasonality(seasonality, currentUser: currentUser)
+    }
+
+    func setMealTypes(_ mealTypes: [MealType]) {
+        guard let currentUser = auth?.currentUser else { return }
+        recipe.setMealTypes(mealTypes, currentUser: currentUser)
+    }
+
+    func addTag(_ tag: String) {
+        guard let currentUser = auth?.currentUser else { return }
+        withAnimation {
+            recipe.addTag(tag, currentUser: currentUser)
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .light)
+        }
+    }
+
+    func removeTag(_ tag: String) {
+        guard let currentUser = auth?.currentUser else { return }
+        withAnimation {
+            recipe.removeTag(tag, currentUser: currentUser)
+            HapticFeedbackManager.shared.generateImpactFeedback(style: .light)
+        }
+    }
+
+    func setTags(_ tags: [String]) {
+        guard let currentUser = auth?.currentUser else { return }
+        recipe.setTags(tags, currentUser: currentUser)
+    }
 }

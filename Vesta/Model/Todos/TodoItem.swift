@@ -51,6 +51,7 @@ class TodoItem: SyncableEntity {
     var dirty: Bool = true
 
     var deletedAt: Date? = nil
+    var expireAt: Date? = nil
 
     @Relationship(deleteRule: .noAction)
     var owner: User?
@@ -391,6 +392,14 @@ class TodoItem: SyncableEntity {
         }
     }
 
+    /// Returns the date of the last completion event, or nil if never completed
+    var lastCompletionDate: Date? {
+        events
+            .filter { $0.eventType == .completed }
+            .compactMap { $0.completedAt }
+            .max()
+    }
+
     var varianceCompletionDistance: TimeInterval? {
         let distances = completionDistances
         guard let mean = meanCompletionDistance, !distances.isEmpty else { return nil }
@@ -406,6 +415,7 @@ class TodoItem: SyncableEntity {
 
     func softDelete(currentUser: User) {
         self.deletedAt = Date()
+        self.setExpiration()
         self.markAsDirty()
 
         // Soft delete related entities only if they're not already deleted
@@ -419,6 +429,7 @@ class TodoItem: SyncableEntity {
 
     func restore(currentUser: User) {
         self.deletedAt = nil
+        self.clearExpiration()
         self.markAsDirty()
 
         // Restore related entities only if they're currently deleted

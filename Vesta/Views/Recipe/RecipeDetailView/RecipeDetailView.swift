@@ -15,6 +15,8 @@ struct RecipeDetailView: View {
     @State private var stepType: StepType = .cooking
     @State private var stepDuration: TimeInterval? = nil
 
+    @State private var newTag: String = ""
+
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
 
@@ -31,6 +33,105 @@ struct RecipeDetailView: View {
                 details: $viewModel.recipe.details,
                 focusedField: $focusedField
             )
+
+            // Seasonality Section
+            Section(
+                header: Text(
+                    NSLocalizedString("Seasonality", comment: "Section header for seasonality"))
+            ) {
+                Picker(
+                    NSLocalizedString("Season", comment: "Seasonality picker label"),
+                    selection: Binding(
+                        get: { viewModel.recipe.seasonality },
+                        set: { newValue in
+                            guard let currentUser = auth.currentUser else { return }
+                            viewModel.recipe.setSeasonality(newValue, currentUser: currentUser)
+                        }
+                    )
+                ) {
+                    Text(NSLocalizedString("None", comment: "No seasonality selected"))
+                        .tag(Seasonality?.none)
+                    ForEach(Seasonality.allCases, id: \.self) { season in
+                        Text(season.displayName).tag(season as Seasonality?)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+
+            // Meal Types Section
+            Section(
+                header: Text(
+                    NSLocalizedString("Meal Types", comment: "Section header for meal types"))
+            ) {
+                ForEach(MealType.allCases, id: \.self) { mealType in
+                    HStack {
+                        Text(mealType.displayName)
+                        Spacer()
+                        if viewModel.recipe.mealTypes.contains(mealType) {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.accentColor)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        guard let currentUser = auth.currentUser else { return }
+                        var newMealTypes = viewModel.recipe.mealTypes
+                        if newMealTypes.contains(mealType) {
+                            newMealTypes.removeAll { $0 == mealType }
+                        } else {
+                            newMealTypes.append(mealType)
+                        }
+                        viewModel.recipe.setMealTypes(newMealTypes, currentUser: currentUser)
+                    }
+                }
+            }
+
+            // Tags Section
+            Section(
+                header: Text(NSLocalizedString("Tags", comment: "Section header for tags"))
+            ) {
+                if !viewModel.recipe.tags.isEmpty {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 8) {
+                        ForEach(viewModel.recipe.tags, id: \.self) { tag in
+                            HStack(spacing: 4) {
+                                Text(tag)
+                                    .font(.caption)
+                                Button(action: {
+                                    guard let currentUser = auth.currentUser else { return }
+                                    withAnimation {
+                                        viewModel.recipe.removeTag(tag, currentUser: currentUser)
+                                    }
+                                }) {
+                                    Image(systemName: "xmark")
+                                        .font(.caption2)
+                                }
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.accentColor.opacity(0.1))
+                            .foregroundColor(.accentColor)
+                            .cornerRadius(8)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                HStack {
+                    TextField(
+                        NSLocalizedString("Add tag", comment: "Add tag placeholder"),
+                        text: $newTag
+                    )
+                    .onSubmit {
+                        addTag()
+                    }
+
+                    Button(action: addTag) {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundColor(.accentColor)
+                    }
+                    .disabled(newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
 
             DurationSectionView(recipe: viewModel.recipe)
 
@@ -171,6 +272,17 @@ struct RecipeDetailView: View {
         stepInstruction = ""
         stepType = .cooking
         stepDuration = nil
+    }
+
+    private func addTag() {
+        let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTag.isEmpty && !viewModel.recipe.tags.contains(trimmedTag) else { return }
+        guard let currentUser = auth.currentUser else { return }
+
+        withAnimation {
+            viewModel.recipe.addTag(trimmedTag, currentUser: currentUser)
+            newTag = ""
+        }
     }
 }
 

@@ -14,6 +14,40 @@ struct ReadOnlyRecipeDetailView: View {
                 Text(LocalizedStringKey(recipe.details))
             }
 
+            // Seasonality Section
+            if let seasonality = recipe.seasonality {
+                Section(header: Text(NSLocalizedString("Seasonality", comment: "Section header"))) {
+                    Text(seasonality.displayName)
+                }
+            }
+
+            // Meal Types Section
+            if !recipe.mealTypes.isEmpty {
+                Section(header: Text(NSLocalizedString("Meal Types", comment: "Section header"))) {
+                    ForEach(recipe.mealTypes, id: \.self) { mealType in
+                        Text(mealType.displayName)
+                    }
+                }
+            }
+
+            // Tags Section
+            if !recipe.tags.isEmpty {
+                Section(header: Text(NSLocalizedString("Tags", comment: "Section header"))) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 8) {
+                        ForEach(recipe.tags, id: \.self) { tag in
+                            Text(tag)
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.accentColor.opacity(0.1))
+                                .foregroundColor(.accentColor)
+                                .cornerRadius(8)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+
             DurationSectionView(recipe: recipe)
 
             Section(header: Text(NSLocalizedString("Ingredients", comment: "Section header"))) {

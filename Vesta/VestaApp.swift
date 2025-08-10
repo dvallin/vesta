@@ -53,13 +53,14 @@ struct VestaApp: App {
             shoppingItemService: shoppingItems
         )
 
-        // Create cleanup service
-        cleanupService = CleanupService(modelContext: modelContext)
-
         syncService = SyncService(
             auth: auth, users: users, todoItemCategories: todoItemCategories,
             meals: meals, todoItems: todoItems, recipes: recipes, shoppingItems: shoppingItems,
             modelContext: modelContext)
+
+        // Create cleanup service
+        cleanupService = CleanupService(
+            modelContext: modelContext, userAuth: auth, syncService: syncService)
 
         NotificationManager.shared.requestAuthorization()
     }

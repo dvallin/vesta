@@ -48,10 +48,16 @@ struct SoftDeletedItem: Identifiable {
 /// Performs hard deletion of entities that have been soft-deleted for an extended period.
 class CleanupService: ObservableObject {
     private let modelContext: ModelContext
+    private let userAuth: UserAuthService
+    private let syncService: SyncService
     private let logger = Logger(subsystem: "com.app.Vesta", category: "Cleanup")
 
-    /// Default threshold for cleaning up deleted entities (3 months)
-    private let defaultCleanupThreshold: TimeInterval = 90 * 24 * 60 * 60  // 90 days in seconds
+    /// Default threshold for cleaning up deleted entities (30 days)
+    /// Note: This matches the TTL set in Firestore via expireAt field
+    let defaultCleanupThreshold: TimeInterval = 30 * 24 * 60 * 60  // 30 days in seconds
+
+    /// Threshold for auto-soft-deleting completed todo items (90 days)
+    private let completedTodoThreshold: TimeInterval = 90 * 24 * 60 * 60  // 90 days in seconds
 
     /// Timer for periodic cleanup
     private var cleanupTimer: Timer?
@@ -59,8 +65,10 @@ class CleanupService: ObservableObject {
     /// Cleanup interval (24 hours by default)
     private let cleanupInterval: TimeInterval = 24 * 60 * 60  // 24 hours in seconds
 
-    init(modelContext: ModelContext) {
+    init(modelContext: ModelContext, userAuth: UserAuthService, syncService: SyncService) {
         self.modelContext = modelContext
+        self.userAuth = userAuth
+        self.syncService = syncService
     }
 
     // MARK: - Public Methods
@@ -95,7 +103,7 @@ class CleanupService: ObservableObject {
 
     /// Perform a manual cleanup operation
     /// - Parameter customThreshold: Optional custom threshold for deletion. If nil, uses default threshold
-    /// - Returns: The total number of entities that were hard deleted
+    /// - Returns: The total number of entities that were hard deleted and soft deleted
     @MainActor
     func performCleanup(customThreshold: TimeInterval? = nil) async -> Int {
         let threshold = customThreshold ?? defaultCleanupThreshold
@@ -104,8 +112,13 @@ class CleanupService: ObservableObject {
         logger.info("Starting cleanup of entities deleted before \(cutoffDate)")
 
         var totalDeleted = 0
+        var totalSoftDeleted = 0
 
-        // Clean up each type of syncable entity
+        // First, auto-soft-delete completed todo items after 90 days
+        totalSoftDeleted += await autoSoftDeleteCompletedTodos()
+
+        // Then clean up each type of syncable entity (hard delete after 30 days)
+        // Note: Firestore cleanup will happen automatically via TTL on expireAt field
         totalDeleted += await cleanupEntities(of: Meal.self, deletedBefore: cutoffDate)
         totalDeleted += await cleanupEntities(of: Recipe.self, deletedBefore: cutoffDate)
         totalDeleted += await cleanupEntities(of: TodoItem.self, deletedBefore: cutoffDate)
@@ -113,18 +126,20 @@ class CleanupService: ObservableObject {
         totalDeleted += await cleanupEntities(of: User.self, deletedBefore: cutoffDate)
 
         // Save changes if any deletions occurred
-        if totalDeleted > 0 {
+        if totalDeleted > 0 || totalSoftDeleted > 0 {
             do {
                 try modelContext.save()
-                logger.info("Successfully completed cleanup. Hard deleted \(totalDeleted) entities")
+                logger.info(
+                    "Successfully completed local cleanup. Hard deleted \(totalDeleted) entities, soft deleted \(totalSoftDeleted) completed todos. Firestore cleanup handled automatically via TTL."
+                )
             } catch {
                 logger.error("Failed to save cleanup changes: \(error.localizedDescription)")
             }
         } else {
-            logger.info("No entities found for cleanup")
+            logger.info("No entities found for local cleanup")
         }
 
-        return totalDeleted
+        return totalDeleted + totalSoftDeleted
     }
 
     /// Get count of entities that would be cleaned up without actually deleting them
@@ -188,6 +203,8 @@ class CleanupService: ObservableObject {
     // MARK: - Private Methods
 
     /// Clean up entities of a specific type that were deleted before the cutoff date
+    /// Cleanup entities of a specific type that have been soft-deleted for longer than the threshold
+    /// This only handles local SwiftData cleanup - Firestore cleanup is automatic via TTL
     /// - Parameters:
     ///   - type: The entity type to clean up
     ///   - cutoffDate: The cutoff date for deletion
@@ -197,31 +214,38 @@ class CleanupService: ObservableObject {
         deletedBefore cutoffDate: Date
     ) async -> Int {
         do {
-            // First, fetch all entities that have deletedAt set (not nil)
+            // Fetch entities that have been soft-deleted and have expired
             let descriptor = FetchDescriptor<T>(
                 predicate: #Predicate<T> { entity in
-                    entity.deletedAt != nil
+                    entity.deletedAt != nil && entity.expireAt != nil
                 }
             )
 
             let deletedEntities = try modelContext.fetch(descriptor)
 
-            // Filter in Swift to find entities deleted before the cutoff date
+            // Filter entities that have expired (expireAt is in the past)
+            let now = Date()
             let entitiesToDelete = deletedEntities.filter { entity in
-                guard let deletedAt = entity.deletedAt else { return false }
-                return deletedAt < cutoffDate
+                guard let expireAt = entity.expireAt else { return false }
+                return expireAt < now
             }
 
             let count = entitiesToDelete.count
 
             if count > 0 {
-                logger.debug("Found \(count) \(String(describing: type)) entities to hard delete")
+                logger.debug(
+                    "Found \(count) expired \(String(describing: type)) entities to hard delete locally"
+                )
 
                 for entity in entitiesToDelete {
                     modelContext.delete(entity)
                 }
 
-                logger.debug("Hard deleted \(count) \(String(describing: type)) entities")
+                try modelContext.save()
+                _ = syncService.pushLocalChanges()
+
+                logger.debug(
+                    "Hard deleted \(count) \(String(describing: type)) entities from local storage")
             }
 
             return count
@@ -229,6 +253,61 @@ class CleanupService: ObservableObject {
             logger.error(
                 "Error cleaning up \(String(describing: type)) entities: \(error.localizedDescription)"
             )
+            return 0
+        }
+    }
+
+    /// Auto-soft-delete completed todo items that have been completed for more than 90 days
+    /// - Returns: The number of todo items that were soft deleted
+    private func autoSoftDeleteCompletedTodos() async -> Int {
+        do {
+            let cutoffDate = Date().addingTimeInterval(-completedTodoThreshold)
+
+            // Get current user from auth service for performing the soft delete operation
+            guard let currentUser = userAuth.currentUser else {
+                logger.warning("No current user available for auto-soft-delete operation")
+                return 0
+            }
+
+            // Fetch completed todos that are not already soft deleted
+            let descriptor = FetchDescriptor<TodoItem>(
+                predicate: #Predicate<TodoItem> { todo in
+                    todo.isCompleted && todo.deletedAt == nil
+                }
+            )
+
+            let completedTodos = try modelContext.fetch(descriptor)
+
+            // Filter todos that have been completed for more than 90 days
+            var todosToSoftDelete: [TodoItem] = []
+
+            for todo in completedTodos {
+                let recentCompletionEvents = todo.events.filter { event in
+                    event.eventType == .completed && event.completedAt >= cutoffDate
+                }
+                if recentCompletionEvents.isEmpty {
+                    todosToSoftDelete.append(todo)
+                }
+            }
+
+            let count = todosToSoftDelete.count
+
+            if count > 0 {
+                logger.debug("Found \(count) completed TodoItems to auto-soft-delete")
+
+                for todo in todosToSoftDelete {
+                    todo.softDelete(currentUser: currentUser)
+                }
+
+                try modelContext.save()
+                _ = syncService.pushLocalChanges()
+
+                logger.debug("Auto-soft-deleted \(count) completed TodoItems")
+            }
+
+            return count
+        } catch {
+            logger.error("Error auto-soft-deleting completed todos: \(error.localizedDescription)")
             return 0
         }
     }
@@ -380,7 +459,7 @@ extension CleanupService {
         var restoredCount = 0
 
         for uid in itemUIDs {
-            if await restoreItem(uid: uid, currentUser: currentUser) {
+            if await restoreItemInternal(uid: uid, currentUser: currentUser) {
                 restoredCount += 1
             }
         }
@@ -388,6 +467,7 @@ extension CleanupService {
         if restoredCount > 0 {
             do {
                 try modelContext.save()
+                _ = syncService.pushLocalChanges()
                 logger.info("Successfully restored \(restoredCount) items")
             } catch {
                 logger.error("Failed to save restore changes: \(error.localizedDescription)")
@@ -405,7 +485,7 @@ extension CleanupService {
         var deletedCount = 0
 
         for uid in itemUIDs {
-            if await hardDeleteItem(uid: uid) {
+            if await hardDeleteItemInternal(uid: uid) {
                 deletedCount += 1
             }
         }
@@ -413,6 +493,7 @@ extension CleanupService {
         if deletedCount > 0 {
             do {
                 try modelContext.save()
+                _ = syncService.pushLocalChanges()
                 logger.info("Successfully hard deleted \(deletedCount) items")
             } catch {
                 logger.error("Failed to save hard delete changes: \(error.localizedDescription)")
@@ -428,17 +509,45 @@ extension CleanupService {
     ///   - currentUser: The user performing the restore operation
     /// - Returns: True if the item was found and restored, false otherwise
     @MainActor
-    private func restoreItem(uid: String, currentUser: User) async -> Bool {
+    func restoreItem(uid: String, currentUser: User) async -> Bool {
+        let result = await restoreItemInternal(uid: uid, currentUser: currentUser)
+        if result {
+            do {
+                try modelContext.save()
+                _ = syncService.pushLocalChanges()
+            } catch {
+                logger.error("Failed to save restore changes: \(error.localizedDescription)")
+                return false
+            }
+        }
+        return result
+    }
+
+    /// Internal restore method that doesn't save/sync - used by bulk operations
+    /// - Parameters:
+    ///   - uid: The UID of the item to restore
+    ///   - currentUser: The user performing the restore operation
+    /// - Returns: True if the item was found and restored, false otherwise
+    @MainActor
+    private func restoreItemInternal(uid: String, currentUser: User) async -> Bool {
         // Try to find and restore the item in each entity type
-        if await restoreEntity(of: Meal.self, uid: uid, currentUser: currentUser) { return true }
-        if await restoreEntity(of: Recipe.self, uid: uid, currentUser: currentUser) { return true }
-        if await restoreEntity(of: TodoItem.self, uid: uid, currentUser: currentUser) {
+        if await restoreEntityInternal(of: Meal.self, uid: uid, currentUser: currentUser) {
             return true
         }
-        if await restoreEntity(of: ShoppingListItem.self, uid: uid, currentUser: currentUser) {
+        if await restoreEntityInternal(of: Recipe.self, uid: uid, currentUser: currentUser) {
             return true
         }
-        if await restoreEntity(of: User.self, uid: uid, currentUser: currentUser) { return true }
+        if await restoreEntityInternal(of: TodoItem.self, uid: uid, currentUser: currentUser) {
+            return true
+        }
+        if await restoreEntityInternal(
+            of: ShoppingListItem.self, uid: uid, currentUser: currentUser)
+        {
+            return true
+        }
+        if await restoreEntityInternal(of: User.self, uid: uid, currentUser: currentUser) {
+            return true
+        }
 
         logger.warning("Item with UID \(uid) not found for restore")
         return false
@@ -448,13 +557,31 @@ extension CleanupService {
     /// - Parameter uid: The UID of the item to permanently delete
     /// - Returns: True if the item was found and deleted, false otherwise
     @MainActor
-    private func hardDeleteItem(uid: String) async -> Bool {
+    func hardDeleteItem(uid: String) async -> Bool {
+        let result = await hardDeleteItemInternal(uid: uid)
+        if result {
+            do {
+                try modelContext.save()
+                _ = syncService.pushLocalChanges()
+            } catch {
+                logger.error("Failed to save hard delete changes: \(error.localizedDescription)")
+                return false
+            }
+        }
+        return result
+    }
+
+    /// Internal hard delete method that doesn't save/sync - used by bulk operations
+    /// - Parameter uid: The UID of the item to permanently delete
+    /// - Returns: True if the item was found and deleted, false otherwise
+    @MainActor
+    private func hardDeleteItemInternal(uid: String) async -> Bool {
         // Try to find and delete the item in each entity type
-        if await hardDeleteEntity(of: Meal.self, uid: uid) { return true }
-        if await hardDeleteEntity(of: Recipe.self, uid: uid) { return true }
-        if await hardDeleteEntity(of: TodoItem.self, uid: uid) { return true }
-        if await hardDeleteEntity(of: ShoppingListItem.self, uid: uid) { return true }
-        if await hardDeleteEntity(of: User.self, uid: uid) { return true }
+        if await hardDeleteEntityInternal(of: Meal.self, uid: uid) { return true }
+        if await hardDeleteEntityInternal(of: Recipe.self, uid: uid) { return true }
+        if await hardDeleteEntityInternal(of: TodoItem.self, uid: uid) { return true }
+        if await hardDeleteEntityInternal(of: ShoppingListItem.self, uid: uid) { return true }
+        if await hardDeleteEntityInternal(of: User.self, uid: uid) { return true }
 
         logger.warning("Item with UID \(uid) not found for hard delete")
         return false
@@ -467,6 +594,22 @@ extension CleanupService {
     ///   - currentUser: The user performing the restore operation
     /// - Returns: True if the entity was found and restored, false otherwise
     private func restoreEntity<T: PersistentModel & SyncableEntity>(
+        of type: T.Type, uid: String, currentUser: User
+    ) async -> Bool {
+        let result = await restoreEntityInternal(of: type, uid: uid, currentUser: currentUser)
+        if result {
+            do {
+                try modelContext.save()
+                _ = syncService.pushLocalChanges()
+            } catch {
+                logger.error("Failed to save restore changes: \(error.localizedDescription)")
+                return false
+            }
+        }
+        return result
+    }
+
+    private func restoreEntityInternal<T: PersistentModel & SyncableEntity>(
         of type: T.Type, uid: String, currentUser: User
     ) async -> Bool {
         do {
@@ -499,6 +642,22 @@ extension CleanupService {
     ///   - uid: The UID of the entity to delete
     /// - Returns: True if the entity was found and deleted, false otherwise
     private func hardDeleteEntity<T: PersistentModel & SyncableEntity>(
+        of type: T.Type, uid: String
+    ) async -> Bool {
+        let result = await hardDeleteEntityInternal(of: type, uid: uid)
+        if result {
+            do {
+                try modelContext.save()
+                _ = syncService.pushLocalChanges()
+            } catch {
+                logger.error("Failed to save hard delete changes: \(error.localizedDescription)")
+                return false
+            }
+        }
+        return result
+    }
+
+    private func hardDeleteEntityInternal<T: PersistentModel & SyncableEntity>(
         of type: T.Type, uid: String
     ) async -> Bool {
         do {

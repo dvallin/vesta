@@ -1,17 +1,6 @@
 import SwiftData
 import SwiftUI
 
-struct RecipeSections {
-    let recent: [Recipe]
-    let notPlanned: [Recipe]
-    let frequent: [Recipe]
-    let all: [Recipe]
-
-    var hasRecentRecipes: Bool { !recent.isEmpty }
-    var hasNotPlannedRecipes: Bool { !notPlanned.isEmpty }
-    var hasFrequentRecipes: Bool { !frequent.isEmpty }
-}
-
 class AddMealViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
@@ -20,8 +9,6 @@ class AddMealViewModel: ObservableObject {
 
     @Published var showingErrorAlert = false
     @Published var errorMessage = ""
-    @Published var recipeSections = RecipeSections(
-        recent: [], notPlanned: [], frequent: [], all: [])
 
     func configureEnvironment(
         _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService
@@ -30,60 +17,6 @@ class AddMealViewModel: ObservableObject {
         self.categoryService = TodoItemCategoryService(modelContext: context)
         self.auth = auth
         self.dismiss = dismiss
-    }
-
-    func organizeRecipes(_ recipes: [Recipe], _ meals: [Meal]) {
-        let now = Date()
-        let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
-        let nextWeek = Calendar.current.date(byAdding: .day, value: 7, to: now) ?? now
-
-        // Get all upcoming meals
-        let upcomingMeals = getUpcomingMeals(meals: meals, until: nextWeek)
-        let plannedRecipeUIDs = Set(upcomingMeals.compactMap { $0.recipe?.uid })
-
-        // Recent recipes (used in last week but not planned ahead)
-        let recent = recipes.filter { recipe in
-            let recentlyUsed = recipe.meals.contains { meal in
-                guard let todoItem = meal.todoItem,
-                    let dueDate = todoItem.dueDate
-                else { return false }
-                return dueDate >= oneWeekAgo && dueDate <= now && meal.isDone
-            }
-            return recentlyUsed && !plannedRecipeUIDs.contains(recipe.uid)
-        }
-
-        // Not planned (not in upcoming meals)
-        let notPlanned = recipes.filter { !plannedRecipeUIDs.contains($0.uid) }
-
-        // Most frequent (by completed meal count, limited to top 5)
-        let frequent =
-            recipes
-            .map { recipe in
-                let completedMealCount = recipe.meals.filter { $0.isDone }.count
-                return (recipe: recipe, count: completedMealCount)
-            }
-            .filter { $0.count > 0 }
-            .sorted { $0.count > $1.count }
-            .prefix(5)
-            .map { $0.recipe }
-
-        recipeSections = RecipeSections(
-            recent: recent,
-            notPlanned: notPlanned,
-            frequent: frequent,
-            all: recipes
-        )
-    }
-
-    private func getUpcomingMeals(meals: [Meal], until date: Date) -> [Meal] {
-        let now = Date()
-        return meals.filter { meal in
-            guard
-                meal.deletedAt == nil,
-                let dueDate = meal.todoItem?.dueDate
-            else { return false }
-            return dueDate > now && dueDate <= date
-        }
     }
 
     @MainActor

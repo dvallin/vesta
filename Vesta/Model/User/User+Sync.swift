@@ -14,10 +14,9 @@ extension User {
             "createdAt": createdAt,
             "lastSignInAt": lastSignInAt,
             "isOnHoliday": isOnHoliday,
+            "deletedAt": deletedAt as Any,
+            "expireAt": expireAt as Any,
         ]
-        if let timestamp = deletedAt {
-            dto["deletedAt"] = timestamp
-        }
 
         // Add holiday start date if available
         if let holidayStartDate = holidayStartDate {
@@ -45,8 +44,13 @@ extension User {
     }
 
     func update(from data: [String: Any]) {
-        if let deletedAt = data["deletedAt"] as? Date {
-            self.deletedAt = deletedAt
+        // Handle deletedAt - can be nil when restored
+        if data.keys.contains("deletedAt") {
+            self.deletedAt = data["deletedAt"] as? Date
+        }
+        // Handle expireAt - can be nil when restored
+        if data.keys.contains("expireAt") {
+            self.expireAt = data["expireAt"] as? Date
         }
         self.isShared = data["isShared"] as? Bool ?? false
 

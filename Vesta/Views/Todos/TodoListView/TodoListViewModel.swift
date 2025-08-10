@@ -41,6 +41,7 @@ class TodoListViewModel: ObservableObject {
     @Published var selectedPriority: Int? = nil
     @Published var selectedCategory: TodoItemCategory? = nil
     @Published var showNoCategory: Bool = false
+    @Published var searchText: String = ""
 
     @Published var selectedTodoItem: TodoItem? = nil
 
@@ -76,6 +77,7 @@ class TodoListViewModel: ObservableObject {
         selectedPriority = nil
         selectedCategory = nil
         showNoCategory = false
+        searchText = ""
     }
 
     func updateCurrentDay() {
@@ -227,7 +229,12 @@ class TodoListViewModel: ObservableObject {
                 // exact category
                 matchesCategory = item.category == selectedCategory
             }
-            guard matchesPriority && matchesCategory else { return false }
+
+            let matchesSearch =
+                searchText.isEmpty || item.title.localizedCaseInsensitiveContains(searchText)
+                || item.details.localizedCaseInsensitiveContains(searchText)
+
+            guard matchesPriority && matchesCategory && matchesSearch else { return false }
 
             switch filterMode {
             case .all:

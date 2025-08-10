@@ -16,6 +16,7 @@ class ShoppingListItem: SyncableEntity {
     var dirty: Bool = true
 
     var deletedAt: Date? = nil
+    var expireAt: Date? = nil
 
     @Relationship(deleteRule: .cascade, inverse: \TodoItem.shoppingListItem)
     var todoItem: TodoItem?
@@ -56,6 +57,7 @@ class ShoppingListItem: SyncableEntity {
 
     func softDelete(currentUser: User) {
         self.deletedAt = Date()
+        self.setExpiration()
         self.markAsDirty()
 
         // Soft delete related todo item only if it's not already deleted
@@ -66,6 +68,7 @@ class ShoppingListItem: SyncableEntity {
 
     func restore(currentUser: User) {
         self.deletedAt = nil
+        self.clearExpiration()
         self.markAsDirty()
 
         // Restore related todo item only if it's currently deleted

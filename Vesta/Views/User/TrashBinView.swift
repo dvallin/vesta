@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 import os
 
@@ -5,17 +6,73 @@ struct TrashBinView: View {
     @EnvironmentObject var cleanupService: CleanupService
     @EnvironmentObject var auth: UserAuthService
     @State private var isLoading = false
-    @State private var softDeletedItems: [SoftDeletedItem] = []
     @State private var lastCleanupResult: Int?
     @State private var showingCleanupAlert = false
-    @State private var customThresholdDays = 90
+    @State private var customThresholdDays = 30
     @State private var showingCustomThresholdSheet = false
     @State private var selectedItems: Set<String> = []
     @State private var showingBulkActions = false
     @State private var bulkOperationResult: (Int, String)?
     @State private var showingBulkResultAlert = false
 
-    private let logger = Logger(subsystem: "com.app.Vesta", category: "TrashBinView")
+    // Reactive queries for soft-deleted items
+    @Query(
+        filter: #Predicate<TodoItem> { item in item.deletedAt != nil },
+        sort: \TodoItem.deletedAt
+    ) private var deletedTodos: [TodoItem]
+
+    @Query(
+        filter: #Predicate<Meal> { item in item.deletedAt != nil },
+        sort: \Meal.deletedAt
+    ) private var deletedMeals: [Meal]
+
+    @Query(
+        filter: #Predicate<Recipe> { item in item.deletedAt != nil },
+        sort: \Recipe.deletedAt
+    ) private var deletedRecipes: [Recipe]
+
+    @Query(
+        filter: #Predicate<ShoppingListItem> { item in item.deletedAt != nil },
+        sort: \ShoppingListItem.deletedAt
+    ) private var deletedShoppingItems: [ShoppingListItem]
+
+    @Query(
+        filter: #Predicate<User> { item in item.deletedAt != nil },
+        sort: \User.deletedAt
+    ) private var deletedUsers: [User]
+
+    private let logger = Logger(subsystem: "com.app.Vesta", category: "TrashBin")
+
+    // Computed property to combine all soft-deleted items
+    private var softDeletedItems: [SoftDeletedItem] {
+        var items: [SoftDeletedItem] = []
+        let threshold = cleanupService.defaultCleanupThreshold
+
+        // Convert each entity type to SoftDeletedItem
+        items.append(
+            contentsOf: deletedTodos.map {
+                SoftDeletedItem(entity: $0, cleanupThreshold: threshold)
+            })
+        items.append(
+            contentsOf: deletedMeals.map {
+                SoftDeletedItem(entity: $0, cleanupThreshold: threshold)
+            })
+        items.append(
+            contentsOf: deletedRecipes.map {
+                SoftDeletedItem(entity: $0, cleanupThreshold: threshold)
+            })
+        items.append(
+            contentsOf: deletedShoppingItems.map {
+                SoftDeletedItem(entity: $0, cleanupThreshold: threshold)
+            })
+        items.append(
+            contentsOf: deletedUsers.map {
+                SoftDeletedItem(entity: $0, cleanupThreshold: threshold)
+            })
+
+        // Sort by deletedAt date (most recent first)
+        return items.sorted { $0.deletedAt > $1.deletedAt }
+    }
 
     var body: some View {
         NavigationView {
@@ -62,12 +119,10 @@ struct TrashBinView: View {
                 }
             }
             .refreshable {
-                await refreshTrashBin()
+                // Data is now reactive through @Query - no manual refresh needed
             }
             .onAppear {
-                Task {
-                    await refreshTrashBin()
-                }
+                // Data is now reactive through @Query - no manual refresh needed
             }
             .alert("Cleanup Completed", isPresented: $showingCleanupAlert) {
                 Button("OK") {}
@@ -79,7 +134,6 @@ struct TrashBinView: View {
             .sheet(isPresented: $showingCustomThresholdSheet) {
                 CustomCleanupSheet(
                     thresholdDays: $customThresholdDays,
-                    isLoading: $isLoading,
                     onPerformCleanup: performCustomCleanup
                 )
             }
@@ -163,23 +217,25 @@ struct TrashBinView: View {
 
     private var informationSection: some View {
         Section("Information") {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Trash Bin")
-                    .font(.headline)
-                Text(
-                    "When you delete items, they are moved to this trash bin. Items remain here for 90 days before being permanently deleted."
-                )
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-                Text("Automatic Cleanup")
-                    .font(.headline)
-                    .padding(.top, 8)
-                Text(
-                    "The app automatically cleans up items that have been in the trash for more than 90 days. This happens once daily in the background."
-                )
-                .font(.caption)
-                .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Trash Bin")
+                        .font(.headline)
+                    Text(
+                        "Deleted items are moved here and kept for 30 days before being permanently removed. Cleanup happens automatically once a day."
+                    )
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Completed Item Cleanup")
+                        .font(.headline)
+                    Text(
+                        "Completed items are automatically moved to the trash bin after 90 days."
+                    )
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                }
             }
             .padding(.vertical, 4)
         }
@@ -216,41 +272,18 @@ struct TrashBinView: View {
         }
     }
 
-    private func refreshTrashBin() async {
-        isLoading = true
-        defer { isLoading = false }
-
-        do {
-            softDeletedItems = await cleanupService.getAllSoftDeletedItems()
-            logger.info("Refreshed trash bin: \(softDeletedItems.count) items")
-        } catch {
-            logger.error("Failed to refresh trash bin: \(error.localizedDescription)")
-        }
-    }
-
-    private func refreshTrashBin() {
-        Task {
-            await refreshTrashBin()
-        }
-    }
-
     private func performCleanupEligibleItems() {
         Task {
             isLoading = true
-            defer { isLoading = false }
-
-            do {
-                let result = await cleanupService.performCleanup()
-                lastCleanupResult = result
-                showingCleanupAlert = true
-
-                // Refresh the trash bin after cleanup
-                await refreshTrashBin()
-
-                logger.info("Manual cleanup completed, deleted \(result) items")
-            } catch {
-                logger.error("Failed to perform cleanup: \(error.localizedDescription)")
+            defer {
+                isLoading = false
             }
+
+            let result = await cleanupService.performCleanup()
+            lastCleanupResult = result
+            showingCleanupAlert = true
+
+            logger.info("Manual cleanup completed, deleted \(result) items")
         }
     }
 
@@ -262,20 +295,50 @@ struct TrashBinView: View {
                 showingCustomThresholdSheet = false
             }
 
-            do {
-                let result = await cleanupService.performCleanup(afterDays: customThresholdDays)
-                lastCleanupResult = result
-                showingCleanupAlert = true
+            let result = await cleanupService.performCleanup(afterDays: customThresholdDays)
+            lastCleanupResult = result
+            showingCleanupAlert = true
 
-                // Refresh the trash bin after cleanup
-                await refreshTrashBin()
+            logger.info(
+                "Custom cleanup completed with \(customThresholdDays) day threshold, deleted \(result) items"
+            )
+        }
+    }
 
-                logger.info(
-                    "Custom cleanup completed with \(customThresholdDays) day threshold, deleted \(result) items"
-                )
-            } catch {
-                logger.error("Failed to perform custom cleanup: \(error.localizedDescription)")
-            }
+    private func performBulkDelete() {
+        guard !selectedItems.isEmpty else { return }
+
+        Task {
+            isLoading = true
+            defer { isLoading = false }
+
+            let deletedCount = await cleanupService.bulkDelete(
+                itemUIDs: Array(selectedItems))
+            bulkOperationResult = (deletedCount, "permanently deleted")
+            showingBulkResultAlert = true
+            selectedItems.removeAll()
+
+            logger.info("Bulk delete completed, deleted \(deletedCount) items")
+        }
+    }
+
+    private func performBulkRestore() {
+        guard !selectedItems.isEmpty, let currentUser = auth.currentUser else {
+            return
+        }
+
+        Task {
+            isLoading = true
+            defer { isLoading = false }
+
+            let restoredCount = await cleanupService.bulkRestore(
+                itemUIDs: Array(selectedItems), currentUser: currentUser)
+            bulkOperationResult = (restoredCount, "restored")
+            showingBulkResultAlert = true
+            selectedItems.removeAll()
+
+            logger.info(
+                "Bulk restore completed, restored \(restoredCount) items")
         }
     }
 }
@@ -339,63 +402,11 @@ struct TrashItemRow: View {
         return formatter.localizedString(for: date, relativeTo: Date())
     }
 
-    private func performBulkDelete() {
-        guard !selectedItems.isEmpty else { return }
-
-        Task {
-            isLoading = true
-            defer { isLoading = false }
-
-            do {
-                let deletedCount = await cleanupService.bulkDelete(
-                    itemUIDs: Array(selectedItems))
-                bulkOperationResult = (deletedCount, "permanently deleted")
-                showingBulkResultAlert = true
-                selectedItems.removeAll()
-
-                // Refresh the trash bin after bulk delete
-                await refreshTrashBin()
-
-                logger.info("Bulk delete completed, deleted \(deletedCount) items")
-            } catch {
-                logger.error(
-                    "Failed to perform bulk delete: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    private func performBulkRestore() {
-        guard !selectedItems.isEmpty, let currentUser = auth.currentUser else {
-            return
-        }
-
-        Task {
-            isLoading = true
-            defer { isLoading = false }
-
-            do {
-                let restoredCount = await cleanupService.bulkRestore(
-                    itemUIDs: Array(selectedItems), currentUser: currentUser)
-                bulkOperationResult = (restoredCount, "restored")
-                showingBulkResultAlert = true
-                selectedItems.removeAll()
-
-                // Refresh the trash bin after bulk restore
-                await refreshTrashBin()
-
-                logger.info(
-                    "Bulk restore completed, restored \(restoredCount) items")
-            } catch {
-                logger.error(
-                    "Failed to perform bulk restore: \(error.localizedDescription)")
-            }
-        }
-    }
 }
 
 struct CustomCleanupSheet: View {
     @Binding var thresholdDays: Int
-    @Binding var isLoading: Bool
+    @State private var isLoading: Bool = false
     let onPerformCleanup: () -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -488,8 +499,22 @@ struct CustomCleanupSheet: View {
         let container = try ModelContainerHelper.createModelContainer(isStoredInMemoryOnly: true)
         let context = container.mainContext
         let auth = UserAuthService(modelContext: context)
+        let users = UserService(modelContext: context)
+        let todoItemCategories = TodoItemCategoryService(modelContext: context)
+        let meals = MealService(modelContext: context)
+        let todoItems = TodoItemService(modelContext: context)
+        let recipes = RecipeService(modelContext: context)
+        let shoppingItems = ShoppingListItemService(modelContext: context)
+        let syncService = SyncService(
+            auth: auth, users: users, todoItemCategories: todoItemCategories,
+            meals: meals, todoItems: todoItems, recipes: recipes, shoppingItems: shoppingItems,
+            modelContext: context
+        )
+        let cleanupService = CleanupService(
+            modelContext: context, userAuth: auth, syncService: syncService)
+
         return TrashBinView()
-            .environmentObject(CleanupService(modelContext: context))
+            .environmentObject(cleanupService)
             .environmentObject(auth)
     } catch {
         return Text("Failed to create ModelContainer")

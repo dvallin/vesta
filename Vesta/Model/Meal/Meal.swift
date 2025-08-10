@@ -33,6 +33,7 @@ class Meal: SyncableEntity {
     var dirty: Bool = true
 
     var deletedAt: Date? = nil
+    var expireAt: Date? = nil
 
     @Relationship(deleteRule: .cascade, inverse: \TodoItem.meal)
     var todoItem: TodoItem?
@@ -46,6 +47,11 @@ class Meal: SyncableEntity {
     var isDone: Bool {
         guard let todoItem = todoItem else { return true }
         return todoItem.isCompleted
+    }
+
+    /// Returns the date when this meal was last completed, or nil if never completed
+    var lastCompletionDate: Date? {
+        return todoItem?.lastCompletionDate
     }
 
     init(
@@ -103,6 +109,7 @@ class Meal: SyncableEntity {
 
     func softDelete(currentUser: User) {
         self.deletedAt = Date()
+        self.setExpiration()
         self.markAsDirty()
 
         // Soft delete related todo item only if it's not already deleted
@@ -113,6 +120,7 @@ class Meal: SyncableEntity {
 
     func restore(currentUser: User) {
         self.deletedAt = nil
+        self.clearExpiration()
         self.markAsDirty()
 
         // Restore related todo item only if it's currently deleted
