@@ -16,19 +16,11 @@ extension ShoppingListItem {
             "expireAt": expireAt as Any,
         ]
 
-        // Handle optional values
-        if let quantity = quantity {
-            dto["quantity"] = quantity
-        }
-
-        if let unit = unit {
-            dto["unit"] = unit.rawValue
-        }
+        dto["quantity"] = quantity as Any
+        dto["unit"] = unit?.rawValue as Any
 
         // Add related entity IDs for references
-        if let todoItemId = todoItem?.uid {
-            dto["todoItemId"] = todoItemId
-        }
+        dto["todoItemId"] = todoItem?.uid as Any
 
         // Add meal references
         dto["mealIds"] = meals.compactMap { $0.uid }
@@ -52,12 +44,16 @@ extension ShoppingListItem {
             self.name = name
         }
 
-        if let quantity = data["quantity"] as? Double {
-            self.quantity = quantity
+        if data.keys.contains("quantity") {
+            self.quantity = data["quantity"] as? Double
         }
 
-        if let unitRaw = data["unit"] as? String, let unit = Unit(rawValue: unitRaw) {
-            self.unit = unit
+        if data.keys.contains("unit") {
+            if let unitRaw = data["unit"] as? String {
+                self.unit = Unit(rawValue: unitRaw)
+            } else {
+                self.unit = nil
+            }
         }
     }
 }

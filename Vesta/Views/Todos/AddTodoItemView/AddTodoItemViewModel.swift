@@ -98,9 +98,10 @@ class AddTodoItemViewModel: ObservableObject {
         isSaving = false
     }
 
-    func updateMatchingCategories() {
+    func updateMatchingCategories(for inputText: String? = nil) {
         guard let categoryService = categoryService else { return }
-        matchingCategories = categoryService.findMatchingCategories(startingWith: category)
+        let searchText = inputText ?? category
+        matchingCategories = categoryService.findMatchingCategories(startingWith: searchText)
     }
 
     @MainActor

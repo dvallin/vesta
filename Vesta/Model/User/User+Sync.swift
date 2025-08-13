@@ -18,23 +18,11 @@ extension User {
             "expireAt": expireAt as Any,
         ]
 
-        // Add holiday start date if available
-        if let holidayStartDate = holidayStartDate {
-            dto["holidayStartDate"] = holidayStartDate
-        }
-
-        // Add optional properties
-        if let email = email {
-            dto["email"] = email
-        }
-
-        if let displayName = displayName {
-            dto["displayName"] = displayName
-        }
-
-        if let photoURL = photoURL {
-            dto["photoURL"] = photoURL
-        }
+        // Add optional properties (always include to ensure nil values are synced)
+        dto["holidayStartDate"] = holidayStartDate as Any
+        dto["email"] = email as Any
+        dto["displayName"] = displayName as Any
+        dto["photoURL"] = photoURL as Any
 
         dto["friendIds"] = friends.compactMap { $0.uid }
         dto["receivedInvites"] = receivedInvites.map { $0.toDTO() }
@@ -66,30 +54,32 @@ extension User {
             self.lastSignInAt = lastSignInAt
         }
 
-        if let email = data["email"] as? String {
-            self.email = email
+        if data.keys.contains("email") {
+            self.email = data["email"] as? String
         }
 
-        if let displayName = data["displayName"] as? String {
-            self.displayName = displayName
+        if data.keys.contains("displayName") {
+            self.displayName = data["displayName"] as? String
         }
 
-        if let photoURL = data["photoURL"] as? String {
-            self.photoURL = photoURL
+        if data.keys.contains("photoURL") {
+            self.photoURL = data["photoURL"] as? String
         }
 
         if let isOnHoliday = data["isOnHoliday"] as? Bool {
             self.isOnHoliday = isOnHoliday
         }
 
-        if let holidayStartDate = data["holidayStartDate"] as? Date {
-            self.holidayStartDate = holidayStartDate
-        } else if self.isOnHoliday && self.holidayStartDate == nil {
-            // If on holiday but no start date, use current date
-            self.holidayStartDate = Date()
-        } else if !self.isOnHoliday {
-            // Clear holiday start date when not on holiday
-            self.holidayStartDate = nil
+        if data.keys.contains("holidayStartDate") {
+            if let holidayStartDate = data["holidayStartDate"] as? Date {
+                self.holidayStartDate = holidayStartDate
+            } else if self.isOnHoliday {
+                // If on holiday but no start date, use current date
+                self.holidayStartDate = Date()
+            } else {
+                // Clear holiday start date when not on holiday
+                self.holidayStartDate = nil
+            }
         }
 
         // Process received invites
@@ -124,31 +114,13 @@ extension Invite {
             "recipientUid": recipientUid,
         ]
 
-        // Add optional sender properties
-        if let senderEmail = senderEmail {
-            dto["senderEmail"] = senderEmail
-        }
-
-        if let senderDisplayName = senderDisplayName {
-            dto["senderDisplayName"] = senderDisplayName
-        }
-
-        if let senderPhotoURL = senderPhotoURL {
-            dto["senderPhotoURL"] = senderPhotoURL
-        }
-
-        // Add optional recipient properties
-        if let recipientEmail = recipientEmail {
-            dto["recipientEmail"] = recipientEmail
-        }
-
-        if let recipientDisplayName = recipientDisplayName {
-            dto["recipientDisplayName"] = recipientDisplayName
-        }
-
-        if let recipientPhotoURL = recipientPhotoURL {
-            dto["recipientPhotoURL"] = recipientPhotoURL
-        }
+        // Add optional properties (always include to ensure nil values are synced)
+        dto["senderEmail"] = senderEmail as Any
+        dto["senderDisplayName"] = senderDisplayName as Any
+        dto["senderPhotoURL"] = senderPhotoURL as Any
+        dto["recipientEmail"] = recipientEmail as Any
+        dto["recipientDisplayName"] = recipientDisplayName as Any
+        dto["recipientPhotoURL"] = recipientPhotoURL as Any
 
         return dto
     }

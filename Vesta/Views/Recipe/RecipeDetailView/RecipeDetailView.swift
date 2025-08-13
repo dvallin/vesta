@@ -15,8 +15,6 @@ struct RecipeDetailView: View {
     @State private var stepType: StepType = .cooking
     @State private var stepDuration: TimeInterval? = nil
 
-    @State private var newTag: String = ""
-
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
 
@@ -86,52 +84,23 @@ struct RecipeDetailView: View {
                 }
             }
 
-            // Tags Section
-            Section(
-                header: Text(NSLocalizedString("Tags", comment: "Section header for tags"))
-            ) {
-                if !viewModel.recipe.tags.isEmpty {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 8) {
-                        ForEach(viewModel.recipe.tags, id: \.self) { tag in
-                            HStack(spacing: 4) {
-                                Text(tag)
-                                    .font(.caption)
-                                Button(action: {
-                                    guard let currentUser = auth.currentUser else { return }
-                                    withAnimation {
-                                        viewModel.recipe.removeTag(tag, currentUser: currentUser)
-                                    }
-                                }) {
-                                    Image(systemName: "xmark")
-                                        .font(.caption2)
-                                }
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.accentColor.opacity(0.1))
-                            .foregroundColor(.accentColor)
-                            .cornerRadius(8)
+            MultiSelector(
+                title: NSLocalizedString("Tags", comment: "Section header for tags"),
+                placeholder: NSLocalizedString("Add tag", comment: "Add tag placeholder"),
+                items: Array<SelectorEntry>.from(viewModel.recipe.tags),
+                onAdd: { newTag in
+                    let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !trimmedTag.isEmpty && !viewModel.recipe.tags.contains(trimmedTag) {
+                        guard let currentUser = auth.currentUser else { return }
+                        withAnimation {
+                            viewModel.recipe.addTag(trimmedTag, currentUser: currentUser)
                         }
                     }
-                    .padding(.vertical, 4)
+                },
+                onRemove: { tagEntry in
+                    viewModel.removeTag(tagEntry.name)
                 }
-
-                HStack {
-                    TextField(
-                        NSLocalizedString("Add tag", comment: "Add tag placeholder"),
-                        text: $newTag
-                    )
-                    .onSubmit {
-                        addTag()
-                    }
-
-                    Button(action: addTag) {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundColor(.accentColor)
-                    }
-                    .disabled(newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
+            )
 
             DurationSectionView(recipe: viewModel.recipe)
 
@@ -274,16 +243,6 @@ struct RecipeDetailView: View {
         stepDuration = nil
     }
 
-    private func addTag() {
-        let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedTag.isEmpty && !viewModel.recipe.tags.contains(trimmedTag) else { return }
-        guard let currentUser = auth.currentUser else { return }
-
-        withAnimation {
-            viewModel.recipe.addTag(trimmedTag, currentUser: currentUser)
-            newTag = ""
-        }
-    }
 }
 
 #Preview {

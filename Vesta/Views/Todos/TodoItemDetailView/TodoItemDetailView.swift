@@ -34,7 +34,9 @@ struct TodoItemDetailView: View {
                     category: $viewModel.tempCategory,
                     matchingCategories: $viewModel.matchingCategories,
                     focusedField: $focusedField,
-                    updateMatchingCategories: viewModel.updateMatchingCategories
+                    updateMatchingCategories: { text in
+                          viewModel.updateMatchingCategories(for: text)
+                      }
                 )
 
                 // --- Completion Statistics Section ---

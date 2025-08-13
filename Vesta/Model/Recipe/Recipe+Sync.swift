@@ -16,10 +16,7 @@ extension Recipe {
             "expireAt": expireAt as Any,
         ]
 
-        // Add optional seasonality
-        if let seasonality = seasonality {
-            dto["seasonality"] = seasonality.rawValue
-        }
+        dto["seasonality"] = seasonality?.rawValue as Any
 
         // Add meal types
         dto["mealTypes"] = mealTypes.map { $0.rawValue }
@@ -36,11 +33,9 @@ extension Recipe {
 
     /// Updates the entity's properties from a dictionary of values
     func update(from data: [String: Any]) {
-        // Handle deletedAt - can be nil when restored
         if data.keys.contains("deletedAt") {
             self.deletedAt = data["deletedAt"] as? Date
         }
-        // Handle expireAt - can be nil when restored
         if data.keys.contains("expireAt") {
             self.expireAt = data["expireAt"] as? Date
         }
@@ -54,21 +49,24 @@ extension Recipe {
             self.details = details
         }
 
-        // Handle seasonality
-        if let seasonalityRaw = data["seasonality"] as? String {
-            self.seasonality = Seasonality(rawValue: seasonalityRaw)
-        } else if data.keys.contains("seasonality") {
-            self.seasonality = nil
+        if data.keys.contains("seasonality") {
+            if let seasonalityRaw = data["seasonality"] as? String {
+                self.seasonality = Seasonality(rawValue: seasonalityRaw)
+            } else if data.keys.contains("seasonality") {
+                self.seasonality = nil
+            }
         }
 
-        // Handle meal types
         if let mealTypesRaw = data["mealTypes"] as? [String] {
             self.mealTypes = mealTypesRaw.compactMap { MealType(rawValue: $0) }
+        } else {
+            self.mealTypes = []
         }
 
-        // Handle tags
         if let tags = data["tags"] as? [String] {
             self.tags = tags
+        } else {
+            self.tags = []
         }
 
         // Process ingredients from data
@@ -103,14 +101,9 @@ extension Ingredient {
             "order": order,
         ]
 
-        // Add optional properties
-        if let quantity = quantity {
-            dto["quantity"] = quantity
-        }
-
-        if let unit = unit {
-            dto["unit"] = unit.rawValue
-        }
+        // Add optional properties (always include to ensure nil values are synced)
+        dto["quantity"] = quantity as Any
+        dto["unit"] = unit?.rawValue as Any
 
         return dto
     }
@@ -152,10 +145,8 @@ extension RecipeStep {
             "type": type.rawValue,
         ]
 
-        // Add optional duration
-        if let duration = duration {
-            dto["duration"] = duration
-        }
+        // Add optional duration (always include to ensure nil values are synced)
+        dto["duration"] = duration as Any
 
         return dto
     }
