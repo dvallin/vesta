@@ -198,10 +198,8 @@ class Recipe: SyncableEntity {
     }
 
     func removeTag(_ tag: String, currentUser: User) {
-        if let index = tags.firstIndex(of: tag) {
-            tags.remove(at: index)
-            markAsDirty()
-        }
+        tags.removeAll { $0 == tag }
+        markAsDirty()
     }
 
     func setTags(_ newTags: [String], currentUser: User) {

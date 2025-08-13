@@ -4,9 +4,9 @@ struct PriorityCategorySection: View {
     @Binding var priority: Int
     @Binding var category: String
     @Binding var matchingCategories: [TodoItemCategory]
-    @FocusState.Binding  var focusedField: String?
+    @FocusState.Binding var focusedField: String?
 
-    var updateMatchingCategories: () -> Void
+    var updateMatchingCategories: (String) -> Void
 
     var body: some View {
         Section(
@@ -29,42 +29,20 @@ struct PriorityCategorySection: View {
                     .tag(4)
             }
 
-            TextField(
-                NSLocalizedString("Enter category", comment: "Category text field placeholder"),
-                text: $category
-            )
-            .onChange(of: category) { _, _ in
-                updateMatchingCategories()
-            }
-            .focused($focusedField, equals: "category")
-
-            if !matchingCategories.isEmpty && focusedField == "category" {
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(matchingCategories, id: \.name) { category in
-                        Button(action: {
-                            self.category = category.name
-                            focusedField = nil
-                        }) {
-                            Text(category.name)
-                                .foregroundColor(.primary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 16)
-                        }
-                        .background(Color(.systemBackground))
-                        .contentShape(Rectangle())
-
-                        if category != matchingCategories.last {
-                            Divider()
-                                .padding(.leading, 16)
-                        }
-                    }
+            AutocompleteSelector(
+                title: NSLocalizedString("Category", comment: "Category section title"),
+                placeholder: NSLocalizedString(
+                    "Enter category", comment: "Category text field placeholder"),
+                selectedItem: $category,
+                suggestions: Array<SelectorEntry>.from(matchingCategories, keyPath: \.name),
+                onTextChange: { text in
+                    updateMatchingCategories(text)
+                },
+                onItemSelected: { categoryName in
+                    category = categoryName
+                    updateMatchingCategories(categoryName)
                 }
-                .background(Color(.secondarySystemBackground))
-                .cornerRadius(10)
-                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-                .transition(.opacity)
-            }
+            )
         }
     }
 }
@@ -83,13 +61,36 @@ struct PriorityCategorySection: View {
                     category: $category,
                     matchingCategories: $matchingCategories,
                     focusedField: $focusedField,
-                    updateMatchingCategories: {}
+                    updateMatchingCategories: { _ in }
                 )
             }
         }
     }
 
     return DefaultContainer()
+}
+
+#Preview("With Category") {
+    struct CategoryContainer: View {
+        @State private var priority = 2
+        @State private var category = "Work"
+        @State private var matchingCategories: [TodoItemCategory] = []
+        @FocusState private var focusedField: String?
+
+        var body: some View {
+            Form {
+                PriorityCategorySection(
+                    priority: $priority,
+                    category: $category,
+                    matchingCategories: $matchingCategories,
+                    focusedField: $focusedField,
+                    updateMatchingCategories: { _ in }
+                )
+            }
+        }
+    }
+
+    return CategoryContainer()
 }
 
 #Preview("With Category Suggestions") {
@@ -99,7 +100,7 @@ struct PriorityCategorySection: View {
         @State private var matchingCategories: [TodoItemCategory] = [
             TodoItemCategory(name: "Work"),
             TodoItemCategory(name: "Workshop"),
-            TodoItemCategory(name: "Workout")
+            TodoItemCategory(name: "Workout"),
         ]
         @FocusState private var focusedField: String?
 
@@ -110,11 +111,8 @@ struct PriorityCategorySection: View {
                     category: $category,
                     matchingCategories: $matchingCategories,
                     focusedField: $focusedField,
-                    updateMatchingCategories: {}
+                    updateMatchingCategories: { _ in }
                 )
-            }
-            .onAppear {
-                focusedField = "category"
             }
         }
     }
@@ -136,7 +134,7 @@ struct PriorityCategorySection: View {
                     category: $category,
                     matchingCategories: $matchingCategories,
                     focusedField: $focusedField,
-                    updateMatchingCategories: {}
+                    updateMatchingCategories: { _ in }
                 )
             }
         }
@@ -159,7 +157,7 @@ struct PriorityCategorySection: View {
                     category: $category,
                     matchingCategories: $matchingCategories,
                     focusedField: $focusedField,
-                    updateMatchingCategories: {}
+                    updateMatchingCategories: { _ in }
                 )
             }
         }

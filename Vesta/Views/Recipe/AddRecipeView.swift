@@ -36,7 +36,6 @@ struct AddRecipeView: View {
     @State private var seasonality: Seasonality? = nil
     @State private var selectedMealTypes: Set<MealType> = []
     @State private var tags: [String] = []
-    @State private var newTag: String = ""
 
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
@@ -97,51 +96,24 @@ struct AddRecipeView: View {
                     }
                 }
 
-                // Tags Section
-                Section(
-                    header: Text(NSLocalizedString("Tags", comment: "Section header for tags"))
-                ) {
-                    if !tags.isEmpty {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 8) {
-                            ForEach(tags, id: \.self) { tag in
-                                HStack(spacing: 4) {
-                                    Text(tag)
-                                        .font(.caption)
-                                    Button(action: {
-                                        withAnimation {
-                                            tags.removeAll { $0 == tag }
-                                        }
-                                    }) {
-                                        Image(systemName: "xmark")
-                                            .font(.caption2)
-                                    }
-                                }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.accentColor.opacity(0.1))
-                                .foregroundColor(.accentColor)
-                                .cornerRadius(8)
+                MultiSelector(
+                    title: NSLocalizedString("Tags", comment: "Section header for tags"),
+                    placeholder: NSLocalizedString("Add tag", comment: "Add tag placeholder"),
+                    items: Array<SelectorEntry>.from(tags),
+                    onAdd: { newTag in
+                        let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !trimmedTag.isEmpty && !tags.contains(trimmedTag) {
+                            withAnimation {
+                                tags.append(trimmedTag)
                             }
                         }
-                        .padding(.vertical, 4)
-                    }
-
-                    HStack {
-                        TextField(
-                            NSLocalizedString("Add tag", comment: "Add tag placeholder"),
-                            text: $newTag
-                        )
-                        .onSubmit {
-                            addTag()
+                    },
+                    onRemove: { tagEntry in
+                        withAnimation {
+                            tags.removeAll { $0 == tagEntry.name }
                         }
-
-                        Button(action: addTag) {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundColor(.accentColor)
-                        }
-                        .disabled(newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
-                }
+                )
 
                 IngredientsSection(
                     header: NSLocalizedString(
@@ -396,15 +368,6 @@ struct AddRecipeView: View {
         isSaving = false
     }
 
-    private func addTag() {
-        let trimmedTag = newTag.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedTag.isEmpty && !tags.contains(trimmedTag) else { return }
-
-        withAnimation {
-            tags.append(trimmedTag)
-            newTag = ""
-        }
-    }
 }
 
 #Preview {

@@ -19,38 +19,17 @@ extension TodoItem {
             "expireAt": expireAt as Any,
         ]
 
-        // Add optional properties
-        if let dueDate = dueDate {
-            dto["dueDate"] = dueDate
-        }
-        if let rescheduleDate = rescheduleDate {
-            dto["rescheduleDate"] = rescheduleDate
-        }
+        // Add optional properties (always include to ensure nil values are synced)
+        dto["dueDate"] = dueDate as Any
+        dto["rescheduleDate"] = rescheduleDate as Any
+        dto["recurrenceFrequency"] = recurrenceFrequency?.rawValue as Any
+        dto["recurrenceType"] = recurrenceType?.rawValue as Any
+        dto["recurrenceInterval"] = recurrenceInterval as Any
 
-        if let recurrenceFrequency = recurrenceFrequency {
-            dto["recurrenceFrequency"] = recurrenceFrequency.rawValue
-        }
-
-        if let recurrenceType = recurrenceType {
-            dto["recurrenceType"] = recurrenceType.rawValue
-        }
-
-        if let recurrenceInterval = recurrenceInterval {
-            dto["recurrenceInterval"] = recurrenceInterval
-        }
-
-        // Add relationship references
-        if let categoryName = category?.name {
-            dto["categoryName"] = categoryName
-        }
-
-        if let mealId = meal?.uid {
-            dto["mealId"] = mealId
-        }
-
-        if let shoppingListItemId = shoppingListItem?.uid {
-            dto["shoppingListItemId"] = shoppingListItemId
-        }
+        // Add relationship references (always include to ensure nil values are synced)
+        dto["categoryName"] = category?.name as Any
+        dto["mealId"] = meal?.uid as Any
+        dto["shoppingListItemId"] = shoppingListItem?.uid as Any
 
         // Add events for analytics (was completionEvents)
         dto["events"] = events.map { $0.toDTO() }

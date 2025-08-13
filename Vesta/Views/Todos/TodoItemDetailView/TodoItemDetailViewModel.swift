@@ -164,9 +164,10 @@ class TodoItemDetailViewModel: ObservableObject {
         isSaving = false
     }
 
-    func updateMatchingCategories() {
+    func updateMatchingCategories(for inputText: String? = nil) {
         guard let categoryService = categoryService else { return }
-        matchingCategories = categoryService.findMatchingCategories(startingWith: tempCategory)
+        let searchText = inputText ?? tempCategory
+        matchingCategories = categoryService.findMatchingCategories(startingWith: searchText)
     }
 
     @MainActor

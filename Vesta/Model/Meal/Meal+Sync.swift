@@ -17,13 +17,8 @@ extension Meal {
         ]
 
         // Add related entity IDs for references
-        if let todoItemId = todoItem?.uid {
-            dto["todoItemId"] = todoItemId
-        }
-
-        if let recipeId = recipe?.uid {
-            dto["recipeId"] = recipeId
-        }
+        dto["todoItemId"] = todoItem?.uid as Any
+        dto["recipeId"] = recipe?.uid as Any
 
         // Add shopping list item references
         dto["shoppingListItemIds"] = shoppingListItems.compactMap {
@@ -34,11 +29,9 @@ extension Meal {
     }
 
     func update(from dto: [String: Any]) {
-        // Handle deletedAt - can be nil when restored
         if dto.keys.contains("deletedAt") {
             self.deletedAt = dto["deletedAt"] as? Date
         }
-        // Handle expireAt - can be nil when restored
         if dto.keys.contains("expireAt") {
             self.expireAt = dto["expireAt"] as? Date
         }

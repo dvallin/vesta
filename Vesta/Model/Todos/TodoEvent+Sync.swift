@@ -8,12 +8,8 @@ extension TodoEvent {
             "eventType": eventType.rawValue,
             "completedAt": completedAt,
         ]
-        if let previousDueDate = previousDueDate {
-            dto["previousDueDate"] = previousDueDate
-        }
-        if let previousRescheduleDate = previousRescheduleDate {
-            dto["previousRescheduleDate"] = previousRescheduleDate
-        }
+        dto["previousDueDate"] = previousDueDate as Any
+        dto["previousRescheduleDate"] = previousRescheduleDate as Any
         return dto
     }
 
@@ -27,11 +23,11 @@ extension TodoEvent {
         if let completedAt = dto["completedAt"] as? Date {
             self.completedAt = completedAt
         }
-        if let previousDueDate = dto["previousDueDate"] as? Date {
-            self.previousDueDate = previousDueDate
+        if dto.keys.contains("previousDueDate") {
+            self.previousDueDate = dto["previousDueDate"] as? Date
         }
-        if let previousRescheduleDate = dto["previousRescheduleDate"] as? Date {
-            self.previousRescheduleDate = previousRescheduleDate
+        if dto.keys.contains("previousRescheduleDate") {
+            self.previousRescheduleDate = dto["previousRescheduleDate"] as? Date
         }
     }
 }
