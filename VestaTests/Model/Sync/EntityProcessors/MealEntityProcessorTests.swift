@@ -73,7 +73,7 @@ class MealEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Verify results
         let meal = try mealService.fetchUnique(withUID: uid)
@@ -104,7 +104,7 @@ class MealEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Verify results
         let meal = try mealService.fetchUnique(withUID: uid)
@@ -128,7 +128,7 @@ class MealEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Verify results
         let meal = try mealService.fetchUnique(withUID: uid)
@@ -153,7 +153,7 @@ class MealEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Verify results
         let meal = try mealService.fetchUnique(withUID: uid)
@@ -180,7 +180,7 @@ class MealEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Verify results
         let meal = try mealService.fetchUnique(withUID: uid)
@@ -206,7 +206,7 @@ class MealEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Verify results
         let updatedMeal = try mealService.fetchUnique(withUID: "existing-meal")
@@ -270,7 +270,7 @@ class MealEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Verify results
         let updatedMeal = try mealService.fetchUnique(withUID: "existing-meal")
@@ -320,7 +320,7 @@ class MealEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Verify results
         let updatedMeal = try mealService.fetchUnique(withUID: "existing-meal")
@@ -342,7 +342,7 @@ class MealEntityProcessorTests: XCTestCase {
         let countBefore = mealsBefore.count
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Count meals after processing
         let mealsAfter = try context.fetch(FetchDescriptor<Meal>())
@@ -364,7 +364,7 @@ class MealEntityProcessorTests: XCTestCase {
         let countBefore = mealsBefore.count
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Count meals after processing
         let mealsAfter = try context.fetch(FetchDescriptor<Meal>())
@@ -390,7 +390,7 @@ class MealEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [mealData], currentUser: currentUser)
+        try await processor.process(entities: [mealData])
 
         // Verify results
         let meal = try mealService.fetchUnique(withUID: uid)
@@ -421,7 +421,7 @@ class MealEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entities
-        try await processor.process(entities: [mealData1, mealData2], currentUser: currentUser)
+        try await processor.process(entities: [mealData1, mealData2])
 
         // Verify results
         let meal1 = try mealService.fetchUnique(withUID: uid1)

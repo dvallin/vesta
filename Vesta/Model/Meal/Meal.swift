@@ -38,10 +38,10 @@ class Meal: SyncableEntity {
     @Relationship(deleteRule: .cascade, inverse: \TodoItem.meal)
     var todoItem: TodoItem?
 
-    @Relationship(inverse: \Recipe.meals)
+    @Relationship(deleteRule: .nullify, inverse: \Recipe.meals)
     var recipe: Recipe?
 
-    @Relationship(inverse: \ShoppingListItem.meals)
+    @Relationship(deleteRule: .nullify, inverse: \ShoppingListItem.meals)
     var shoppingListItems: [ShoppingListItem]
 
     var isDone: Bool {

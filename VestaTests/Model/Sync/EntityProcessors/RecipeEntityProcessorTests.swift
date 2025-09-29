@@ -67,7 +67,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let recipe = try recipeService.fetchUnique(withUID: uid)
@@ -98,7 +98,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let recipe = try recipeService.fetchUnique(withUID: uid)
@@ -136,7 +136,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let recipe = try recipeService.fetchUnique(withUID: uid)
@@ -187,7 +187,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let recipe = try recipeService.fetchUnique(withUID: uid)
@@ -230,7 +230,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let recipe = try recipeService.fetchUnique(withUID: uid)
@@ -256,7 +256,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let updatedRecipe = try recipeService.fetchUnique(withUID: "existing-recipe")
@@ -268,11 +268,12 @@ class RecipeEntityProcessorTests: XCTestCase {
 
     func testUpdateRecipeWithChangedIngredients() async throws {
         // Insert an existing recipe
+        let user = Fixtures.createUser()
         let recipe = Recipe(
             title: "Original Recipe", details: "Original details", owner: currentUser)
         recipe.uid = "existing-recipe"
         recipe.addIngredient(
-            name: "Original Ingredient", quantity: 100, unit: .gram, currentUser: currentUser)
+            name: "Original Ingredient", quantity: 100, unit: .gram, currentUser: user)
         context.insert(recipe)
         try context.save()
 
@@ -298,7 +299,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let updatedRecipe = try recipeService.fetchUnique(withUID: "existing-recipe")
@@ -345,7 +346,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let updatedRecipe = try recipeService.fetchUnique(withUID: "existing-recipe")
@@ -388,7 +389,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let updatedRecipe = try recipeService.fetchUnique(withUID: "existing-recipe")
@@ -425,7 +426,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let updatedRecipe = try recipeService.fetchUnique(withUID: "existing-recipe")
@@ -445,7 +446,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         let countBefore = recipesBefore.count
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Count recipes after processing
         let recipesAfter = try context.fetch(FetchDescriptor<Recipe>())
@@ -467,7 +468,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         let countBefore = recipesBefore.count
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Count recipes after processing
         let recipesAfter = try context.fetch(FetchDescriptor<Recipe>())
@@ -491,7 +492,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [recipeData], currentUser: currentUser)
+        try await processor.process(entities: [recipeData])
 
         // Verify results
         let recipe = try recipeService.fetchUnique(withUID: uid)
@@ -520,7 +521,7 @@ class RecipeEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entities
-        try await processor.process(entities: [recipeData1, recipeData2], currentUser: currentUser)
+        try await processor.process(entities: [recipeData1, recipeData2])
 
         // Verify results
         let recipe1 = try recipeService.fetchUnique(withUID: uid1)

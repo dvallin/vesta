@@ -69,7 +69,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [shoppingItemData], currentUser: currentUser)
+        try await processor.process(entities: [shoppingItemData])
 
         // Verify results
         let item = try shoppingListItemService.fetchUnique(withUID: uid)
@@ -101,7 +101,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [shoppingItemData], currentUser: currentUser)
+        try await processor.process(entities: [shoppingItemData])
 
         // Verify results
         let item = try shoppingListItemService.fetchUnique(withUID: uid)
@@ -125,7 +125,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [shoppingItemData], currentUser: currentUser)
+        try await processor.process(entities: [shoppingItemData])
 
         // Verify results
         let item = try shoppingListItemService.fetchUnique(withUID: uid)
@@ -151,7 +151,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [shoppingItemData], currentUser: currentUser)
+        try await processor.process(entities: [shoppingItemData])
 
         // Verify results
         let item = try shoppingListItemService.fetchUnique(withUID: uid)
@@ -179,7 +179,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [shoppingItemData], currentUser: currentUser)
+        try await processor.process(entities: [shoppingItemData])
 
         // Verify results
         let updatedItem = try shoppingListItemService.fetchUnique(withUID: "existing-item")
@@ -237,7 +237,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [shoppingItemData], currentUser: currentUser)
+        try await processor.process(entities: [shoppingItemData])
 
         // Verify results
         let updatedItem = try shoppingListItemService.fetchUnique(withUID: "existing-item")
@@ -278,7 +278,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [shoppingItemData], currentUser: currentUser)
+        try await processor.process(entities: [shoppingItemData])
 
         // Verify results
         let updatedItem = try shoppingListItemService.fetchUnique(withUID: "existing-item")
@@ -299,7 +299,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
         let countBefore = itemsBefore.count
 
         // Process the entity
-        try await processor.process(entities: [shoppingItemData], currentUser: currentUser)
+        try await processor.process(entities: [shoppingItemData])
 
         // Count items after processing
         let itemsAfter = try context.fetch(FetchDescriptor<ShoppingListItem>())
@@ -322,7 +322,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
         let countBefore = itemsBefore.count
 
         // Process the entity
-        try await processor.process(entities: [shoppingItemData], currentUser: currentUser)
+        try await processor.process(entities: [shoppingItemData])
 
         // Count items after processing
         let itemsAfter = try context.fetch(FetchDescriptor<ShoppingListItem>())
@@ -346,7 +346,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [shoppingItemData], currentUser: currentUser)
+        try await processor.process(entities: [shoppingItemData])
 
         // Verify results
         let item = try shoppingListItemService.fetchUnique(withUID: uid)
@@ -378,7 +378,7 @@ class ShoppingListItemEntityProcessorTests: XCTestCase {
 
         // Process the entities
         try await processor.process(
-            entities: [shoppingItemData1, shoppingItemData2], currentUser: currentUser)
+            entities: [shoppingItemData1, shoppingItemData2])
 
         // Verify results
         let item1 = try shoppingListItemService.fetchUnique(withUID: uid1)

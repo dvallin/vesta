@@ -59,13 +59,13 @@ class TodoItem: SyncableEntity {
     @Relationship
     var meal: Meal?
 
-    @Relationship
+    @Relationship(deleteRule: .nullify)
     var shoppingListItem: ShoppingListItem?
 
-    @Relationship
+    @Relationship(deleteRule: .nullify)
     var category: TodoItemCategory?
 
-    @Relationship
+    @Relationship(deleteRule: .cascade)
     var events: [TodoEvent] = []
 
     init(

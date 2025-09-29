@@ -16,21 +16,17 @@ struct TodoList: View {
                     viewModel: viewModel,
                     item: item
                 )
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    // Existing delete action
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    // Delete action
                     Button(role: .destructive) {
-                        viewModel.deleteItem(item) { item, id in
-                            viewModel.undoDeleteItem(item, id: id)
-                        }
+                        deleteTodoItem(item)
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
-                    // New skip action for recurring todos
+                    // Skip action for recurring todos
                     if item.recurrenceFrequency != nil {
                         Button {
-                            // Call skip via TodoListItem's skip() method
-                            // This will be handled by TodoListItem, not directly here
-                            // (No-op here, skip is handled in TodoListItem)
+                            skipTodoItem(item)
                         } label: {
                             Label("Skip", systemImage: "forward.end")
                         }
@@ -86,9 +82,23 @@ struct TodoList: View {
     private func deleteTodoItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                viewModel.deleteItem(filteredTodoItems[index]) { item, id in
-                    viewModel.undoDeleteItem(item, id: id)
-                }
+                deleteTodoItem(filteredTodoItems[index])
+            }
+        }
+    }
+
+    private func deleteTodoItem(_ item: TodoItem) {
+        withAnimation {
+            viewModel.deleteItem(item) { item, id in
+                viewModel.undoDeleteItem(item, id: id)
+            }
+        }
+    }
+
+    private func skipTodoItem(_ item: TodoItem) {
+        withAnimation {
+            viewModel.skip(item) { item, id in
+                viewModel.undoLastEvent(item, id: id)
             }
         }
     }

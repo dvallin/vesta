@@ -131,7 +131,7 @@ final class MealTests: XCTestCase {
 
     func testRemoveDueDate() throws {
         // Arrange
-        let user = try createUser()
+        let user = Fixtures.createUser()
         let meal = Meal(
             scalingFactor: 1.0,
             todoItem: todoItem,
@@ -157,7 +157,7 @@ final class MealTests: XCTestCase {
 
     func testSetDueDateWithNil() throws {
         // Arrange
-        let user = try createUser()
+        let user = Fixtures.createUser()
         let meal = Meal(
             scalingFactor: 1.0,
             todoItem: todoItem,
