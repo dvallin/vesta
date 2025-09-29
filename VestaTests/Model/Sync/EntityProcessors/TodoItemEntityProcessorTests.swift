@@ -66,7 +66,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [todoData], currentUser: currentUser)
+        try await processor.process(entities: [todoData])
 
         // Then a new todo item should be created
         let todoItems = try fetchAllTodoItems()
@@ -104,7 +104,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [todoData], currentUser: currentUser)
+        try await processor.process(entities: [todoData])
 
         // Then a new todo item should be created with the owner set
         let todoItem = try todoItemService.fetchUnique(withUID: todoUID)
@@ -136,7 +136,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [updatedData], currentUser: currentUser)
+        try await processor.process(entities: [updatedData])
 
         // Then the todo item should be updated
         let updatedTodo = try todoItemService.fetchUnique(withUID: todoItem.uid)
@@ -161,7 +161,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [todoData], currentUser: currentUser)
+        try await processor.process(entities: [todoData])
 
         // Then a new todo item should be created with the category
         let todoItem = try todoItemService.fetchUnique(withUID: todoUID)
@@ -192,7 +192,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [todoData], currentUser: currentUser)
+        try await processor.process(entities: [todoData])
 
         // Then a new todo item should be created with the meal reference
         let todoItem = try todoItemService.fetchUnique(withUID: todoUID)
@@ -217,7 +217,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [todoData], currentUser: currentUser)
+        try await processor.process(entities: [todoData])
 
         // Then a new todo item should be created with the shopping item reference
         let todoItem = try todoItemService.fetchUnique(withUID: todoUID)
@@ -240,7 +240,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [todoData], currentUser: currentUser)
+        try await processor.process(entities: [todoData])
 
         // Then a new todo item should be created with recurrence settings
         let todoItem = try todoItemService.fetchUnique(withUID: todoUID)
@@ -287,7 +287,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [updatedData], currentUser: currentUser)
+        try await processor.process(entities: [updatedData])
 
         // Then the todo item should have all relationships removed
         let updatedTodo = try todoItemService.fetchUnique(withUID: todoItem.uid)
@@ -307,7 +307,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [todoData], currentUser: currentUser)
+        try await processor.process(entities: [todoData])
 
         // Then no todo item should be created
         let todoItems = try fetchAllTodoItems()
@@ -322,7 +322,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [todoData], currentUser: currentUser)
+        try await processor.process(entities: [todoData])
 
         // Then no todo item should be created
         let todoItems = try fetchAllTodoItems()
@@ -353,7 +353,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entity
-        try await processor.process(entities: [updatedData], currentUser: currentUser)
+        try await processor.process(entities: [updatedData])
 
         // Then the todo item should have the new category
         let updatedTodo = try todoItemService.fetchUnique(withUID: todoItem.uid)
@@ -383,7 +383,7 @@ class TodoItemEntityProcessorTests: XCTestCase {
         ]
 
         // When we process the entities
-        try await processor.process(entities: [todoData1, todoData2], currentUser: currentUser)
+        try await processor.process(entities: [todoData1, todoData2])
 
         // Then both todo items should be created
         let todoItems = try fetchAllTodoItems()

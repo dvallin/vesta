@@ -7,7 +7,7 @@ class TodoItemCategory {
     var color: String?
     var isFreezable: Bool = false
 
-    @Relationship(inverse: \TodoItem.category)
+    @Relationship(deleteRule: .nullify, inverse: \TodoItem.category)
     var todoItems: [TodoItem]
 
     init(name: String, color: String? = nil, isFreezable: Bool = false) {

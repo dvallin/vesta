@@ -89,12 +89,6 @@ struct TodoListItem: View {
         }
     }
 
-    private func skip() {
-        withAnimation {
-            viewModel.skip(item, undoAction: undoLastEvent)
-        }
-    }
-
     private func undoLastEvent(item: TodoItem, id: UUID) {
         withAnimation {
             viewModel.undoLastEvent(item, id: id)

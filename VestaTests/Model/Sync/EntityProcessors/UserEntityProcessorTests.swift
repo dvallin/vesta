@@ -49,7 +49,7 @@ class UserEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [userData], currentUser: currentUser)
+        try await processor.process(entities: [userData])
 
         // Verify the user was created properly
         let fetchedUser = try userService.fetchUnique(withUID: newUserUid)
@@ -99,7 +99,7 @@ class UserEntityProcessorTests: XCTestCase {
         print("Processing user with friendIds: \(userData["friendIds"] ?? [])")
 
         // Process the entity
-        try await processor.process(entities: [userData], currentUser: currentUser)
+        try await processor.process(entities: [userData])
 
         // Verify the user was created with friends
         let fetchedUser = try userService.fetchUnique(withUID: newUserUid)
@@ -153,7 +153,7 @@ class UserEntityProcessorTests: XCTestCase {
         ]
 
         // Process the update
-        try await processor.process(entities: [updatedData], currentUser: currentUser)
+        try await processor.process(entities: [updatedData])
 
         // Verify the user was updated
         let fetchedUser = try userService.fetchUnique(withUID: "existing-user-123")
@@ -242,7 +242,7 @@ class UserEntityProcessorTests: XCTestCase {
         ]
 
         // Process the update
-        try await processor.process(entities: [updatedData], currentUser: currentUser)
+        try await processor.process(entities: [updatedData])
 
         // Verify the user's friends were updated correctly
         let fetchedUser = try userService.fetchUnique(withUID: "user-with-changing-friends")
@@ -299,7 +299,7 @@ class UserEntityProcessorTests: XCTestCase {
         ]
 
         // Process the update
-        try await processor.process(entities: [updatedData], currentUser: currentUser)
+        try await processor.process(entities: [updatedData])
 
         // Verify the invites were processed correctly
         let fetchedUser = try userService.fetchUnique(withUID: "user-with-invites")
@@ -337,7 +337,7 @@ class UserEntityProcessorTests: XCTestCase {
         let userCountBefore = try userService.fetchAll().count
 
         // Process should skip this entity
-        try await processor.process(entities: [incompleteUserData], currentUser: currentUser)
+        try await processor.process(entities: [incompleteUserData])
 
         // Verify no new user was added
         let userCountAfter = try userService.fetchAll().count
@@ -370,7 +370,7 @@ class UserEntityProcessorTests: XCTestCase {
         ]
 
         // Process the update
-        try await processor.process(entities: [updatedData], currentUser: currentUser)
+        try await processor.process(entities: [updatedData])
 
         // Verify the user no longer has friends
         let fetchedUser = try userService.fetchUnique(withUID: "user-with-friends-to-clear")
@@ -396,7 +396,7 @@ class UserEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [userData], currentUser: currentUser)
+        try await processor.process(entities: [userData])
 
         // Verify the owner relationship is established
         let fetchedUser = try userService.fetchUnique(withUID: "user-with-owner")
@@ -417,7 +417,7 @@ class UserEntityProcessorTests: XCTestCase {
         ]
 
         // Process the entity
-        try await processor.process(entities: [userData], currentUser: currentUser)
+        try await processor.process(entities: [userData])
 
         // Verify the self-ownership relationship is established
         let fetchedUser = try userService.fetchUnique(withUID: "self-owner-user")
@@ -452,7 +452,7 @@ class UserEntityProcessorTests: XCTestCase {
         ]
 
         // Process the update
-        try await processor.process(entities: [updatedData], currentUser: currentUser)
+        try await processor.process(entities: [updatedData])
 
         // Verify the owner relationship is removed
         let fetchedUser = try userService.fetchUnique(withUID: "user-with-owner-to-remove")
