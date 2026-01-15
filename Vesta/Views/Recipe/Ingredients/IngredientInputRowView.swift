@@ -24,7 +24,7 @@ struct IngredientInputRowView: View {
                 .focused($focusedField, equals: .quantity)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 #if os(iOS)
-                    .keyboardType(.decimalPad)
+                    .keyboardType(.numbersAndPunctuation)
                 #endif
                 .submitLabel(.next)
                 .onSubmit {
@@ -52,11 +52,15 @@ struct IngredientInputRowView: View {
             .submitLabel(.done)
             .autocorrectionDisabled(true)
             .textInputAutocapitalization(.words)
-            .onSubmit { onAdd() }
+            .onSubmit {
+                onAdd()
+                focusedField = .quantity
+            }
 
             Button(action: {
                 withAnimation {
                     onAdd()
+                    focusedField = .quantity
                 }
             }) {
                 Image(systemName: "plus.circle")

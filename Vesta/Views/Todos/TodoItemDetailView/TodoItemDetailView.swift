@@ -15,7 +15,7 @@ struct TodoItemDetailView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 TitleDetailsSection(
                     title: $viewModel.tempTitle, details: $viewModel.tempDetails,
@@ -35,8 +35,8 @@ struct TodoItemDetailView: View {
                     matchingCategories: $viewModel.matchingCategories,
                     focusedField: $focusedField,
                     updateMatchingCategories: { text in
-                          viewModel.updateMatchingCategories(for: text)
-                      }
+                        viewModel.updateMatchingCategories(for: text)
+                    }
                 )
 
                 // --- Completion Statistics Section ---

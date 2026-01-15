@@ -53,11 +53,15 @@ struct StepInputRowView: View {
                 TextEditor(text: $instruction)
                     .focused($focusedField, equals: .instruction)
                     .submitLabel(.done)
-                    .onSubmit { onAdd() }
+                    .onSubmit {
+                        onAdd()
+                        focusedField = .instruction
+                    }
 
                 Button(action: {
                     withAnimation {
                         onAdd()
+                        focusedField = .instruction
                     }
                 }) {
                     Image(systemName: "plus.circle")

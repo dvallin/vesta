@@ -18,7 +18,7 @@ class ShoppingListItem: SyncableEntity {
     var deletedAt: Date? = nil
     var expireAt: Date? = nil
 
-    @Relationship(deleteRule: .cascade, inverse: \TodoItem.shoppingListItem)
+    @Relationship(deleteRule: .nullify, inverse: \TodoItem.shoppingListItem)
     var todoItem: TodoItem?
 
     @Relationship(deleteRule: .nullify)

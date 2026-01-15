@@ -14,7 +14,7 @@ struct InvitesView: View {
     @State private var errorMessage = ""
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 Picker("Invite Type", selection: $selectedTab) {
                     Text(NSLocalizedString("Received", comment: "Received invites tab"))
@@ -347,7 +347,7 @@ struct SentInviteRow: View {
 
         // Create the invite service
         let inviteService = UserInviteService(modelContext: context, apiClient: mockAPIClient)
-        
+
         // Set the current user on the auth service for preview
         authService.setCurrentUser(user: user)
 

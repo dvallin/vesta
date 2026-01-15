@@ -47,7 +47,7 @@ struct MealListItem: View {
                         .font(.headline)
                         .foregroundColor(.primary)
                     if let dueDate = meal.todoItem?.dueDate {
-                        Text(dueDate, style: .date)
+                        Text(dueDate.formattedForDisplay(includeTime: false))
                             .font(.subheadline)
                             .foregroundColor(
                                 (dueDate < Date() && !(meal.isDone)) ? .red : .secondary

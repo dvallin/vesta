@@ -78,7 +78,7 @@ struct ShoppingList: View {
             owner: Fixtures.createUser()),
     ]
 
-    return NavigationView {
+    return NavigationStack {
         ShoppingList(
             viewModel: ShoppingListViewModel(),
             shoppingItems: shoppingItems

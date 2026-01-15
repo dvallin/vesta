@@ -75,7 +75,7 @@ struct TrashBinView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 if isLoading {
                     Section {
@@ -415,7 +415,7 @@ struct CustomCleanupSheet: View {
     @State private var isLoadingPreview = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 Section("Threshold") {
                     HStack {

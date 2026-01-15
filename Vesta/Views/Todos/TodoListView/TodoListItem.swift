@@ -36,10 +36,7 @@ struct TodoListItem: View {
                                 }
                             }
                             Text(
-                                dueDate,
-                                format: item.ignoreTimeComponent
-                                    ? Date.FormatStyle(date: .numeric, time: .omitted)
-                                    : Date.FormatStyle(date: .numeric, time: .shortened)
+                                dueDate.formattedForDisplay(includeTime: !item.ignoreTimeComponent)
                             )
                             .font(.subheadline)
                             .foregroundColor(item.isOverdue ? .red : .secondary)
@@ -63,6 +60,7 @@ struct TodoListItem: View {
                     }
                 }
             }
+            .buttonStyle(PlainButtonStyle())
         }
     }
 

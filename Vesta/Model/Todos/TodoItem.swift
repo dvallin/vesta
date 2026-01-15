@@ -8,13 +8,17 @@ enum RecurrenceFrequency: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .daily:
-            return NSLocalizedString("Daily", comment: "Recurrence frequency: daily")
+            return String(
+                localized: "todos.recurrence-frequency.daily")
         case .weekly:
-            return NSLocalizedString("Weekly", comment: "Recurrence frequency: weekly")
+            return String(
+                localized: "todos.recurrence-frequency.weekly")
         case .monthly:
-            return NSLocalizedString("Monthly", comment: "Recurrence frequency: monthly")
+            return String(
+                localized: "todos.recurrence-frequency.monthly")
         case .yearly:
-            return NSLocalizedString("Yearly", comment: "Recurrence frequency: yearly")
+            return String(
+                localized: "todos.recurrence-frequency.yearly")
         }
     }
 }
@@ -25,9 +29,9 @@ enum RecurrenceType: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .fixed:
-            return NSLocalizedString("Fixed", comment: "Recurrence type: fixed")
+            return String(localized: "todos.recurrence-type.fixed")
         case .flexible:
-            return NSLocalizedString("Flexible", comment: "Recurrence type: flexible")
+            return String(localized: "todos.recurrence-type.flexible")
         }
     }
 }

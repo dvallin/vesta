@@ -9,7 +9,7 @@ struct UserProfileView: View {
     @StateObject var viewModel = UserProfileViewModel()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     userInfoSection

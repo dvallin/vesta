@@ -30,55 +30,13 @@ struct TodoListViewInner: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                HStack {
-                    if isSearchActive {
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.secondary)
-                                .font(.system(size: 16))
-
-                            TextField("Search todos...", text: $viewModel.searchText)
-                                .focused($isSearchFocused)
-                                .textFieldStyle(PlainTextFieldStyle())
-                                .font(.headline)
-
-                            Button("Cancel") {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    isSearchActive = false
-                                    viewModel.searchText = ""
-                                    isSearchFocused = false
-                                }
-                            }
-                            .font(.system(size: 16))
-                            .foregroundColor(.accentColor)
-                        }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 6)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
-                        .transition(.scale.combined(with: .opacity))
-                    } else {
-                        HStack {
-                            Text(viewModel.displayTitle)
-                                .font(.headline)
-                                .fontWeight(.semibold)
-
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    isSearchActive = true
-                                    isSearchFocused = true
-                                }
-                            } label: {
-                                Image(systemName: "magnifyingglass")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(.accentColor)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        .transition(.scale.combined(with: .opacity))
-                    }
-                }
-                .frame(maxWidth: .infinity)
+                SearchableNavigationBar(
+                    title: viewModel.filterMode.displayName,
+                    searchText: $viewModel.searchText,
+                    isSearchActive: $isSearchActive,
+                    isSearchFocused: $isSearchFocused,
+                    searchPlaceholder: "Search todos..."
+                )
             }
 
             if viewModel.filterMode != .completed && !isSearchActive {

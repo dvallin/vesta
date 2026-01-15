@@ -130,7 +130,7 @@ struct TodoList: View {
         ),
     ]
 
-    return NavigationView {
+    return NavigationStack {
         TodoList(
             viewModel: TodoListViewModel(),
             todoItems: todoItems
@@ -152,7 +152,7 @@ struct TodoList: View {
         ),
     ]
 
-    return NavigationView {
+    return NavigationStack {
         TodoList(
             viewModel: TodoListViewModel(),
             todoItems: todoItems
@@ -178,7 +178,7 @@ struct TodoList: View {
         ),
     ]
 
-    return NavigationView {
+    return NavigationStack {
         TodoList(
             viewModel: TodoListViewModel(),
             todoItems: todoItems
@@ -187,7 +187,7 @@ struct TodoList: View {
 }
 
 #Preview("Empty List") {
-    return NavigationView {
+    return NavigationStack {
         TodoList(
             viewModel: TodoListViewModel(),
             todoItems: []
@@ -211,7 +211,7 @@ struct TodoList: View {
 
     let viewModel = TodoListViewModel()
 
-    return NavigationView {
+    return NavigationStack {
         TodoList(
             viewModel: viewModel,
             todoItems: todoItems

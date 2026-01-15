@@ -12,7 +12,7 @@ struct LoginView: View {
     @State private var cancellables = Set<AnyCancellable>()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Login Information")) {
                     TextField("Email", text: $email)

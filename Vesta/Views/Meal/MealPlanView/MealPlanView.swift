@@ -11,7 +11,7 @@ struct MealPlanView: View {
     @StateObject var viewModel = MealPlanViewModel()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             MealPlanViewInner(
                 viewModel: viewModel,
                 meals: meals

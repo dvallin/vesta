@@ -16,7 +16,7 @@ struct ShoppingListView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ShoppingListViewInner(
                 viewModel: viewModel,
                 shoppingItems: shoppingItems

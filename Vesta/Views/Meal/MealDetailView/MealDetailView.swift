@@ -12,7 +12,7 @@ struct MealDetailView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 if let recipe = viewModel.meal.recipe {
                     ReadOnlyRecipeDetailView(
@@ -20,15 +20,14 @@ struct MealDetailView: View {
                     )
                 }
                 HStack {
-                    Text(NSLocalizedString("Scaling Factor:", comment: "Scaling factor label"))
+                    Text(
+                        String(localized: "meal.detail-view.scaling-factor.label")
+                    )
                     TextField(
-                        NSLocalizedString("Scaling Factor", comment: "Scaling factor input field"),
+                        String(localized: "meal.detail-view.scaling-factor.field"),
                         value: Binding(
                             get: { viewModel.meal.scalingFactor },
-                            set: { newValue in
-                                guard let currentUser = auth.currentUser else { return }
-                                viewModel.meal.setScalingFactor(newValue, currentUser: currentUser)
-                            }
+                            set: { newValue in viewModel.setScalingFactor(newValue) }
                         ),
                         formatter: NumberFormatter()
                     )
@@ -40,9 +39,12 @@ struct MealDetailView: View {
                 .padding()
 
                 HStack {
-                    Text(NSLocalizedString("Meal Type:", comment: "Meal type label"))
+                    Text(
+                        NSLocalizedString(
+                            "meal.detail-view.meal-type.label", comment: "Meal type label"))
                     Picker(
-                        NSLocalizedString("Meal Type", comment: "Meal type picker label"),
+                        NSLocalizedString(
+                            "meal.detail-view.meal-type.field", comment: "Meal type picker label"),
                         selection: Binding(
                             get: { viewModel.meal.mealType },
                             set: { newValue in
@@ -59,27 +61,29 @@ struct MealDetailView: View {
                 .padding(.horizontal)
 
                 HStack {
-                    Text(NSLocalizedString("Due Date:", comment: "Due date label"))
+                    Text(
+                        String(localized: "meal.detail-view.due-date.label")
+                    )
                     if viewModel.meal.todoItem?.dueDate != nil {
                         DatePicker(
                             "",
                             selection: Binding(
                                 get: { viewModel.meal.todoItem?.dueDate ?? Date() },
-                                set: { newValue in
-                                    guard let currentUser = auth.currentUser else { return }
-                                    viewModel.meal.setDueDate(newValue, currentUser: currentUser)
-                                }
+                                set: { newValue in viewModel.setDueDate(newValue) }
                             ),
                             displayedComponents: .date
                         )
-                        Button(NSLocalizedString("Remove", comment: "Remove due date button")) {
+                        Button(
+                            String(localized: "meal.detail-view.due-date.remove")
+                        ) {
                             viewModel.removeDueDate()
                         }
                         .foregroundColor(.red)
                     } else {
-                        Button(NSLocalizedString("Set Due Date", comment: "Set due date button")) {
-                            guard let currentUser = auth.currentUser else { return }
-                            viewModel.meal.setDueDate(Date(), currentUser: currentUser)
+                        Button(
+                            String(localized: "meal.detail-view.due-date.set")
+                        ) {
+                            viewModel.setDueDate(Date())
                         }
                         .foregroundColor(.blue)
                     }
@@ -87,18 +91,18 @@ struct MealDetailView: View {
                 .padding()
             }
             .navigationTitle(
-                NSLocalizedString("Meal Details", comment: "Meal details screen title")
+                String(localized: "meal.detail-view.title")
             )
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button(NSLocalizedString("Cancel", comment: "Cancel button")) {
+                        Button(String(localized: "ui.toolbar.cancel")) {
                             viewModel.cancel()
                         }
                     }
 
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(NSLocalizedString("Save", comment: "Save button")) {
+                        Button(String(localized: "ui.toolbar.save")) {
                             viewModel.save()
                         }
                     }

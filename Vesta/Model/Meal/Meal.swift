@@ -9,11 +9,11 @@ enum MealType: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .breakfast:
-            return NSLocalizedString("breakfast", comment: "Breakfast meal type")
+            return String(localized: "meal.mealtype.breakfast")
         case .lunch:
-            return NSLocalizedString("lunch", comment: "Lunch meal type")
+            return String(localized: "meal.mealtype.lunch")
         case .dinner:
-            return NSLocalizedString("dinner", comment: "Dinner meal type")
+            return String(localized: "meal.mealtype.dinner")
         }
     }
 }
@@ -35,7 +35,7 @@ class Meal: SyncableEntity {
     var deletedAt: Date? = nil
     var expireAt: Date? = nil
 
-    @Relationship(deleteRule: .cascade, inverse: \TodoItem.meal)
+    @Relationship(deleteRule: .nullify, inverse: \TodoItem.meal)
     var todoItem: TodoItem?
 
     @Relationship(deleteRule: .nullify, inverse: \Recipe.meals)

@@ -45,9 +45,19 @@ class MealDetailViewModel: ObservableObject {
         meal.updateTodoItemDueDate(for: mealType, currentUser: currentUser)
     }
 
+    func setDueDate(_ date: Date) {
+        guard let currentUser = auth?.currentUser else { return }
+        meal.updateTodoItemDueDate(for: meal.mealType, on: date, currentUser: currentUser)
+    }
+
     func setMealType(_ mealType: MealType) {
         guard let currentUser = auth?.currentUser else { return }
         meal.setMealType(mealType, currentUser: currentUser)
+    }
+
+    func setScalingFactor(_ newValue: Double) {
+        guard let currentUser = auth?.currentUser else { return }
+        meal.setScalingFactor(newValue, currentUser: currentUser)
     }
 
     func removeDueDate() {

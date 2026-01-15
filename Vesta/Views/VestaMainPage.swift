@@ -43,8 +43,8 @@ struct VestaMainPage: View {
             }
             .onAppear {
                 // Handle data migrations first
-                MigrationManager.migrateToSyncableEntities(
-                    in: modelContext, currentUser: currentUser)
+                // MigrationManager.migrateToSyncableEntities(
+                //    in: modelContext, currentUser: currentUser)
 
                 // Apply sharing settings to all entities
                 let updatedCount = entitySharingService.updateEntitySharingStatus(for: currentUser)

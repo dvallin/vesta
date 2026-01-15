@@ -14,7 +14,7 @@ struct NextMealView: View {
                     Text(meal.recipe?.title ?? "No Recipe")
                         .font(.headline)
                     if let dueDate = meal.todoItem?.dueDate {
-                        Text(dueDate, style: .date)
+                        Text(dueDate.formattedForDisplay(includeTime: false))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -33,7 +33,7 @@ struct NextMealView: View {
 
 #Preview {
     let user = Fixtures.createUser()
-    
+
     List {
         NextMealView(
             meal: Meal(

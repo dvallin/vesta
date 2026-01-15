@@ -7,164 +7,11 @@ struct RecipeQuickFilterView: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                // Filter Mode Menu
-                Menu {
-                    ForEach(RecipeFilterMode.allCases, id: \.self) { mode in
-                        Button(action: {
-                            viewModel.filterMode = mode
-                            HapticFeedbackManager.shared.generateSelectionFeedback()
-                        }) {
-                            if viewModel.filterMode == mode {
-                                Label(mode.displayName, systemImage: "checkmark")
-                            } else {
-                                Text(mode.displayName)
-                            }
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Text(viewModel.filterMode.displayName)
-                        Image(systemName: "chevron.down")
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-                }
-
-                // Seasonality Filter
-                Menu {
-                    Button(action: {
-                        viewModel.selectedSeasonality = nil
-                        HapticFeedbackManager.shared.generateSelectionFeedback()
-                    }) {
-                        if viewModel.selectedSeasonality == nil {
-                            Label("All Seasons", systemImage: "checkmark")
-                        } else {
-                            Text("All Seasons")
-                        }
-                    }
-
-                    Divider()
-
-                    ForEach(Seasonality.allCases, id: \.self) { seasonality in
-                        Button(action: {
-                            viewModel.selectedSeasonality = seasonality
-                            HapticFeedbackManager.shared.generateSelectionFeedback()
-                        }) {
-                            if viewModel.selectedSeasonality == seasonality {
-                                Label(seasonality.displayName, systemImage: "checkmark")
-                            } else {
-                                Text(seasonality.displayName)
-                            }
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Text(seasonalityDisplayName)
-                        Image(systemName: "chevron.down")
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-                }
-
-                // Meal Type Filter
-                Menu {
-                    Button(action: {
-                        viewModel.selectedMealType = nil
-                        HapticFeedbackManager.shared.generateSelectionFeedback()
-                    }) {
-                        if viewModel.selectedMealType == nil {
-                            Label("All Meals", systemImage: "checkmark")
-                        } else {
-                            Text("All Meals")
-                        }
-                    }
-
-                    Divider()
-
-                    ForEach(MealType.allCases, id: \.self) { mealType in
-                        Button(action: {
-                            viewModel.selectedMealType = mealType
-                            HapticFeedbackManager.shared.generateSelectionFeedback()
-                        }) {
-                            if viewModel.selectedMealType == mealType {
-                                Label(mealType.displayName, systemImage: "checkmark")
-                            } else {
-                                Text(mealType.displayName)
-                            }
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Text(mealTypeDisplayName)
-                        Image(systemName: "chevron.down")
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-                }
-
-                // Tags Filter
-                Menu {
-                    Button(action: {
-                        viewModel.selectedTag = nil
-                        viewModel.showUntagged = false
-                        HapticFeedbackManager.shared.generateSelectionFeedback()
-                    }) {
-                        if viewModel.selectedTag == nil && !viewModel.showUntagged {
-                            Label("All Tags", systemImage: "checkmark")
-                        } else {
-                            Text("All Tags")
-                        }
-                    }
-
-                    Button(action: {
-                        viewModel.selectedTag = nil
-                        viewModel.showUntagged = true
-                        HapticFeedbackManager.shared.generateSelectionFeedback()
-                    }) {
-                        if viewModel.selectedTag == nil && viewModel.showUntagged {
-                            Label("No Tags", systemImage: "checkmark")
-                        } else {
-                            Text("No Tags")
-                        }
-                    }
-
-                    let availableTags = viewModel.fetchAllTags(from: recipes)
-                    if !availableTags.isEmpty {
-                        Divider()
-
-                        ForEach(availableTags, id: \.self) { tag in
-                            Button(action: {
-                                viewModel.selectedTag = tag
-                                viewModel.showUntagged = false
-                                HapticFeedbackManager.shared.generateSelectionFeedback()
-                            }) {
-                                if viewModel.selectedTag == tag {
-                                    Label(tag, systemImage: "checkmark")
-                                } else {
-                                    Text(tag)
-                                }
-                            }
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Text(tagDisplayName)
-                        Image(systemName: "chevron.down")
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-                }
-
-                // Clear Filters Button
-                if hasActiveFilters {
+                tagMenu
+                filterModeMenu
+                seasonalityMenu
+                mealTypeMenu
+                if viewModel.hasActiveFilters {
                     Button(action: {
                         viewModel.resetFilters()
                         HapticFeedbackManager.shared.generateSelectionFeedback()
@@ -186,15 +33,159 @@ struct RecipeQuickFilterView: View {
         .padding(.bottom, 8)
     }
 
-    private var seasonalityDisplayName: String {
-        viewModel.selectedSeasonality?.displayName
-            ?? NSLocalizedString("Season", comment: "Seasonality filter default text")
+    // MARK: - Tag Menu
+
+    private var tagMenu: some View {
+        Menu {
+            Button(action: viewModel.setShowAllTags) {
+                menuItem(
+                    title: NSLocalizedString("All Tags", comment: "Tag filter: all tags"),
+                    isSelected: viewModel.selectedTag == nil && !viewModel.showUntagged,
+                    shouldLocalize: false
+                )
+            }
+
+            Button(action: { viewModel.setShowUntagged(true) }) {
+                menuItem(
+                    title: NSLocalizedString("No Tags", comment: "Tag filter: no tags"),
+                    isSelected: viewModel.selectedTag == nil && viewModel.showUntagged,
+                    shouldLocalize: false
+                )
+            }
+
+            let availableTags = viewModel.fetchAllTags(from: recipes)
+            if !availableTags.isEmpty {
+                Divider()
+
+                ForEach(availableTags, id: \.self) { tag in
+                    Button(action: { viewModel.setTag(tag) }) {
+                        menuItem(
+                            title: tag,
+                            isSelected: viewModel.selectedTag == tag,
+                            shouldLocalize: false
+                        )
+                    }
+                }
+            }
+        } label: {
+            filterLabel(text: tagDisplayName)
+        }
     }
 
-    private var mealTypeDisplayName: String {
-        viewModel.selectedMealType?.displayName
-            ?? NSLocalizedString("Meal", comment: "Meal type filter default text")
+    // MARK: - Filter Mode Menu
+
+    private var filterModeMenu: some View {
+        Menu {
+            Button(action: { viewModel.setFilterMode(.all) }) {
+                menuItem(
+                    title: RecipeFilterMode.all.displayName,
+                    isSelected: viewModel.filterMode == .all,
+                    shouldLocalize: false
+                )
+            }
+
+            Divider()
+
+            ForEach(RecipeFilterMode.allCases.filter { $0 != .all }, id: \.self) { mode in
+                Button(action: { viewModel.setFilterMode(mode) }) {
+                    menuItem(
+                        title: mode.displayName,
+                        isSelected: viewModel.filterMode == mode,
+                        shouldLocalize: false
+                    )
+                }
+            }
+        } label: {
+            filterLabel(text: viewModel.filterMode.displayName)
+        }
     }
+
+    // MARK: - Seasonality Menu
+
+    private var seasonalityMenu: some View {
+        Menu {
+            Button(action: { viewModel.setSeasonality(nil) }) {
+                menuItem(
+                    title: NSLocalizedString(
+                        "All Seasons", comment: "Seasonality filter: all seasons"),
+                    isSelected: viewModel.selectedSeasonality == nil,
+                    shouldLocalize: false
+                )
+            }
+
+            Divider()
+
+            ForEach(Seasonality.allCases, id: \.self) { seasonality in
+                Button(action: { viewModel.setSeasonality(seasonality) }) {
+                    menuItem(
+                        title: seasonality.displayName,
+                        isSelected: viewModel.selectedSeasonality == seasonality,
+                        shouldLocalize: false
+                    )
+                }
+            }
+        } label: {
+            filterLabel(text: seasonalityDisplayName)
+        }
+    }
+
+    // MARK: - Meal Type Menu
+
+    private var mealTypeMenu: some View {
+        Menu {
+            Button(action: { viewModel.setMealType(nil) }) {
+                menuItem(
+                    title: NSLocalizedString("All Meals", comment: "Meal type filter: all meals"),
+                    isSelected: viewModel.selectedMealType == nil,
+                    shouldLocalize: false
+                )
+            }
+
+            Divider()
+
+            ForEach(MealType.allCases, id: \.self) { mealType in
+                Button(action: { viewModel.setMealType(mealType) }) {
+                    menuItem(
+                        title: mealType.displayName,
+                        isSelected: viewModel.selectedMealType == mealType,
+                        shouldLocalize: false
+                    )
+                }
+            }
+        } label: {
+            filterLabel(text: mealTypeDisplayName)
+        }
+    }
+
+    // MARK: - Helper Views
+
+    @ViewBuilder
+    private func menuItem(title: String, isSelected: Bool, shouldLocalize: Bool = true) -> some View
+    {
+        let displayTitle =
+            shouldLocalize
+            ? String(localized: LocalizedStringResource(stringLiteral: title))
+            : title
+
+        if isSelected {
+            Label(displayTitle, systemImage: "checkmark")
+        } else {
+            Text(displayTitle)
+        }
+    }
+
+    private func filterLabel(text: String) -> some View {
+        HStack {
+            Text(text)
+            Image(systemName: "chevron.down")
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(8)
+    }
+
+    // MARK: - Display Names
 
     private var tagDisplayName: String {
         if viewModel.showUntagged {
@@ -204,10 +195,14 @@ struct RecipeQuickFilterView: View {
             ?? NSLocalizedString("Tags", comment: "Tag filter default text")
     }
 
-    private var hasActiveFilters: Bool {
-        viewModel.filterMode != .all || viewModel.selectedSeasonality != nil
-            || viewModel.selectedMealType != nil || viewModel.selectedTag != nil
-            || viewModel.showUntagged
+    private var seasonalityDisplayName: String {
+        viewModel.selectedSeasonality?.displayName
+            ?? NSLocalizedString("Season", comment: "Seasonality filter default text")
+    }
+
+    private var mealTypeDisplayName: String {
+        viewModel.selectedMealType?.displayName
+            ?? NSLocalizedString("Meal", comment: "Meal type filter default text")
     }
 }
 

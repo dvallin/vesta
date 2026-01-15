@@ -12,18 +12,17 @@ enum FilterMode: String, CaseIterable {
     var displayName: String {
         switch self {
         case .all:
-            return NSLocalizedString("Show All", comment: "Filter mode: show all items")
-        case .next3Days:
-            return NSLocalizedString("Next 3 Days", comment: "Filter mode: show next 3 days items")
+            return String(localized: "todos.filter-mode.all")
         case .today:
-            return NSLocalizedString("Only Today", comment: "Filter mode: show only today's items")
+            return String(localized: "todos.filter-mode.today")
+        case .next3Days:
+            return String(localized: "todos.filter-mode.next-three")
         case .noDueDate:
-            return NSLocalizedString(
-                "No Due Date", comment: "Filter mode: show items with no due date")
+            return String(localized: "todos.filter-mode.no-due-date")
         case .overdue:
-            return NSLocalizedString("Overdue", comment: "Filter mode: show overdue items")
+            return String(localized: "todos.filter-mode.overdue")
         case .completed:
-            return NSLocalizedString("Completed", comment: "Filter mode: completed items")
+            return String(localized: "todos.filter-mode.completed")
         }
     }
 }
@@ -190,6 +189,7 @@ class TodoListViewModel: ObservableObject {
     }
 
     func showRescheduleOverdueTasks() {
+        reset()
         filterMode = .overdue
     }
 
@@ -246,28 +246,64 @@ class TodoListViewModel: ObservableObject {
             case .noDueDate:
                 return !item.isCompleted && item.dueDate == nil
             case .overdue:
-                return item.isOverdue
+                // this view should not show same day, so just isOverdue does not do it.
+                return item.needsReschedule
             case .completed:
                 return item.isCompleted
             }
         }
     }
 
-    var displayTitle: String {
-        switch filterMode {
-        case .all:
-            return NSLocalizedString("All Tasks", comment: "Filter mode: all tasks")
-        case .today:
-            return NSLocalizedString("Today's Tasks", comment: "Filter mode: today's tasks")
-        case .next3Days:
-            return NSLocalizedString("Next 3 Days Tasks", comment: "Filter mode: next 3 days tasks")
-        case .noDueDate:
-            return NSLocalizedString(
-                "No Due Date", comment: "Filter mode: tasks without due date")
-        case .overdue:
-            return NSLocalizedString("Overdue Tasks", comment: "Filter mode: overdue tasks")
-        case .completed:
-            return NSLocalizedString("Completed Tasks", comment: "Filter mode: completed tasks")
-        }
+    // MARK: - Filter Override Methods
+
+    /// Sets category and applies left-to-right override: resets filterMode to .all when selecting specific category
+    func setCategory(_ category: TodoItemCategory?) {
+        selectedCategory = category
+        showNoCategory = false
+
+        filterMode = .all
+        selectedPriority = nil
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    /// Sets showNoCategory and applies override logic
+    func setShowNoCategory(_ show: Bool) {
+        showNoCategory = show
+        selectedCategory = nil
+        filterMode = .all
+        selectedPriority = nil
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    /// Sets showAllCategories and clears category selection
+    func setShowAllCategories() {
+        showNoCategory = false
+        filterMode = .all
+        selectedCategory = nil
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    /// Sets filter mode - no override, maintains category selection
+    func setFilterMode(_ mode: FilterMode) {
+        filterMode = mode
+        selectedPriority = nil
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    /// Sets priority - no override, maintains category and filter mode selection
+    func setPriority(_ priority: Int?) {
+        selectedPriority = priority
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    var hasActiveFilters: Bool {
+        filterMode != .today || selectedCategory != nil
+            || selectedPriority != nil || searchText != ""
+            || showNoCategory
     }
 }

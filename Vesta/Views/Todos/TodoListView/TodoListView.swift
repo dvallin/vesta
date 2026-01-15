@@ -10,7 +10,7 @@ struct TodoListView: View {
     @StateObject var viewModel = TodoListViewModel()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             if viewModel.filterMode == .completed {
                 CompletedTodoListView(viewModel: viewModel)
             } else {

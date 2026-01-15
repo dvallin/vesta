@@ -11,7 +11,7 @@ struct AddFriendView: View {
     @StateObject private var viewModel = AddFriendViewModel()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 VStack(alignment: .leading) {
                     Text(
@@ -42,7 +42,8 @@ struct AddFriendView: View {
                             Text(NSLocalizedString("Search", comment: "Search button"))
                         }
                         .disabled(
-                            viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+                                .isEmpty)
                     }
                     .padding(.horizontal)
                 }
@@ -100,8 +101,12 @@ struct AddFriendView: View {
             }
             .alert(isPresented: $viewModel.showingInviteSent) {
                 Alert(
-                    title: Text(NSLocalizedString("Invite Sent", comment: "Invite sent alert title")),
-                    message: Text(NSLocalizedString("Your invite has been sent successfully", comment: "Invite sent message")),
+                    title: Text(
+                        NSLocalizedString("Invite Sent", comment: "Invite sent alert title")),
+                    message: Text(
+                        NSLocalizedString(
+                            "Your invite has been sent successfully", comment: "Invite sent message"
+                        )),
                     dismissButton: .default(Text("OK")) {
                         dismiss()
                     }
@@ -118,9 +123,9 @@ struct AddFriendView: View {
 struct UserSearchResultRow: View {
     let result: UserSearchResult
     let onSendInvite: () -> Void
-    
+
     @State private var isSending = false
-    
+
     var body: some View {
         HStack {
             if let photoURL = result.photoURL, !photoURL.isEmpty {
@@ -187,85 +192,90 @@ struct UserSearchResultRow: View {
 class AddFriendViewModel: ObservableObject {
     private let searchService = UserSearchService()
     private let logger = Logger(subsystem: "com.app.Vesta", category: "AddFriend")
-    
+
     var modelContext: ModelContext?
-    
+
     // Dependencies injected by the view
     private var inviteService: UserInviteService?
-    
+
     @Published var searchText: String = ""
     @Published var searchResults: [UserSearchResult] = []
     @Published var isSearching = false
     @Published var errorMessage: String? = nil
     @Published var hasSearched = false
     @Published var showingInviteSent = false
-    
+
     func configure(inviteService: UserInviteService) {
         self.inviteService = inviteService
     }
-    
+
     func searchForFriends() {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return }
-        
+
         isSearching = true
         errorMessage = nil
         hasSearched = true
-        
+
         searchService.searchUsers(query: query) { [weak self] result in
             guard let self = self else { return }
-            
+
             self.isSearching = false
-            
+
             switch result {
             case .success(let results):
                 self.searchResults = results
                 self.logger.info("Found \(results.count) users matching query: \(query)")
-                
+
             case .failure(let error):
                 self.searchResults = []
-                self.errorMessage = NSLocalizedString("Error searching users", comment: "Search error message")
+                self.errorMessage = NSLocalizedString(
+                    "Error searching users", comment: "Search error message")
                 self.logger.error("User search failed: \(error.localizedDescription)")
             }
         }
     }
-    
+
     func sendInvite(to user: UserSearchResult, currentUser: User?) {
         guard let currentUser = currentUser else {
-            errorMessage = NSLocalizedString("You need to be logged in to send invites", comment: "Not logged in error")
+            errorMessage = NSLocalizedString(
+                "You need to be logged in to send invites", comment: "Not logged in error")
             return
         }
-        
+
         guard let inviteService = inviteService else {
-            errorMessage = NSLocalizedString("Invite service not available", comment: "Service error")
+            errorMessage = NSLocalizedString(
+                "Invite service not available", comment: "Service error")
             logger.error("Invite service not configured")
             return
         }
-        
+
         // Check if already friends
         if currentUser.friends.contains(where: { $0.uid == user.uid }) {
             errorMessage = NSLocalizedString(
                 "This user is already in your friends list", comment: "Already friends error")
             return
         }
-        
+
         // Check if invite already sent
         if currentUser.sentInvites.contains(where: { $0.uid.contains(user.uid) }) {
             errorMessage = NSLocalizedString(
                 "You've already sent an invite to this user", comment: "Invite already sent error")
             return
         }
-        
+
         // Use the invite service to send the invite to Firebase
         inviteService.sendInvite(from: currentUser, to: user) { [weak self] success in
             guard let self = self else { return }
-            
+
             if success {
                 self.logger.info("Invite sent successfully to: \(user.uid)")
                 self.showingInviteSent = true
             } else {
-                self.errorMessage = inviteService.errorMessage ?? NSLocalizedString(
-                    "Failed to send invite", comment: "Send invite error")
+                self.errorMessage =
+                    inviteService.errorMessage
+                    ?? NSLocalizedString(
+                        "Failed to send invite", comment: "Send invite error")
                 self.logger.error("Failed to send invite: \(self.errorMessage ?? "Unknown error")")
             }
         }

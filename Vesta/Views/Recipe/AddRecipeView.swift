@@ -45,7 +45,7 @@ struct AddRecipeView: View {
     @FocusState private var focusedField: String?
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 RecipeTitleDetailsSection(
                     title: $title,

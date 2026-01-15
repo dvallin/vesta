@@ -191,4 +191,70 @@ class RecipeListViewModel: ObservableObject {
         selectedTag = nil
         showUntagged = false
     }
+
+    // MARK: - Filter Override Methods
+
+    /// Sets tag and applies left-to-right override: resets all other filters when selecting tag
+    func setTag(_ tag: String?) {
+        selectedTag = tag
+        showUntagged = false
+
+        filterMode = .all
+        selectedSeasonality = nil
+        selectedMealType = nil
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    /// Sets showUntagged and applies override logic
+    func setShowUntagged(_ show: Bool) {
+        showUntagged = show
+        selectedTag = nil
+
+        filterMode = .all
+        selectedSeasonality = nil
+        selectedMealType = nil
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    /// Sets showAllTags and clears tag selection
+    func setShowAllTags() {
+        selectedTag = nil
+        showUntagged = false
+
+        filterMode = .all
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    /// Sets filter mode and resets later filters
+    func setFilterMode(_ mode: RecipeFilterMode) {
+        filterMode = mode
+        selectedSeasonality = nil
+        selectedMealType = nil
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    /// Sets seasonality and resets later filters
+    func setSeasonality(_ seasonality: Seasonality?) {
+        selectedSeasonality = seasonality
+        selectedMealType = nil
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    /// Sets meal type - no override, maintains all other selections
+    func setMealType(_ mealType: MealType?) {
+        selectedMealType = mealType
+
+        HapticFeedbackManager.shared.generateSelectionFeedback()
+    }
+
+    var hasActiveFilters: Bool {
+        filterMode != .all || selectedSeasonality != nil
+            || selectedMealType != nil || selectedTag != nil
+            || showUntagged
+    }
 }
