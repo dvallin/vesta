@@ -55,12 +55,14 @@ struct StepInputRowView: View {
                     .submitLabel(.done)
                     .onSubmit {
                         onAdd()
+                        durationString = ""
                         focusedField = .instruction
                     }
 
                 Button(action: {
                     withAnimation {
                         onAdd()
+                        durationString = ""
                         focusedField = .instruction
                     }
                 }) {
