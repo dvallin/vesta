@@ -36,6 +36,29 @@ enum RecurrenceType: String, Codable, CaseIterable {
     }
 }
 
+enum DayOfWeek: String, Codable, CaseIterable {
+    case sunday, monday, tuesday, wednesday, thursday, friday, saturday
+
+    var displayName: String {
+        switch self {
+        case .sunday:
+            return String(localized: "todos.day-of-week.sunday")
+        case .monday:
+            return String(localized: "todos.day-of-week.monday")
+        case .tuesday:
+            return String(localized: "todos.day-of-week.tuesday")
+        case .wednesday:
+            return String(localized: "todos.day-of-week.wednesday")
+        case .thursday:
+            return String(localized: "todos.day-of-week.thursday")
+        case .friday:
+            return String(localized: "todos.day-of-week.friday")
+        case .saturday:
+            return String(localized: "todos.day-of-week.saturday")
+        }
+    }
+}
+
 @Model
 class TodoItem: SyncableEntity {
     @Attribute(.unique) var uid: String
@@ -48,6 +71,7 @@ class TodoItem: SyncableEntity {
     var recurrenceFrequency: RecurrenceFrequency?
     var recurrenceType: RecurrenceType?
     var recurrenceInterval: Int?
+    var repeatOn: [DayOfWeek]?
     var ignoreTimeComponent: Bool
     var priority: Int
 
@@ -57,13 +81,13 @@ class TodoItem: SyncableEntity {
     var deletedAt: Date? = nil
     var expireAt: Date? = nil
 
-    @Relationship(deleteRule: .noAction)
+    @Relationship(deleteRule: .nullify)
     var owner: User?
 
-    @Relationship
+    @Relationship(deleteRule: .cascade)
     var meal: Meal?
 
-    @Relationship(deleteRule: .nullify)
+    @Relationship(deleteRule: .cascade)
     var shoppingListItem: ShoppingListItem?
 
     @Relationship(deleteRule: .nullify)
@@ -81,6 +105,7 @@ class TodoItem: SyncableEntity {
         recurrenceFrequency: RecurrenceFrequency? = nil,
         recurrenceType: RecurrenceType? = nil,
         recurrenceInterval: Int? = nil,
+        repeatOn: [DayOfWeek]? = nil,
         ignoreTimeComponent: Bool = true,
         priority: Int = 4,
         meal: Meal? = nil,
@@ -95,6 +120,7 @@ class TodoItem: SyncableEntity {
         self.rescheduleDate = rescheduleDate
         self.isCompleted = isCompleted
         self.recurrenceFrequency = recurrenceFrequency
+        self.repeatOn = repeatOn
         self.recurrenceType = recurrenceType
         self.recurrenceInterval = recurrenceInterval
         self.ignoreTimeComponent = ignoreTimeComponent
@@ -111,6 +137,7 @@ class TodoItem: SyncableEntity {
         rescheduleDate: Date? = nil,
         recurrenceFrequency: RecurrenceFrequency? = nil,
         recurrenceType: RecurrenceType? = nil,
+        repeatOn: [DayOfWeek]? = nil,
         recurrenceInterval: Int? = nil,
         ignoreTimeComponent: Bool = true,
         priority: Int = 4,
@@ -122,8 +149,9 @@ class TodoItem: SyncableEntity {
         let item = TodoItem(
             title: title, details: details, dueDate: dueDate, rescheduleDate: rescheduleDate,
             recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType,
-            recurrenceInterval: recurrenceInterval, ignoreTimeComponent: ignoreTimeComponent,
-            priority: priority, category: category, owner: owner)
+            recurrenceInterval: recurrenceInterval, repeatOn: repeatOn,
+            ignoreTimeComponent: ignoreTimeComponent, priority: priority, category: category,
+            owner: owner)
         return item
     }
 
@@ -168,17 +196,84 @@ class TodoItem: SyncableEntity {
             return false
         }
 
-        guard let dueDate = rescheduleDate ?? dueDate else { return false }
-        let isInThePast = dueDate < Date()
         if ignoreTimeComponent {
-            return !self.isCompleted && isInThePast && !self.isToday
+            return !self.isCompleted && self.isInThePast && !self.isToday
         } else {
-            return !self.isCompleted && isInThePast
+            return !self.isCompleted && self.isInThePast
         }
+    }
+
+    var isInThePast: Bool {
+        guard let dueDate = rescheduleDate ?? dueDate else { return false }
+        return dueDate < Date()
     }
 
     var needsReschedule: Bool {
         return self.isOverdue && !self.isToday
+    }
+
+    var lastCompletionDate: Date? {
+        events
+            .filter { $0.eventType == .completed }
+            .compactMap { $0.completedAt }
+            .max()
+    }
+
+    func isWithinStreakTolerance(date: Date, targetDate: Date) -> Bool {
+        let tolerance =
+            Calendar.current.date(byAdding: .day, value: 2, to: targetDate) ?? targetDate
+        return date <= tolerance
+    }
+
+    var isHabitItem: Bool {
+        return self.recurrenceFrequency != nil
+    }
+
+    var streakMissed: Bool {
+        if self.isFrozen {
+            return false
+        }
+        guard let dueDate = dueDate else { return true }
+        return self.isInThePast && !isWithinStreakTolerance(date: Date(), targetDate: dueDate)
+    }
+
+    var currentStreak: Int {
+        if self.streakMissed {
+            return 0
+        }
+
+        let sortedEvents = events.sorted { $0.completedAt < $1.completedAt }
+        guard !sortedEvents.isEmpty else { return 0 }
+
+        var streak = 0
+        for event in sortedEvents.reversed() {
+            if event.eventType == .completed && wasCompletedWithinReasonableTime(event) {
+                streak += 1
+            } else if event.eventType == .skipped {
+                // Skipped tasks don't break the streak, just don't add to it
+                continue
+            } else {
+                // Late completion or other event types break the streak
+                break
+            }
+        }
+        return streak
+    }
+
+    private func wasCompletedWithinReasonableTime(_ event: TodoEvent) -> Bool {
+        guard let date = event.completedAt as Date? else {
+            return false
+        }
+        guard let dueDate = event.previousDueDate else {
+            return false
+        }
+        return isWithinStreakTolerance(date: date, targetDate: dueDate)
+    }
+
+    var health: Int {
+        let S_CAP = 5.0
+        let streak = Double(self.currentStreak)
+        return Int(100 * (streak / (streak + S_CAP)))
     }
 
     func markAsDone(currentUser: User) {
@@ -281,6 +376,11 @@ class TodoItem: SyncableEntity {
         self.markAsDirty()
     }
 
+    func setRepeatOn(repeatOn: [DayOfWeek]?, currentUser: User) {
+        self.repeatOn = repeatOn
+        self.markAsDirty()
+    }
+
     func setIgnoreTimeComponent(ignoreTimeComponent: Bool, currentUser: User) {
         self.ignoreTimeComponent = ignoreTimeComponent
 
@@ -309,10 +409,72 @@ class TodoItem: SyncableEntity {
     private func updateDueDate(
         for frequency: RecurrenceFrequency, basedOn baseDate: Date, currentUser: User
     ) {
-        let calendar = Calendar.current
         let interval = recurrenceInterval ?? 1
+
+        let newDueDate: Date
+
+        newDueDate = findNextOccurrence(
+            from: baseDate, frequency: frequency, interval: interval, repeatOn: repeatOn)
+
+        if ignoreTimeComponent {
+            self.dueDate = DateUtils.calendar.startOfDay(for: newDueDate)
+        } else {
+            self.dueDate = newDueDate
+        }
+
+        self.markAsDirty()
+    }
+
+    private func findNextOccurrence(
+        from baseDate: Date, frequency: RecurrenceFrequency, interval: Int,
+        repeatOn: [DayOfWeek]? = nil
+    ) -> Date {
+        let calendar = Calendar.current
         let now = Date()
 
+        // Special handling for weekly fixed recurrence with repeatOn days
+        if frequency == .weekly, let repeatOn = repeatOn, !repeatOn.isEmpty {
+            let targetWeekdays = repeatOn.map { dayOfWeek in
+                switch dayOfWeek {
+                case .sunday: return 1
+                case .monday: return 2
+                case .tuesday: return 3
+                case .wednesday: return 4
+                case .thursday: return 5
+                case .friday: return 6
+                case .saturday: return 7
+                }
+            }
+
+            let maxSearchDays = 7 * interval + 7
+            for dayOffset in 1...maxSearchDays {
+                guard
+                    let candidateDate = calendar.date(
+                        byAdding: .day, value: dayOffset, to: baseDate)
+                else { continue }
+                let weekday = calendar.component(.weekday, from: candidateDate)
+
+                if targetWeekdays.contains(weekday) && candidateDate > now {
+                    // Check if this candidate respects the interval requirement
+                    let weeksSinceBase =
+                        calendar.dateComponents([.weekOfYear], from: baseDate, to: candidateDate)
+                        .weekOfYear ?? 0
+
+                    if weeksSinceBase % interval == 0 {
+                        // Preserve time from original baseDate
+                        let preservedTime =
+                            DateUtils.preserveTime(from: baseDate, applying: candidateDate)
+                            ?? candidateDate
+                        return preservedTime
+                    }
+                }
+            }
+
+            // Fallback: if nothing found, return base date plus interval weeks
+            return calendar.date(byAdding: .weekOfYear, value: interval, to: baseDate) ?? baseDate
+        }
+
+        // Standard recurrence logic for all other cases
         // Get calendar component based on frequency
         let component: Calendar.Component = {
             switch frequency {
@@ -333,13 +495,7 @@ class TodoItem: SyncableEntity {
                 calendar.date(byAdding: component, value: interval, to: newDueDate) ?? newDueDate
         }
 
-        if ignoreTimeComponent {
-            self.dueDate = DateUtils.calendar.startOfDay(for: newDueDate)
-        } else {
-            self.dueDate = newDueDate
-        }
-
-        self.markAsDirty()
+        return newDueDate
     }
 
     // MARK: - Undo Last Event
@@ -365,83 +521,39 @@ class TodoItem: SyncableEntity {
         self.events.removeLast()
     }
 
-    // MARK: - Completion Analytics
-
-    /// Computes the time intervals between completion and the previous due date for all completed events.
-    var completionDistances: [TimeInterval] {
-        events
-            .filter { $0.eventType == .completed }
-            .compactMap { event in
-                guard let completedAt = event.completedAt as Date?,
-                    let previousDueDate = event.previousDueDate
-                else { return nil }
-                return completedAt.timeIntervalSince(previousDueDate)
-            }
-    }
-
-    var meanCompletionDistance: TimeInterval? {
-        let distances = completionDistances
-        guard !distances.isEmpty else { return nil }
-        return distances.reduce(0, +) / Double(distances.count)
-    }
-
-    var medianCompletionDistance: TimeInterval? {
-        let distances = completionDistances.sorted()
-        guard !distances.isEmpty else { return nil }
-        let mid = distances.count / 2
-        if distances.count % 2 == 0 {
-            return (distances[mid - 1] + distances[mid]) / 2
-        } else {
-            return distances[mid]
-        }
-    }
-
-    /// Returns the date of the last completion event, or nil if never completed
-    var lastCompletionDate: Date? {
-        events
-            .filter { $0.eventType == .completed }
-            .compactMap { $0.completedAt }
-            .max()
-    }
-
-    var varianceCompletionDistance: TimeInterval? {
-        let distances = completionDistances
-        guard let mean = meanCompletionDistance, !distances.isEmpty else { return nil }
-        if distances.count == 1 {
-            return 0
-        }
-        let variance =
-            distances.map { pow($0 - mean, 2) }.reduce(0, +) / Double(distances.count - 1)
-        return variance
-    }
-
     // MARK: - Soft Delete Operations
 
     func softDelete(currentUser: User) {
+        // Early return if already soft deleted
+        guard self.deletedAt == nil else { return }
+
         self.deletedAt = Date()
         self.setExpiration()
         self.markAsDirty()
 
-        // Soft delete related entities only if they're not already deleted
-        if let meal = self.meal, meal.deletedAt == nil {
+        if let meal = self.meal {
             meal.softDelete(currentUser: currentUser)
         }
-        if let shoppingListItem = self.shoppingListItem, shoppingListItem.deletedAt == nil {
+        if let shoppingListItem = self.shoppingListItem {
             shoppingListItem.softDelete(currentUser: currentUser)
         }
     }
 
     func restore(currentUser: User) {
+        // Early return if not soft deleted
+        guard self.deletedAt != nil else { return }
+
         self.deletedAt = nil
         self.clearExpiration()
         self.markAsDirty()
 
-        // Restore related entities only if they're currently deleted
-        if let meal = self.meal, meal.deletedAt != nil {
+        if let meal = self.meal {
             meal.restore(currentUser: currentUser)
         }
-        if let shoppingListItem = self.shoppingListItem, shoppingListItem.deletedAt != nil {
+        if let shoppingListItem = self.shoppingListItem {
             shoppingListItem.restore(currentUser: currentUser)
         }
+
     }
+
 }

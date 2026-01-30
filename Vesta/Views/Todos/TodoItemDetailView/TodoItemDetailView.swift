@@ -26,6 +26,7 @@ struct TodoItemDetailView: View {
                     recurrenceFrequency: $viewModel.tempRecurrenceFrequency,
                     recurrenceInterval: $viewModel.tempRecurrenceInterval,
                     recurrenceType: $viewModel.tempRecurrenceType,
+                    repeatOn: $viewModel.tempRepeatOn,
                     ignoreTimeComponent: $viewModel.tempIgnoreTimeComponent
                 )
 
@@ -39,46 +40,27 @@ struct TodoItemDetailView: View {
                     }
                 )
 
-                // --- Completion Statistics Section ---
-                Section(
-                    NSLocalizedString(
-                        "Completion Statistics", comment: "Completion statistics section header")
-                ) {
-                    if let mean = viewModel.item.meanCompletionDistance {
+                if viewModel.item.isHabitItem {
+                    Section(
+                        NSLocalizedString(
+                            "Habits", comment: "Habits section header")
+                    ) {
                         HStack {
                             Text(
                                 NSLocalizedString(
-                                    "Mean Completion Time", comment: "Mean completion time label"))
+                                    "Health", comment: "Health label"))
                             Spacer()
-                            Text(formatDistance(mean))
+                            Text("\(viewModel.item.health)%")
                                 .foregroundColor(.secondary)
                         }
-                    }
-                    if let median = viewModel.item.medianCompletionDistance {
                         HStack {
                             Text(
                                 NSLocalizedString(
-                                    "Median Completion Time",
-                                    comment: "Median completion time label"))
+                                    "Current Streak", comment: "Current streak label"))
                             Spacer()
-                            Text(formatDistance(median))
+                            Text("\(viewModel.item.currentStreak)")
                                 .foregroundColor(.secondary)
                         }
-                    }
-                    if let variance = viewModel.item.varianceCompletionDistance {
-                        HStack {
-                            Text(NSLocalizedString("Variance", comment: "Variance label"))
-                            Spacer()
-                            Text(formatDistance(variance, isVariance: true))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    if viewModel.item.completionDistances.isEmpty {
-                        Text(
-                            NSLocalizedString(
-                                "No completion data yet.", comment: "No completion data message")
-                        )
-                        .foregroundColor(.secondary)
                     }
                 }
 

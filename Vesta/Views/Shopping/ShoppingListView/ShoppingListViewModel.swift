@@ -84,7 +84,7 @@ class ShoppingListViewModel: ObservableObject {
         _ item: ShoppingListItem, undoAction: @escaping (ShoppingListItem, UUID) -> Void
     ) {
         guard let currentUser = auth?.currentUser else { return }
-        item.softDelete(currentUser: currentUser)
+        item.todoItem?.softDelete(currentUser: currentUser)
 
         if saveContext() {
             HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)

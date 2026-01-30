@@ -17,6 +17,7 @@ class TodoItemDetailViewModel: ObservableObject {
     @Published var tempRecurrenceFrequency: RecurrenceFrequency?
     @Published var tempRecurrenceInterval: Int?
     @Published var tempRecurrenceType: RecurrenceType?
+    @Published var tempRepeatOn: [DayOfWeek]?
     @Published var tempIgnoreTimeComponent: Bool
     @Published var tempIsCompleted: Bool
     @Published var tempPriority: Int
@@ -36,6 +37,7 @@ class TodoItemDetailViewModel: ObservableObject {
         self.tempRecurrenceFrequency = item.recurrenceFrequency
         self.tempRecurrenceInterval = item.recurrenceInterval
         self.tempRecurrenceType = item.recurrenceType
+        self.tempRepeatOn = item.repeatOn
         self.tempIgnoreTimeComponent = item.ignoreTimeComponent
         self.tempIsCompleted = item.isCompleted
         self.tempPriority = item.priority
@@ -58,6 +60,7 @@ class TodoItemDetailViewModel: ObservableObject {
             || tempRecurrenceFrequency != item.recurrenceFrequency
             || tempRecurrenceInterval != item.recurrenceInterval
             || tempRecurrenceType != item.recurrenceType
+            || tempRepeatOn != item.repeatOn
             || tempIgnoreTimeComponent != item.ignoreTimeComponent
             || tempIsCompleted != item.isCompleted
             || tempPriority != item.priority
@@ -120,6 +123,10 @@ class TodoItemDetailViewModel: ObservableObject {
         }
         if tempRecurrenceType != item.recurrenceType {
             item.setRecurrenceType(recurrenceType: tempRecurrenceType, currentUser: currentUser)
+        }
+        if tempRepeatOn != item.repeatOn {
+            item.repeatOn = tempRepeatOn
+            item.markAsDirty()
         }
         if tempIgnoreTimeComponent != item.ignoreTimeComponent {
             item.setIgnoreTimeComponent(

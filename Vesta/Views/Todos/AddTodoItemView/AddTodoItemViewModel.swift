@@ -14,6 +14,7 @@ class AddTodoItemViewModel: ObservableObject {
     @Published var recurrenceFrequency: RecurrenceFrequency? = nil
     @Published var recurrenceInterval: Int? = nil
     @Published var recurrenceType: RecurrenceType? = nil
+    @Published var repeatOn: [DayOfWeek]? = nil
     @Published var ignoreTimeComponent: Bool = true
     @Published var priority: Int = 4
     @Published var category: String = ""
@@ -68,7 +69,7 @@ class AddTodoItemViewModel: ObservableObject {
             let todoItem = TodoItem.create(
                 title: title, details: details, dueDate: dueDate,
                 recurrenceFrequency: recurrenceFrequency, recurrenceType: recurrenceType,
-                recurrenceInterval: recurrenceInterval,
+                repeatOn: repeatOn, recurrenceInterval: recurrenceInterval,
                 ignoreTimeComponent: ignoreTimeComponent,
                 priority: priority,
                 category: categoryEntity,

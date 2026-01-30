@@ -42,9 +42,9 @@ struct VestaMainPage: View {
                 }
             }
             .onAppear {
-                // Handle data migrations first
-                // MigrationManager.migrateToSyncableEntities(
-                //    in: modelContext, currentUser: currentUser)
+                // Validate Data Model -- this checks for broken relationships
+                MigrationManager.validateModel(
+                    in: modelContext, currentUser: currentUser)
 
                 // Apply sharing settings to all entities
                 let updatedCount = entitySharingService.updateEntitySharingStatus(for: currentUser)

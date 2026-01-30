@@ -114,29 +114,39 @@ class CleanupService: ObservableObject {
         var totalDeleted = 0
         var totalSoftDeleted = 0
 
-        // First, auto-soft-delete completed todo items after 90 days
-        totalSoftDeleted += await autoSoftDeleteCompletedTodos()
-
         // Then clean up each type of syncable entity (hard delete after 30 days)
         // Note: Firestore cleanup will happen automatically via TTL on expireAt field
         totalDeleted += await cleanupEntities(of: Meal.self, deletedBefore: cutoffDate)
         totalDeleted += await cleanupEntities(of: Recipe.self, deletedBefore: cutoffDate)
-        totalDeleted += await cleanupEntities(of: TodoItem.self, deletedBefore: cutoffDate)
         totalDeleted += await cleanupEntities(of: ShoppingListItem.self, deletedBefore: cutoffDate)
+        totalDeleted += await cleanupEntities(of: TodoItem.self, deletedBefore: cutoffDate)
         totalDeleted += await cleanupEntities(of: User.self, deletedBefore: cutoffDate)
-
+        
         // Save changes if any deletions occurred
-        if totalDeleted > 0 || totalSoftDeleted > 0 {
+        if totalDeleted > 0 {
             do {
                 try modelContext.save()
                 logger.info(
-                    "Successfully completed local cleanup. Hard deleted \(totalDeleted) entities, soft deleted \(totalSoftDeleted) completed todos. Firestore cleanup handled automatically via TTL."
+                    "Successfully completed local cleanup. Hard deleted \(totalDeleted) entities."
                 )
             } catch {
                 logger.error("Failed to save cleanup changes: \(error.localizedDescription)")
             }
-        } else {
-            logger.info("No entities found for local cleanup")
+        }
+        
+        // auto-soft-delete completed todo items after 90 days
+        totalSoftDeleted += await autoSoftDeleteCompletedTodos()
+        
+        // Save changes if any deletions occurred
+        if totalSoftDeleted > 0 {
+            do {
+                try modelContext.save()
+                logger.info(
+                    "Successfully completed local cleanup. Soft deleted \(totalSoftDeleted) completed todos."
+                )
+            } catch {
+                logger.error("Failed to save cleanup changes: \(error.localizedDescription)")
+            }
         }
 
         return totalDeleted + totalSoftDeleted

@@ -109,7 +109,7 @@ class MealPlanViewModel: ObservableObject {
             NotificationManager.shared.cancelNotification(for: todoItem)
         }
 
-        meal.softDelete(currentUser: currentUser)
+        meal.todoItem?.softDelete(currentUser: currentUser)
 
         if saveContext() {
             HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)

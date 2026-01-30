@@ -25,6 +25,7 @@ extension TodoItem {
         dto["recurrenceFrequency"] = recurrenceFrequency?.rawValue as Any
         dto["recurrenceType"] = recurrenceType?.rawValue as Any
         dto["recurrenceInterval"] = recurrenceInterval as Any
+        dto["repeatOn"] = repeatOn?.map { $0.rawValue } as Any
 
         // Add relationship references (always include to ensure nil values are synced)
         dto["categoryName"] = category?.name as Any
@@ -84,6 +85,13 @@ extension TodoItem {
         }
         if dto.keys.contains("recurrenceInterval") {
             self.recurrenceInterval = dto["recurrenceInterval"] as? Int
+        }
+        if dto.keys.contains("repeatOn") {
+            if let repeatOnRaw = dto["repeatOn"] as? [String] {
+                self.repeatOn = repeatOnRaw.compactMap { DayOfWeek(rawValue: $0) }
+            } else {
+                self.repeatOn = nil
+            }
         }
 
         // Update events from DTOs (was completionEvents)

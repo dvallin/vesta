@@ -21,46 +21,53 @@ struct TodoListItem: View {
             }
             .buttonStyle(BorderlessButtonStyle())
 
-            Button(action: selectItem) {
-                VStack(alignment: .leading) {
+            VStack(alignment: .leading) {
+                HStack {
                     Text(item.title)
                         .font(.headline)
-                    HStack(alignment: .bottom) {
-                        if let dueDate = item.dueDate {
-                            if item.recurrenceFrequency != nil {
-                                Image(systemName: "repeat")
+                    Spacer()
+                    if item.isHabitItem && item.currentStreak > 0 {
+                        HealthScoreIndicator(health: item.health)
+                    }
+                }
+                HStack(alignment: .bottom) {
+                    if let dueDate = item.dueDate {
+                        if item.recurrenceFrequency != nil {
+                            Image(systemName: "repeat")
+                                .foregroundColor(.secondary)
+                            if item.recurrenceType == .fixed {
+                                Image(systemName: "lock")
                                     .foregroundColor(.secondary)
-                                if item.recurrenceType == .fixed {
-                                    Image(systemName: "lock")
-                                        .foregroundColor(.secondary)
-                                }
                             }
-                            Text(
-                                dueDate.formattedForDisplay(includeTime: !item.ignoreTimeComponent)
-                            )
-                            .font(.subheadline)
-                            .foregroundColor(item.isOverdue ? .red : .secondary)
-                        } else {
-                            Text(
-                                NSLocalizedString(
-                                    "No due date", comment: "Label for items without due date")
-                            )
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
                         }
-                        Spacer()
-                        if let category = item.category {
-                            Text(category.name)
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .cornerRadius(5)
-                                .background(Color.blue.opacity(0.1))
-                                .foregroundColor(.blue)
-                        }
+                        Text(
+                            dueDate.formattedForDisplay(includeTime: !item.ignoreTimeComponent)
+                        )
+                        .font(.subheadline)
+                        .foregroundColor(item.isOverdue ? .red : .secondary)
+                    } else {
+                        Text(
+                            NSLocalizedString(
+                                "No due date", comment: "Label for items without due date")
+                        )
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    if let category = item.category {
+                        Text(category.name)
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .cornerRadius(5)
+                            .background(Color.blue.opacity(0.1))
+                            .foregroundColor(.blue)
                     }
                 }
             }
-            .buttonStyle(PlainButtonStyle())
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            selectItem()
         }
     }
 

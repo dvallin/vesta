@@ -35,6 +35,7 @@ struct AddTodoItemView: View {
                     recurrenceFrequency: $viewModel.recurrenceFrequency,
                     recurrenceInterval: $viewModel.recurrenceInterval,
                     recurrenceType: $viewModel.recurrenceType,
+                    repeatOn: $viewModel.repeatOn,
                     ignoreTimeComponent: $viewModel.ignoreTimeComponent
                 )
 
