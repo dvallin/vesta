@@ -654,4 +654,165 @@ final class TodoItemTests: XCTestCase {
         XCTAssertEqual(
             expectedDateComponents.day, actualComponents.day, "The day of month should match")
     }
+
+    // MARK: - Adaptive Tolerance Tests
+
+    func testAdaptiveToleranceForDailyHabits() throws {
+        let dailyTask = TodoItem(
+            title: "Daily Exercise",
+            dueDate: Date(),
+            recurrenceFrequency: .daily,
+            recurrenceType: .flexible,
+            owner: user
+        )
+
+        // Daily habits should have 1 day tolerance (with 30% flexible bonus = 1.3, rounded down to 1)
+        XCTAssertEqual(dailyTask.currentToleranceDays, 1)
+
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
+        let dayAfterTomorrow = Calendar.current.date(byAdding: .day, value: 2, to: Date())!
+
+        // Should be within tolerance 1 day after due date
+        XCTAssertTrue(dailyTask.isWithinStreakTolerance(date: tomorrow, targetDate: yesterday))
+
+        // Should NOT be within tolerance 2 days after due date
+        XCTAssertFalse(
+            dailyTask.isWithinStreakTolerance(date: dayAfterTomorrow, targetDate: yesterday))
+    }
+
+    func testAdaptiveToleranceForWeeklyTasks() throws {
+        let weeklyTask = TodoItem(
+            title: "Weekly Meeting",
+            dueDate: Date(),
+            recurrenceFrequency: .weekly,
+            recurrenceType: .flexible,
+            owner: user
+        )
+
+        // Weekly tasks should have 2 days base * 1.3 flexible = 2.6, rounded down to 2
+        XCTAssertEqual(weeklyTask.currentToleranceDays, 2)
+
+        let baseDate = Date()
+        let twoDaysLater = Calendar.current.date(byAdding: .day, value: 2, to: baseDate)!
+        let threeDaysLater = Calendar.current.date(byAdding: .day, value: 3, to: baseDate)!
+
+        // Should be within tolerance 2 days after due date
+        XCTAssertTrue(weeklyTask.isWithinStreakTolerance(date: twoDaysLater, targetDate: baseDate))
+
+        // Should NOT be within tolerance 3 days after due date
+        XCTAssertFalse(
+            weeklyTask.isWithinStreakTolerance(date: threeDaysLater, targetDate: baseDate))
+    }
+
+    func testAdaptiveToleranceForMonthlyTasks() throws {
+        let monthlyTask = TodoItem(
+            title: "Monthly Review",
+            dueDate: Date(),
+            recurrenceFrequency: .monthly,
+            recurrenceType: .flexible,
+            owner: user
+        )
+
+        // Monthly tasks should have 5 days base * 1.3 flexible = 6.5, rounded down to 6
+        XCTAssertEqual(monthlyTask.currentToleranceDays, 6)
+
+        let baseDate = Date()
+        let sixDaysLater = Calendar.current.date(byAdding: .day, value: 6, to: baseDate)!
+        let sevenDaysLater = Calendar.current.date(byAdding: .day, value: 7, to: baseDate)!
+
+        // Should be within tolerance 6 days after due date
+        XCTAssertTrue(monthlyTask.isWithinStreakTolerance(date: sixDaysLater, targetDate: baseDate))
+
+        // Should NOT be within tolerance 7 days after due date
+        XCTAssertFalse(
+            monthlyTask.isWithinStreakTolerance(date: sevenDaysLater, targetDate: baseDate))
+    }
+
+    func testAdaptiveToleranceForYearlyTasks() throws {
+        let yearlyTask = TodoItem(
+            title: "Annual Checkup",
+            dueDate: Date(),
+            recurrenceFrequency: .yearly,
+            recurrenceType: .flexible,
+            owner: user
+        )
+
+        // Yearly tasks should have 14 days base * 1.3 flexible = 18.2, rounded down to 18
+        XCTAssertEqual(yearlyTask.currentToleranceDays, 18)
+
+        let baseDate = Date()
+        let eighteenDaysLater = Calendar.current.date(byAdding: .day, value: 18, to: baseDate)!
+        let nineteenDaysLater = Calendar.current.date(byAdding: .day, value: 19, to: baseDate)!
+
+        // Should be within tolerance 18 days after due date
+        XCTAssertTrue(
+            yearlyTask.isWithinStreakTolerance(date: eighteenDaysLater, targetDate: baseDate))
+
+        // Should NOT be within tolerance 19 days after due date
+        XCTAssertFalse(
+            yearlyTask.isWithinStreakTolerance(date: nineteenDaysLater, targetDate: baseDate))
+    }
+
+    func testFixedVsFlexibleToleranceDifference() throws {
+        let fixedWeeklyTask = TodoItem(
+            title: "Fixed Weekly Meeting",
+            dueDate: Date(),
+            recurrenceFrequency: .weekly,
+            recurrenceType: .fixed,
+            owner: user
+        )
+
+        let flexibleWeeklyTask = TodoItem(
+            title: "Flexible Weekly Exercise",
+            dueDate: Date(),
+            recurrenceFrequency: .weekly,
+            recurrenceType: .flexible,
+            owner: user
+        )
+
+        // Fixed should have less tolerance than flexible
+        // Fixed: 2 days * 0.7 = 1.4, rounded down to 1
+        // Flexible: 2 days * 1.3 = 2.6, rounded down to 2
+        XCTAssertEqual(fixedWeeklyTask.currentToleranceDays, 1)
+        XCTAssertEqual(flexibleWeeklyTask.currentToleranceDays, 2)
+        XCTAssertLessThan(
+            fixedWeeklyTask.currentToleranceDays, flexibleWeeklyTask.currentToleranceDays)
+    }
+
+    func testNonRecurringItemTolerance() throws {
+        let oneTimeTask = TodoItem(
+            title: "One-time task",
+            dueDate: Date(),
+            owner: user
+        )
+
+        // Non-recurring items should get default 2-day tolerance
+        XCTAssertEqual(oneTimeTask.currentToleranceDays, 2)
+
+        let baseDate = Date()
+        let twoDaysLater = Calendar.current.date(byAdding: .day, value: 2, to: baseDate)!
+        let threeDaysLater = Calendar.current.date(byAdding: .day, value: 3, to: baseDate)!
+
+        // Should be within tolerance 2 days after due date
+        XCTAssertTrue(oneTimeTask.isWithinStreakTolerance(date: twoDaysLater, targetDate: baseDate))
+
+        // Should NOT be within tolerance 3 days after due date
+        XCTAssertFalse(
+            oneTimeTask.isWithinStreakTolerance(date: threeDaysLater, targetDate: baseDate))
+    }
+
+    func testMinimumToleranceIsAlwaysOne() throws {
+        // Even with the strictest settings, tolerance should never be less than 1 day
+        let strictDailyTask = TodoItem(
+            title: "Very Strict Daily Task",
+            dueDate: Date(),
+            recurrenceFrequency: .daily,
+            recurrenceType: .fixed,
+            owner: user
+        )
+
+        // Daily (1 day) * fixed (0.7) = 0.7, but should be rounded up to minimum of 1
+        XCTAssertEqual(strictDailyTask.currentToleranceDays, 1)
+    }
 }

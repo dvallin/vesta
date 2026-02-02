@@ -61,6 +61,29 @@ struct TodoItemDetailView: View {
                             Text("\(viewModel.item.currentStreak)")
                                 .foregroundColor(.secondary)
                         }
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack {
+                                Text(
+                                    NSLocalizedString(
+                                        "Tolerance", comment: "Streak tolerance label"))
+                                Spacer()
+                                Text(
+                                    String.localizedStringWithFormat(
+                                        NSLocalizedString(
+                                            "%d days", comment: "Days tolerance format"),
+                                        viewModel.item.currentToleranceDays)
+                                )
+                                .foregroundColor(.secondary)
+                            }
+                            Text(
+                                NSLocalizedString(
+                                    "How many days late you can complete this without breaking your streak",
+                                    comment: "Tolerance explanation text")
+                            )
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.leading, 0)
+                        }
                     }
                 }
 

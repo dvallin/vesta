@@ -219,10 +219,59 @@ class TodoItem: SyncableEntity {
             .max()
     }
 
+    /// Checks if a completion date is within acceptable tolerance of the target due date
+    /// Uses adaptive tolerance based on recurrence frequency and type
     func isWithinStreakTolerance(date: Date, targetDate: Date) -> Bool {
+        let toleranceDays = calculateAdaptiveTolerance()
         let tolerance =
-            Calendar.current.date(byAdding: .day, value: 2, to: targetDate) ?? targetDate
+            Calendar.current.date(byAdding: .day, value: toleranceDays, to: targetDate)
+            ?? targetDate
         return date <= tolerance
+    }
+
+    /// Calculates adaptive tolerance in days based on recurrence frequency and type
+    /// - Daily habits: 1 day (strict for consistency)
+    /// - Weekly tasks: 2 days (allows some flexibility)
+    /// - Monthly tasks: 5 days (reasonable for larger intervals)
+    /// - Yearly tasks: 14 days (generous for infrequent tasks)
+    ///
+    /// Modifiers:
+    /// - Fixed recurrence: 70% of base (stricter scheduling)
+    /// - Flexible recurrence: 130% of base (more adaptable)
+    private func calculateAdaptiveTolerance() -> Int {
+        guard let frequency = recurrenceFrequency else {
+            return 2  // Default for non-recurring items
+        }
+
+        let baseToleranceByFrequency: Int
+        switch frequency {
+        case .daily:
+            baseToleranceByFrequency = 1  // Daily habits should be stricter
+        case .weekly:
+            baseToleranceByFrequency = 2  // Weekly tasks get 2 days
+        case .monthly:
+            baseToleranceByFrequency = 5  // Monthly tasks get more flexibility
+        case .yearly:
+            baseToleranceByFrequency = 14  // Yearly tasks get 2 weeks
+        }
+
+        // Adjust based on recurrence type
+        let typeMultiplier: Double
+        switch recurrenceType {
+        case .fixed:
+            typeMultiplier = 0.7  // Fixed recurrences should be stricter
+        case .flexible:
+            typeMultiplier = 1.3  // Flexible recurrences get more tolerance
+        case .none:
+            typeMultiplier = 1.0  // Default multiplier
+        }
+
+        return max(1, Int(Double(baseToleranceByFrequency) * typeMultiplier))
+    }
+
+    /// Returns the current tolerance in days for this item (useful for debugging/UI)
+    var currentToleranceDays: Int {
+        return calculateAdaptiveTolerance()
     }
 
     var isHabitItem: Bool {

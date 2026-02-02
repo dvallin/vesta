@@ -250,6 +250,9 @@
     "%@ skipped" : {
       "comment" : "Toast message for skipping todo"
     },
+    "%d days" : {
+      "comment" : "Days tolerance format"
+    },
     "%dd" : {
       "comment" : "Badge text for future days",
       "localizations" : {
@@ -3234,6 +3237,9 @@
     },
     "Holiday since: %@" : {
       "comment" : "Holiday start date"
+    },
+    "How many days late you can complete this without breaking your streak" : {
+      "comment" : "Tolerance explanation text"
     },
     "Ignore Time Component" : {
       "comment" : "Toggle for ignoring time component",
@@ -8443,6 +8449,9 @@
           }
         }
       }
+    },
+    "Tolerance" : {
+      "comment" : "Streak tolerance label"
     },
     "Total" : {
       "comment" : "Duration label"
