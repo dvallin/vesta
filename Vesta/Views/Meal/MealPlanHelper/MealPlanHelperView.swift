@@ -8,6 +8,9 @@ struct MealPlanHelperView: View {
     @Query<Meal>(
         filter: #Predicate { meal in meal.deletedAt == nil }
     ) private var allMeals: [Meal]
+    @Query<Recipe>(
+        filter: #Predicate { recipe in recipe.deletedAt == nil }
+    ) private var allRecipes: [Recipe]
 
     @StateObject var viewModel: MealPlanHelperViewModel
 
@@ -127,7 +130,7 @@ struct MealPlanHelperView: View {
         }
         .onAppear {
             viewModel.configureEnvironment(modelContext, auth)
-            viewModel.analyzeAndPropose(allMeals: allMeals)
+            viewModel.analyzeAndPropose(allMeals: allMeals, allRecipes: allRecipes)
         }
     }
 }
