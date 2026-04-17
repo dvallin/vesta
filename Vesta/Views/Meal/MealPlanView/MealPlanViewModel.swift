@@ -80,6 +80,24 @@ class MealPlanViewModel: ObservableObject {
         return sortedMeals(from: filteredMeals)
     }
 
+    /// Groups meals by day, returning an array of (Date, [Meal]) tuples sorted by date
+    func mealsGroupedByDay(from meals: [Meal]) -> [(date: Date, meals: [Meal])] {
+        let calendar = Calendar.current
+
+        // Group meals by the start of their due date
+        var grouped: [Date: [Meal]] = [:]
+
+        for meal in meals {
+            guard let dueDate = meal.todoItem?.dueDate else { continue }
+            let startOfDay = calendar.startOfDay(for: dueDate)
+            grouped[startOfDay, default: []].append(meal)
+        }
+
+        // Sort each group by meal time, then return sorted by date
+        return grouped.map { (date: $0.key, meals: sortedMeals(from: $0.value)) }
+            .sorted { $0.date < $1.date }
+    }
+
     func selectMeal(_ meal: Meal) {
         selectedMeal = meal
     }
