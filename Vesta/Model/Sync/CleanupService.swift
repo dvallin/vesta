@@ -46,6 +46,7 @@ struct SoftDeletedItem: Identifiable {
 
 /// Service responsible for cleaning up soft-deleted entities that are older than a specified threshold.
 /// Performs hard deletion of entities that have been soft-deleted for an extended period.
+@MainActor
 class CleanupService: ObservableObject {
     private let modelContext: ModelContext
     private let userAuth: UserAuthService
@@ -104,7 +105,6 @@ class CleanupService: ObservableObject {
     /// Perform a manual cleanup operation
     /// - Parameter customThreshold: Optional custom threshold for deletion. If nil, uses default threshold
     /// - Returns: The total number of entities that were hard deleted and soft deleted
-    @MainActor
     func performCleanup(customThreshold: TimeInterval? = nil) async -> Int {
         let threshold = customThreshold ?? defaultCleanupThreshold
         let cutoffDate = Date().addingTimeInterval(-threshold)
@@ -121,7 +121,7 @@ class CleanupService: ObservableObject {
         totalDeleted += await cleanupEntities(of: ShoppingListItem.self, deletedBefore: cutoffDate)
         totalDeleted += await cleanupEntities(of: TodoItem.self, deletedBefore: cutoffDate)
         totalDeleted += await cleanupEntities(of: User.self, deletedBefore: cutoffDate)
-        
+
         // Save changes if any deletions occurred
         if totalDeleted > 0 {
             do {
@@ -133,10 +133,10 @@ class CleanupService: ObservableObject {
                 logger.error("Failed to save cleanup changes: \(error.localizedDescription)")
             }
         }
-        
+
         // auto-soft-delete completed todo items after 90 days
         totalSoftDeleted += await autoSoftDeleteCompletedTodos()
-        
+
         // Save changes if any deletions occurred
         if totalSoftDeleted > 0 {
             do {
