@@ -4,6 +4,7 @@ import SwiftUI
 struct MealPlanViewInner: View {
     @ObservedObject var viewModel: MealPlanViewModel
     var meals: [Meal]
+    @State private var isPresentingPlanHelper = false
 
     private func groupMealsByDay(_ meals: [Meal]) -> [Date: [Meal]] {
         let calendar = Calendar.current
@@ -174,7 +175,24 @@ struct MealPlanViewInner: View {
                             systemImage: "cart")
                     }
                 }
+                if viewModel.filterMode == .currentWeek || viewModel.filterMode == .nextWeek {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            HapticFeedbackManager.shared.generateSelectionFeedback()
+                            isPresentingPlanHelper = true
+                        }) {
+                            Label(
+                                NSLocalizedString(
+                                    "Plan Helper",
+                                    comment: "Plan helper button"),
+                                systemImage: "wand.and.stars")
+                        }
+                    }
+                }
             #endif
+        }
+        .sheet(isPresented: $isPresentingPlanHelper) {
+            MealPlanHelperView(filterMode: viewModel.filterMode)
         }
     }
 }
