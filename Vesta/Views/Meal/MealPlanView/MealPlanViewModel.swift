@@ -80,6 +80,84 @@ class MealPlanViewModel: ObservableObject {
         return sortedMeals(from: filteredMeals)
     }
 
+    func groupMealsByDay(_ meals: [Meal]) -> (undated: [Meal], dated: [Date: [Meal]]) {
+        let calendar = Calendar.current
+        var undated: [Meal] = []
+        var dated: [Date: [Meal]] = [:]
+        for meal in meals {
+            guard let dueDate = meal.todoItem?.dueDate else {
+                undated.append(meal)
+                continue
+            }
+            dated[calendar.startOfDay(for: dueDate), default: []].append(meal)
+        }
+        return (undated, dated)
+    }
+
+    func datesInFilterRange() -> [Date] {
+        let calendar = Calendar.current
+        let now = Date()
+
+        let dateRange: (start: Date, end: Date)?
+
+        switch filterMode {
+        case .all:
+            // For "all" mode, we don't show empty days
+            return []
+
+        case .currentWeek:
+            if let interval = calendar.dateInterval(of: .weekOfYear, for: now) {
+                dateRange = (interval.start, interval.end)
+            } else {
+                dateRange = nil
+            }
+
+        case .lastWeek:
+            let lastWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: now) ?? now
+            if let interval = calendar.dateInterval(of: .weekOfYear, for: lastWeek) {
+                dateRange = (interval.start, interval.end)
+            } else {
+                dateRange = nil
+            }
+
+        case .nextWeek:
+            let nextWeek = calendar.date(byAdding: .weekOfYear, value: 1, to: now) ?? now
+            if let interval = calendar.dateInterval(of: .weekOfYear, for: nextWeek) {
+                dateRange = (interval.start, interval.end)
+            } else {
+                dateRange = nil
+            }
+        }
+
+        guard let range = dateRange else { return [] }
+
+        var dates: [Date] = []
+        var current = range.start
+        while current < range.end {
+            dates.append(current)
+            current = calendar.date(byAdding: .day, value: 1, to: current) ?? range.end
+        }
+        return dates
+    }
+
+    /// Groups meals by day, returning an array of (Date, [Meal]) tuples sorted by date
+    func mealsGroupedByDay(from meals: [Meal]) -> [(date: Date, meals: [Meal])] {
+        let calendar = Calendar.current
+
+        // Group meals by the start of their due date
+        var grouped: [Date: [Meal]] = [:]
+
+        for meal in meals {
+            guard let dueDate = meal.todoItem?.dueDate else { continue }
+            let startOfDay = calendar.startOfDay(for: dueDate)
+            grouped[startOfDay, default: []].append(meal)
+        }
+
+        // Sort each group by meal time, then return sorted by date
+        return grouped.map { (date: $0.key, meals: sortedMeals(from: $0.value)) }
+            .sorted { $0.date < $1.date }
+    }
+
     func selectMeal(_ meal: Meal) {
         selectedMeal = meal
     }

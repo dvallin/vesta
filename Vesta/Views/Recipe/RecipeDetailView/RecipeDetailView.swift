@@ -150,6 +150,7 @@ struct RecipeDetailView: View {
                 .environment(\.editMode, .constant(.active))
             #endif
         }
+        .scrollDismissesKeyboard(.interactively)
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -179,11 +180,6 @@ struct RecipeDetailView: View {
                 }
             #endif
 
-            ToolbarItem(placement: .keyboard) {
-                Button(NSLocalizedString("Done", comment: "Done button")) {
-                    focusedField = nil
-                }
-            }
         }
         .alert(
             NSLocalizedString("Validation Error", comment: "Validation error alert title"),
