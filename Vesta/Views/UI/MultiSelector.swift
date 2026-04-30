@@ -74,6 +74,7 @@ struct MultiSelector: View {
                     .onSubmit {
                         addItem()
                     }
+                    .submitLabel(.done)
 
                 Button(action: addItem) {
                     Image(systemName: "plus.circle.fill")

@@ -6,67 +6,10 @@ struct MealPlanViewInner: View {
     var meals: [Meal]
     @State private var isPresentingPlanHelper = false
 
-    private func groupMealsByDay(_ meals: [Meal]) -> [Date: [Meal]] {
-        let calendar = Calendar.current
-        return Dictionary(grouping: meals) { meal -> Date in
-            guard let dueDate = meal.todoItem?.dueDate else {
-                return Date.distantFuture
-            }
-            return calendar.startOfDay(for: dueDate)
-        }
-    }
-
-    private func datesInFilterRange(filterMode: MealPlanFilterMode) -> [Date] {
-        let calendar = Calendar.current
-        let now = Date()
-
-        let dateRange: (start: Date, end: Date)?
-
-        switch filterMode {
-        case .all:
-            // For "all" mode, we don't show empty days
-            return []
-
-        case .currentWeek:
-            if let interval = calendar.dateInterval(of: .weekOfYear, for: now) {
-                dateRange = (interval.start, interval.end)
-            } else {
-                dateRange = nil
-            }
-
-        case .lastWeek:
-            let lastWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: now) ?? now
-            if let interval = calendar.dateInterval(of: .weekOfYear, for: lastWeek) {
-                dateRange = (interval.start, interval.end)
-            } else {
-                dateRange = nil
-            }
-
-        case .nextWeek:
-            let nextWeek = calendar.date(byAdding: .weekOfYear, value: 1, to: now) ?? now
-            if let interval = calendar.dateInterval(of: .weekOfYear, for: nextWeek) {
-                dateRange = (interval.start, interval.end)
-            } else {
-                dateRange = nil
-            }
-        }
-
-        guard let range = dateRange else { return [] }
-
-        var dates: [Date] = []
-        var current = range.start
-        while current < range.end {
-            dates.append(current)
-            current = calendar.date(byAdding: .day, value: 1, to: current) ?? range.end
-        }
-        return dates
-    }
-
     var body: some View {
         let filteredMeals = viewModel.filteredMeals(from: meals)
-        let mealsByDay = groupMealsByDay(filteredMeals)
-        let allDates = datesInFilterRange(filterMode: viewModel.filterMode)
-        // For week views, use all dates; for "all" mode, use only dates with meals
+        let (undatedMeals, mealsByDay) = viewModel.groupMealsByDay(filteredMeals)
+        let allDates = viewModel.datesInFilterRange()
         let datesToShow =
             allDates.isEmpty
             ? mealsByDay.keys.sorted()
@@ -95,29 +38,14 @@ struct MealPlanViewInner: View {
                                 viewModel.selectedMeal = nextMeal
                             }
                         }
+                        if !undatedMeals.isEmpty {
+                            mealRows(for: undatedMeals)
+                        }
 
                         ForEach(datesToShow, id: \.self) { date in
                             Section {
                                 if let dayMeals = mealsByDay[date], !dayMeals.isEmpty {
-                                    ForEach(dayMeals) { meal in
-                                        MealListItem(viewModel: viewModel, meal: meal)
-                                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                                Button(role: .destructive) {
-                                                    withAnimation {
-                                                        viewModel.deleteMeal(
-                                                            meal,
-                                                            undoAction: { meal, id in
-                                                                withAnimation {
-                                                                    viewModel.undoMealDeletion(
-                                                                        meal, id: id)
-                                                                }
-                                                            })
-                                                    }
-                                                } label: {
-                                                    Label("Delete", systemImage: "trash")
-                                                }
-                                            }
-                                    }
+                                    mealRows(for: dayMeals)
                                 } else {
                                     HStack(spacing: 8) {
                                         Image(systemName: "fork.knife")
@@ -175,7 +103,7 @@ struct MealPlanViewInner: View {
                             systemImage: "cart")
                     }
                 }
-                if viewModel.filterMode == .currentWeek || viewModel.filterMode == .nextWeek {
+                if viewModel.filterMode != .lastWeek {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button(action: {
                             HapticFeedbackManager.shared.generateSelectionFeedback()
@@ -193,6 +121,28 @@ struct MealPlanViewInner: View {
         }
         .sheet(isPresented: $isPresentingPlanHelper) {
             MealPlanHelperView(filterMode: viewModel.filterMode)
+        }
+    }
+
+    @ViewBuilder
+    private func mealRows(for meals: [Meal]) -> some View {
+        ForEach(meals) { meal in
+            MealListItem(viewModel: viewModel, meal: meal)
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    Button(role: .destructive) {
+                        withAnimation {
+                            viewModel.deleteMeal(
+                                meal,
+                                undoAction: { meal, id in
+                                    withAnimation {
+                                        viewModel.undoMealDeletion(meal, id: id)
+                                    }
+                                })
+                        }
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
         }
     }
 }

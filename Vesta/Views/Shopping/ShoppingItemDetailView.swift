@@ -147,6 +147,12 @@ struct ShoppingItemDetailView: View {
                     }
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
+            .onChange(of: focusedField) { _, newValue in
+                if newValue != "quantity" {
+                    isEditingQuantity = false
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(
@@ -164,12 +170,6 @@ struct ShoppingItemDetailView: View {
                     }
                 }
 
-                ToolbarItem(placement: .keyboard) {
-                    Button(NSLocalizedString("Done", comment: "Done button")) {
-                        isEditingQuantity = false
-                        focusedField = nil
-                    }
-                }
             }
         }
     }

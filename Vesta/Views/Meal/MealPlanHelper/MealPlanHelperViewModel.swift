@@ -4,10 +4,11 @@ import SwiftUI
 /// Represents a gap in the meal plan
 struct MealGap: Identifiable, Equatable {
     let id = UUID()
-    let date: Date
+    let date: Date?
     let mealType: MealType
 
-    var weekdayName: String {
+    var weekdayName: String? {
+        guard let date else { return nil }
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
         return formatter.string(from: date)
@@ -64,6 +65,9 @@ class MealPlanHelperViewModel: ObservableObject {
     /// Number of weeks to look back for frequency analysis
     private let lookbackWeeks = 4
 
+    /// Number of proposals if not running week based
+    private let undatedProposalCount = 5
+
     /// Cutoff hour for lunch proposals (don't suggest lunch after this hour)
     private let lunchCutoffHour = 13
 
@@ -72,6 +76,11 @@ class MealPlanHelperViewModel: ObservableObject {
     ///   - allMeals: All meals in the system
     ///   - allRecipes: All recipes in the catalog (for fallback suggestions)
     func analyzeAndPropose(allMeals: [Meal], allRecipes: [Recipe] = []) {
+        if filterMode == .all {
+            analyzeAndProposeUndated(allMeals: allMeals, allRecipes: allRecipes)
+            return
+        }
+
         let calendar = Calendar.current
 
         // Get target week dates
@@ -156,6 +165,47 @@ class MealPlanHelperViewModel: ObservableObject {
                         proposedRecipeIds.insert(recipe.uid)
                     }
                 }
+            }
+        }
+
+        proposals = newProposals
+    }
+
+    private func analyzeAndProposeUndated(allMeals: [Meal], allRecipes: [Recipe]) {
+        let historicalMeals = getHistoricalMeals(from: allMeals, weeks: lookbackWeeks)
+
+        // Show existing undated meals in the "Already Planned" section
+        plannedMeals =
+            allMeals
+            .filter { $0.todoItem?.dueDate == nil }
+            .sorted { ($0.recipe?.title ?? "") < ($1.recipe?.title ?? "") }
+
+        // Exclude recipes already present as undated meals
+        let existingRecipeIds = Set(plannedMeals.compactMap { $0.recipe?.uid })
+        var proposedRecipeIds = existingRecipeIds
+        var newProposals: [MealProposal] = []
+
+        // Alternate dinner/lunch for variety
+        let mealSequence: [MealType] = Array(
+            Array(
+                repeating: [MealType.dinner, .lunch],
+                count: (undatedProposalCount + 1) / 2
+            ).flatMap { $0 }.prefix(undatedProposalCount))
+
+        for mealType in mealSequence {
+            let gap = MealGap(date: nil, mealType: mealType)
+            let recipe =
+                findBestRecipeForMealType(
+                    mealType, from: historicalMeals, excluding: proposedRecipeIds)
+                ?? findPopularRecipeFromCatalog(
+                    allRecipes: allRecipes, excluding: proposedRecipeIds, requireNormalStatus: true)
+                ?? findPopularRecipeFromCatalog(
+                    allRecipes: allRecipes, excluding: proposedRecipeIds, requireNormalStatus: false
+                )
+
+            if let recipe {
+                newProposals.append(MealProposal(gap: gap, suggestedRecipe: recipe))
+                proposedRecipeIds.insert(recipe.uid)
             }
         }
 
@@ -356,8 +406,13 @@ class MealPlanHelperViewModel: ObservableObject {
             )
 
             // Calculate the due date with proper time for meal type
-            let (hour, minute) = DateUtils.mealTime(for: proposal.gap.mealType)
-            let dueDate = DateUtils.setTime(hour: hour, minute: minute, for: proposal.gap.date)
+            let dueDate: Date?
+            if let gapDate = proposal.gap.date {
+                let (hour, minute) = DateUtils.mealTime(for: proposal.gap.mealType)
+                dueDate = DateUtils.setTime(hour: hour, minute: minute, for: gapDate)
+            } else {
+                dueDate = nil
+            }
 
             let todoItem = TodoItem.create(
                 title: proposal.suggestedRecipe.title,

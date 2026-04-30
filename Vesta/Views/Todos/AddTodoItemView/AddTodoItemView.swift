@@ -49,6 +49,7 @@ struct AddTodoItemView: View {
                     }
                 )
             }
+            .scrollDismissesKeyboard(.interactively)
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
@@ -66,12 +67,6 @@ struct AddTodoItemView: View {
                         .disabled(viewModel.isSaving)
                     }
                 #endif
-
-                ToolbarItem(placement: .keyboard) {
-                    Button(NSLocalizedString("Done", comment: "Done button")) {
-                        focusedField = nil
-                    }
-                }
             }
             .alert(
                 NSLocalizedString("Validation Error", comment: "Validation error alert title"),

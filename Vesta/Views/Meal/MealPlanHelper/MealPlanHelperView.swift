@@ -153,12 +153,14 @@ struct PlannedMealRow: View {
                 Text(meal.recipe?.title ?? "No Recipe")
                     .font(.body)
                 HStack(spacing: 4) {
-                    Text(dayName)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text("•")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if !dayName.isEmpty {
+                        Text(dayName)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("•")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                     Text(meal.mealType.displayName)
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -185,12 +187,14 @@ struct ProposalRow: View {
         VStack(alignment: .leading, spacing: 8) {
             // Gap info
             HStack(spacing: 4) {
-                Text(proposal.gap.weekdayName)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                Text("•")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                if let weekdayName = proposal.gap.weekdayName {
+                    Text(weekdayName)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    Text("•")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
                 Text(proposal.gap.mealType.displayName)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
