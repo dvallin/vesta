@@ -1,10 +1,30 @@
 import SwiftData
 import SwiftUI
+import UserNotifications
 
 struct MigrationManager {
 
-    static func validateModel(in context: ModelContext, currentUser: User) {
+    static func migrate(in context: ModelContext, currentUser: User) {
         validateRelationshipIntegrity(in: context)
+        refreshAllNotifications(in: context)
+    }
+
+    static func refreshAllNotifications(in context: ModelContext) {
+        // Remove all pending notifications and re-schedule from current data
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+
+        let descriptor = FetchDescriptor<TodoItem>(
+            predicate: #Predicate<TodoItem> { !$0.isCompleted && $0.deletedAt == nil }
+        )
+        do {
+            let todoItems = try context.fetch(descriptor)
+            for item in todoItems {
+                NotificationManager.shared.scheduleNotification(for: item)
+            }
+            print("🔔 Refreshed notifications for \(todoItems.count) active todo items")
+        } catch {
+            print("Error refreshing notifications: \(error)")
+        }
     }
 
     static func validateRelationshipIntegrity(in context: ModelContext) {

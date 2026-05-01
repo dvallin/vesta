@@ -26,8 +26,15 @@ struct TodoListItem: View {
                     Text(item.title)
                         .font(.headline)
                     Spacer()
-                    if item.isHabitItem && item.currentStreak > 0 {
-                        HealthScoreIndicator(health: item.health)
+                    if item.isHabitItem {
+                        HealthScoreIndicator(
+                            health: item.health,
+                            isPersonalBest: item.bestStreak > 0
+                                && item.currentStreak >= item.bestStreak,
+                            isRebuilding: item.currentStreak == 0
+                                && item.bestStreak > 0,
+                            trend: item.healthTrend
+                        )
                     }
                 }
                 HStack(alignment: .bottom) {

@@ -36,6 +36,34 @@ enum RecurrenceType: String, Codable, CaseIterable {
     }
 }
 
+enum HealthTrend: String {
+    case improving
+    case stable
+    case declining
+
+    var systemImage: String {
+        switch self {
+        case .improving:
+            return "arrow.up.right"
+        case .stable:
+            return "arrow.right"
+        case .declining:
+            return "arrow.down.right"
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .improving:
+            return String(localized: "todos.health-trend.improving")
+        case .stable:
+            return String(localized: "todos.health-trend.stable")
+        case .declining:
+            return String(localized: "todos.health-trend.declining")
+        }
+    }
+}
+
 enum DayOfWeek: String, Codable, CaseIterable {
     case sunday, monday, tuesday, wednesday, thursday, friday, saturday
 
@@ -287,26 +315,58 @@ class TodoItem: SyncableEntity {
     }
 
     var currentStreak: Int {
-        if self.streakMissed {
-            return 0
-        }
-
         let sortedEvents = events.sorted { $0.completedAt < $1.completedAt }
         guard !sortedEvents.isEmpty else { return 0 }
 
         var streak = 0
+        var consecutiveMisses = 0
+        let maxConsecutiveMisses = 2
+
         for event in sortedEvents.reversed() {
             if event.eventType == .completed && wasCompletedWithinReasonableTime(event) {
                 streak += 1
+                consecutiveMisses = 0
             } else if event.eventType == .skipped {
                 // Skipped tasks don't break the streak, just don't add to it
                 continue
             } else {
-                // Late completion or other event types break the streak
-                break
+                // Late completion or other event types: apply decay
+                consecutiveMisses += 1
+                if consecutiveMisses >= maxConsecutiveMisses {
+                    // Two consecutive misses: full reset
+                    break
+                }
+                // First miss: halve the accumulated streak (graceful decay)
+                streak = streak / 2
             }
         }
+
+        // If currently overdue beyond tolerance, apply one decay penalty
+        if self.streakMissed {
+            streak = streak / 2
+        }
+
         return streak
+    }
+
+    var bestStreak: Int {
+        let sortedEvents = events.sorted { $0.completedAt < $1.completedAt }
+        guard !sortedEvents.isEmpty else { return 0 }
+
+        var current = 0
+        var best = 0
+        for event in sortedEvents {
+            if event.eventType == .completed && wasCompletedWithinReasonableTime(event) {
+                current += 1
+                best = max(best, current)
+            } else if event.eventType == .skipped {
+                // Skipped tasks don't break the streak, just don't count
+                continue
+            } else {
+                current = 0
+            }
+        }
+        return max(best, currentStreak)
     }
 
     private func wasCompletedWithinReasonableTime(_ event: TodoEvent) -> Bool {
@@ -320,9 +380,107 @@ class TodoItem: SyncableEntity {
     }
 
     var health: Int {
-        let S_CAP = 5.0
+        let sCap = adaptiveStreakCap
         let streak = Double(self.currentStreak)
-        return Int(100 * (streak / (streak + S_CAP)))
+        let base = 100.0 * (streak / (streak + sCap))
+        // Subtle quality bonus: up to +5% for completing before the due date
+        let qualityBonus = onTimeRate * 5.0
+        return min(100, Int(base + qualityBonus))
+    }
+
+    /// Adapts the streak saturation cap based on recurrence frequency.
+    /// Lower caps mean health grows faster per completion, which is appropriate
+    /// for less frequent tasks where each completion represents more elapsed time.
+    /// - Daily: S_CAP=7 (~50% at 1 week, ~75% at 3 weeks)
+    /// - Weekly: S_CAP=5 (~50% at 5 weeks, ~75% at 15 weeks)
+    /// - Monthly: S_CAP=3 (~50% at 3 months, ~75% at 9 months)
+    /// - Yearly: S_CAP=2 (~50% at 2 years, ~75% at 6 years)
+    private var adaptiveStreakCap: Double {
+        switch recurrenceFrequency {
+        case .daily:
+            return 7.0
+        case .weekly:
+            return 5.0
+        case .monthly:
+            return 3.0
+        case .yearly:
+            return 2.0
+        case .none:
+            return 5.0
+        }
+    }
+
+    /// Determines if health is trending up, stable, or down by comparing
+    /// the on-time completion rate of recent events vs older events.
+    var healthTrend: HealthTrend {
+        let completedEvents =
+            events
+            .filter { $0.eventType == .completed }
+            .sorted { $0.completedAt < $1.completedAt }
+
+        // Need at least 4 completed events to determine a meaningful trend
+        guard completedEvents.count >= 4 else { return .stable }
+
+        let midpoint = completedEvents.count / 2
+        let olderEvents = Array(completedEvents.prefix(midpoint))
+        let recentEvents = Array(completedEvents.suffix(from: midpoint))
+
+        let olderRate = onTimeRateFor(events: olderEvents)
+        let recentRate = onTimeRateFor(events: recentEvents)
+
+        let threshold = 0.15
+        if recentRate > olderRate + threshold {
+            return .improving
+        } else if recentRate < olderRate - threshold {
+            return .declining
+        }
+        return .stable
+    }
+
+    /// The fraction of completed events in the current streak that were
+    /// completed on or before the due date (not just within tolerance).
+    /// Returns a value from 0.0 to 1.0.
+    var onTimeRate: Double {
+        let sortedEvents = events.sorted { $0.completedAt < $1.completedAt }
+        let streakEvents = recentStreakCompletions(from: sortedEvents)
+        guard !streakEvents.isEmpty else { return 0.0 }
+        return onTimeRateFor(events: streakEvents)
+    }
+
+    /// Calculates the on-time rate for a given set of events.
+    /// "On time" means completed on or before the due date (stricter than tolerance).
+    private func onTimeRateFor(events: [TodoEvent]) -> Double {
+        guard !events.isEmpty else { return 0.0 }
+        let onTimeCount = events.filter { wasCompletedOnTime($0) }.count
+        return Double(onTimeCount) / Double(events.count)
+    }
+
+    /// Checks if an event was completed on or before its due date (strict, no tolerance).
+    private func wasCompletedOnTime(_ event: TodoEvent) -> Bool {
+        guard event.eventType == .completed else { return false }
+        guard let completedAt = event.completedAt as Date?,
+            let dueDate = event.previousDueDate
+        else {
+            return false
+        }
+        return completedAt <= dueDate
+    }
+
+    /// Extracts the completed events that belong to the current streak
+    /// (walking backwards from most recent, stopping at the first non-on-time,
+    /// non-skipped event — mirroring the streak logic).
+    private func recentStreakCompletions(from sortedEvents: [TodoEvent]) -> [TodoEvent] {
+        var streakEvents: [TodoEvent] = []
+        for event in sortedEvents.reversed() {
+            if event.eventType == .completed && wasCompletedWithinReasonableTime(event) {
+                streakEvents.append(event)
+            } else if event.eventType == .skipped {
+                continue
+            } else {
+                break
+            }
+        }
+        return streakEvents
     }
 
     func markAsDone(currentUser: User) {

@@ -43,7 +43,7 @@ struct VestaMainPage: View {
             }
             .onAppear {
                 // Validate Data Model -- this checks for broken relationships
-                MigrationManager.validateModel(
+                MigrationManager.migrate(
                     in: modelContext, currentUser: currentUser)
 
                 // Apply sharing settings to all entities
