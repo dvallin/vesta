@@ -24,7 +24,7 @@ struct AddTodoItemView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 TitleDetailsSection(
                     title: $viewModel.title, details: $viewModel.details,

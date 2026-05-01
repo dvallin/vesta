@@ -27,7 +27,7 @@ class RecipeDetailViewModel: ObservableObject {
         do {
             try modelContext?.save()
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
-            dismiss!()
+            dismiss?()
         } catch {
             HapticFeedbackManager.shared.generateNotificationFeedback(type: .error)
             validationMessage = String(
@@ -41,7 +41,7 @@ class RecipeDetailViewModel: ObservableObject {
     @MainActor
     func cancel() {
         modelContext?.rollback()
-        dismiss!()
+        dismiss?()
     }
 
     func addIngredient(name: String, quantity: Double?, unit: Unit?) {
@@ -117,5 +117,25 @@ class RecipeDetailViewModel: ObservableObject {
     func setTags(_ tags: [String]) {
         guard let currentUser = auth?.currentUser else { return }
         recipe.setTags(tags, currentUser: currentUser)
+    }
+
+    func setServings(_ servings: Int) {
+        guard let currentUser = auth?.currentUser else { return }
+        recipe.setServings(servings, currentUser: currentUser)
+    }
+
+    func setDifficulty(_ difficulty: Difficulty?) {
+        guard let currentUser = auth?.currentUser else { return }
+        recipe.setDifficulty(difficulty, currentUser: currentUser)
+    }
+
+    func setSourceURL(_ url: String?) {
+        guard let currentUser = auth?.currentUser else { return }
+        recipe.setSourceURL(url, currentUser: currentUser)
+    }
+
+    func setNotes(_ notes: String) {
+        guard let currentUser = auth?.currentUser else { return }
+        recipe.setNotes(notes, currentUser: currentUser)
     }
 }

@@ -12,6 +12,7 @@ extension Recipe {
 
             "title": title,
             "details": details,
+            "createdAt": createdAt,
             "deletedAt": deletedAt as Any,
             "expireAt": expireAt as Any,
         ]
@@ -23,6 +24,13 @@ extension Recipe {
 
         // Add tags
         dto["tags"] = tags
+
+        // Add new fields
+        dto["servings"] = servings
+        dto["isFavorite"] = isFavorite
+        dto["difficulty"] = difficulty?.rawValue as Any
+        dto["sourceURL"] = sourceURL as Any
+        dto["notes"] = notes
 
         dto["ingredients"] = ingredients.map { $0.toDTO() }
         dto["steps"] = steps.map { $0.toDTO() }
@@ -38,6 +46,9 @@ extension Recipe {
         }
         if data.keys.contains("expireAt") {
             self.expireAt = data["expireAt"] as? Date
+        }
+        if let createdAt = data["createdAt"] as? Date {
+            self.createdAt = createdAt
         }
         self.isShared = data["isShared"] as? Bool ?? false
 
@@ -67,6 +78,26 @@ extension Recipe {
             self.tags = tags
         } else {
             self.tags = []
+        }
+
+        if let servings = data["servings"] as? Int {
+            self.servings = servings
+        }
+        if let isFavorite = data["isFavorite"] as? Bool {
+            self.isFavorite = isFavorite
+        }
+        if data.keys.contains("difficulty") {
+            if let difficultyRaw = data["difficulty"] as? String {
+                self.difficulty = Difficulty(rawValue: difficultyRaw)
+            } else {
+                self.difficulty = nil
+            }
+        }
+        if data.keys.contains("sourceURL") {
+            self.sourceURL = data["sourceURL"] as? String
+        }
+        if let notes = data["notes"] as? String {
+            self.notes = notes
         }
 
         // Process ingredients from data

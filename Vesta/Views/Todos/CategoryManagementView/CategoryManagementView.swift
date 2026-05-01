@@ -9,7 +9,7 @@ struct CategoryManagementView: View {
     @StateObject private var viewModel = CategoryManagementViewModel()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 ForEach(categories) { category in
                     HStack(alignment: .center, spacing: 8) {

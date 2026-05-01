@@ -71,9 +71,9 @@ import OSLog
                 Recipe assistant. Transform recipes per user instructions. All text in \(languageName) (\(languageCode)).
 
                 Respond with ONLY valid JSON, no markdown or fences:
-                {"title":"str","details":"str","ingredients":[{"name":"str","order":int,"quantity":num|null,"unit":"teaspoon|tablespoon|cup|milliliter|liter|gram|kilogram|ounce|pound|piece"|null}],"steps":[{"order":int,"instruction":"str","type":"preparation|cooking|maturing","duration":seconds|null}],"seasonality":"spring|summer|autumn|winter|yearRound"|null,"mealTypes":["breakfast|lunch|dinner"],"tags":["str"]}
+                {"title":"str","details":"str","servings":int,"difficulty":"easy|medium|hard"|null,"ingredients":[{"name":"str","order":int,"quantity":num|null,"unit":"teaspoon|tablespoon|cup|milliliter|liter|gram|kilogram|ounce|pound|piece"|null}],"steps":[{"order":int,"instruction":"str","type":"preparation|cooking|maturing","duration":seconds|null}],"seasonality":"spring|summer|autumn|winter|yearRound"|null,"mealTypes":["breakfast|lunch|dinner"],"tags":["str"]}
 
-                Rules: Preserve recipe identity. Respect existing ingredients unless action requires changes. Normalize names. Clear actionable steps. Sequential order from 1. Duration in seconds. quantity/unit can be null.
+                Rules: Preserve recipe identity. Respect existing ingredients unless action requires changes. Normalize names. Clear actionable steps. Sequential order from 1. Duration in seconds. quantity/unit can be null. Default servings to 4 if unknown. Infer difficulty from complexity of ingredients and techniques.
                 """
         }
 

@@ -13,6 +13,7 @@ class Recipe: SyncableEntity {
 
     var isShared: Bool = false
     var dirty: Bool = true
+    var createdAt: Date = Date()
 
     var deletedAt: Date? = nil
     var expireAt: Date? = nil
@@ -30,6 +31,12 @@ class Recipe: SyncableEntity {
     var mealTypes: [MealType] = []
     var tags: [String] = []
 
+    var servings: Int = 4
+    var isFavorite: Bool = false
+    var difficulty: Difficulty? = nil
+    var sourceURL: String? = nil
+    var notes: String = ""
+
     init(
         title: String, details: String, ingredients: [Ingredient] = [], steps: [RecipeStep] = [],
         owner: User?
@@ -42,6 +49,7 @@ class Recipe: SyncableEntity {
         self.meals = []
         self.owner = owner
         self.dirty = true
+        self.createdAt = Date()
 
         for ingredient in ingredients {
             ingredient.recipe = self
@@ -207,6 +215,32 @@ class Recipe: SyncableEntity {
         markAsDirty()
     }
 
+    func setServings(_ newServings: Int, currentUser: User) {
+        servings = max(1, newServings)
+        markAsDirty()
+    }
+
+    func toggleFavorite(currentUser: User) {
+        isFavorite.toggle()
+        markAsDirty()
+    }
+
+    func setDifficulty(_ newDifficulty: Difficulty?, currentUser: User) {
+        difficulty = newDifficulty
+        markAsDirty()
+    }
+
+    func setSourceURL(_ newSourceURL: String?, currentUser: User) {
+        let trimmed = newSourceURL?.trimmingCharacters(in: .whitespacesAndNewlines)
+        sourceURL = (trimmed?.isEmpty == true) ? nil : trimmed
+        markAsDirty()
+    }
+
+    func setNotes(_ newNotes: String, currentUser: User) {
+        notes = newNotes
+        markAsDirty()
+    }
+
     // MARK: - Soft Delete Operations
 
     func softDelete(currentUser: User) {
@@ -260,6 +294,34 @@ class RecipeStep {
         self.type = type
         self.duration = duration
         self.recipe = recipe
+    }
+}
+
+enum Difficulty: String, Codable, CaseIterable {
+    case easy
+    case medium
+    case hard
+
+    var displayName: String {
+        switch self {
+        case .easy:
+            return NSLocalizedString("Easy", comment: "Easy difficulty")
+        case .medium:
+            return NSLocalizedString("Medium", comment: "Medium difficulty")
+        case .hard:
+            return NSLocalizedString("Hard", comment: "Hard difficulty")
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .easy:
+            return "gauge.with.dots.needle.0percent"
+        case .medium:
+            return "gauge.with.dots.needle.50percent"
+        case .hard:
+            return "gauge.with.dots.needle.100percent"
+        }
     }
 }
 

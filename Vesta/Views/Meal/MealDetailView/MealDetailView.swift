@@ -149,7 +149,7 @@ struct MealDetailView: View {
         context.insert(todoItem)
         context.insert(meal)
 
-        return NavigationView {
+        return NavigationStack {
             MealDetailView(meal: meal)
         }
         .modelContainer(container)

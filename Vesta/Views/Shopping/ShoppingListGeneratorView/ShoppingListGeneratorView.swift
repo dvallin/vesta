@@ -11,7 +11,7 @@ struct ShoppingListGeneratorView: View {
     let meals: [Meal]
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 ForEach($viewModel.ingredientSelections) { $selection in
                     IngredientSelectionRow(selection: $selection)

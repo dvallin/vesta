@@ -8,7 +8,7 @@ struct RecipeList: View {
         List {
             ForEach(recipes) { recipe in
                 NavigationLink {
-                    RecipeDetailView(recipe: recipe)
+                    RecipeReadView(recipe: recipe)
                 } label: {
                     RecipeRow(recipe: recipe)
                 }

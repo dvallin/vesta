@@ -22,9 +22,29 @@ struct RecipeContentView<R: RecipeDisplayable>: View {
                 .fontWeight(.bold)
                 .padding(.horizontal)
 
+            // Servings & Difficulty
+            HStack(spacing: 12) {
+                Label(
+                    String(
+                        format: NSLocalizedString("%d servings", comment: "Servings count"),
+                        recipe.servings
+                    ),
+                    systemImage: "person.2"
+                )
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+                if let difficulty = recipe.difficulty {
+                    Label(difficulty.displayName, systemImage: difficulty.systemImage)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(.horizontal)
+
             // Details
             if !recipe.details.isEmpty {
-                Text(LocalizedStringKey(recipe.details))
+                Text(recipe.details)
                     .font(.body)
                     .foregroundColor(.secondary)
                     .padding(.horizontal)

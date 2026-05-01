@@ -17,7 +17,6 @@ struct RecipeDetailView: View {
 
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
-    @State private var isPresentingGenerationView = false
 
     @FocusState private var focusedField: String?
 
@@ -55,6 +54,75 @@ struct RecipeDetailView: View {
                     }
                 }
                 .pickerStyle(.menu)
+            }
+
+            // Servings & Difficulty Section
+            Section(
+                header: Text(
+                    NSLocalizedString(
+                        "Servings & Difficulty",
+                        comment: "Section header for servings and difficulty"))
+            ) {
+                Stepper(
+                    value: Binding(
+                        get: { viewModel.recipe.servings },
+                        set: { viewModel.setServings($0) }
+                    ),
+                    in: 1...99
+                ) {
+                    HStack {
+                        Text(NSLocalizedString("Servings", comment: "Servings label"))
+                        Spacer()
+                        Text("\(viewModel.recipe.servings)")
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Picker(
+                    NSLocalizedString("Difficulty", comment: "Difficulty picker label"),
+                    selection: Binding(
+                        get: { viewModel.recipe.difficulty },
+                        set: { viewModel.setDifficulty($0) }
+                    )
+                ) {
+                    Text(NSLocalizedString("None", comment: "No difficulty selected"))
+                        .tag(Difficulty?.none)
+                    ForEach(Difficulty.allCases, id: \.self) { difficulty in
+                        Text(difficulty.displayName).tag(difficulty as Difficulty?)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+
+            // Source URL Section
+            Section(
+                header: Text(
+                    NSLocalizedString("Source", comment: "Section header for source URL"))
+            ) {
+                TextField(
+                    NSLocalizedString("Recipe URL (optional)", comment: "Source URL placeholder"),
+                    text: Binding(
+                        get: { viewModel.recipe.sourceURL ?? "" },
+                        set: { viewModel.setSourceURL($0) }
+                    )
+                )
+                .keyboardType(.URL)
+                .autocapitalization(.none)
+                .autocorrectionDisabled()
+            }
+
+            // Notes Section
+            Section(
+                header: Text(
+                    NSLocalizedString("Notes", comment: "Section header for personal notes"))
+            ) {
+                TextEditor(
+                    text: Binding(
+                        get: { viewModel.recipe.notes },
+                        set: { viewModel.setNotes($0) }
+                    )
+                )
+                .frame(minHeight: 80)
             }
 
             // Meal Types Section
@@ -175,20 +243,8 @@ struct RecipeDetailView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 12) {
-                        if APIKeyManager.hasAPIKey {
-                            Button {
-                                isPresentingGenerationView = true
-                            } label: {
-                                Label(
-                                    NSLocalizedString("AI Assist", comment: "AI assist button"),
-                                    systemImage: "sparkles"
-                                )
-                            }
-                        }
-                        Button("Save") {
-                            viewModel.save()
-                        }
+                    Button("Save") {
+                        viewModel.save()
                     }
                 }
             #endif
@@ -208,9 +264,7 @@ struct RecipeDetailView: View {
         .onAppear {
             viewModel.configureEnvironment(modelContext, dismiss, auth)
         }
-        .sheet(isPresented: $isPresentingGenerationView) {
-            RecipeGenerationView(recipe: viewModel.recipe)
-        }
+
     }
 
     // MARK: - Private Methods

@@ -33,7 +33,7 @@ struct RecipeListView: View {
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 RecipeQuickFilterView(viewModel: viewModel, recipes: recipes)
                     .padding(.top, 8)

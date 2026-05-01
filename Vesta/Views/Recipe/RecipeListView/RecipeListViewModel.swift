@@ -9,6 +9,7 @@ enum RecipeFilterMode: String, CaseIterable, Identifiable {
     case notPlanned
     case quickCook  // under 30 minutes
     case longCook  // over 2 hours
+    case favorites
 
     var id: String { rawValue }
 
@@ -28,6 +29,8 @@ enum RecipeFilterMode: String, CaseIterable, Identifiable {
             return NSLocalizedString("Quick Cook", comment: "Filter mode: quick cooking recipes")
         case .longCook:
             return NSLocalizedString("Long Cook", comment: "Filter mode: long cooking recipes")
+        case .favorites:
+            return NSLocalizedString("Favorites", comment: "Filter mode: favorite recipes")
         }
     }
 }
@@ -105,6 +108,8 @@ class RecipeListViewModel: ObservableObject {
             return recipe.totalDuration > 0 && recipe.totalDuration <= 30 * 60  // 30 minutes
         case .longCook:
             return recipe.totalDuration >= 2 * 60 * 60  // 2 hours
+        case .favorites:
+            return recipe.isFavorite
         }
     }
 
@@ -130,7 +135,7 @@ class RecipeListViewModel: ObservableObject {
             }
         case .recentlyAdded:
             return recipes.sorted {
-                ($0.deletedAt ?? Date.distantPast) > ($1.deletedAt ?? Date.distantPast)
+                $0.createdAt > $1.createdAt
             }
         case .timesCookedRecently:
             return recipes.sorted {
