@@ -12,6 +12,7 @@
 		44C873522D9A8530005F58E2 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 44C873512D9A8530005F58E2 /* FirebaseAuth */; };
 		44C873542D9A8530005F58E2 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 44C873532D9A8530005F58E2 /* FirebaseCore */; };
 		44C873562D9A8530005F58E2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 44C873552D9A8530005F58E2 /* FirebaseFirestore */; };
+		44D2A8852FA498760086217E /* SwiftAnthropic in Frameworks */ = {isa = PBXBuildFile; productRef = 44D2A8842FA498760086217E /* SwiftAnthropic */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +65,7 @@
 				44C873542D9A8530005F58E2 /* FirebaseCore in Frameworks */,
 				44C873522D9A8530005F58E2 /* FirebaseAuth in Frameworks */,
 				44C873562D9A8530005F58E2 /* FirebaseFirestore in Frameworks */,
+				44D2A8852FA498760086217E /* SwiftAnthropic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +87,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		44D2A8832FA498760086217E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		44D602022D5C90EC0036F174 = {
 			isa = PBXGroup;
 			children = (
@@ -93,6 +102,7 @@
 				44D6022A2D5C90ED0036F174 /* VestaUITests */,
 				44D6020C2D5C90EC0036F174 /* Products */,
 				4400DFAF2DA058470034E862 /* GoogleService-Info.plist */,
+				44D2A8832FA498760086217E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -129,6 +139,7 @@
 				44C873512D9A8530005F58E2 /* FirebaseAuth */,
 				44C873532D9A8530005F58E2 /* FirebaseCore */,
 				44C873552D9A8530005F58E2 /* FirebaseFirestore */,
+				44D2A8842FA498760086217E /* SwiftAnthropic */,
 			);
 			productName = Vesta;
 			productReference = 44D6020B2D5C90EC0036F174 /* Vesta.app */;
@@ -222,6 +233,7 @@
 			packageReferences = (
 				44A3BB662D8D583200389973 /* XCRemoteSwiftPackageReference "ViewInspector" */,
 				44C873502D9A8530005F58E2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				44D2A8822FA496940086217E /* XCRemoteSwiftPackageReference "SwiftAnthropic" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 44D6020C2D5C90EC0036F174 /* Products */;
@@ -609,6 +621,14 @@
 				minimumVersion = 11.10.0;
 			};
 		};
+		44D2A8822FA496940086217E /* XCRemoteSwiftPackageReference "SwiftAnthropic" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jamesrochabrun/SwiftAnthropic";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -631,6 +651,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 44C873502D9A8530005F58E2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		44D2A8842FA498760086217E /* SwiftAnthropic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 44D2A8822FA496940086217E /* XCRemoteSwiftPackageReference "SwiftAnthropic" */;
+			productName = SwiftAnthropic;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

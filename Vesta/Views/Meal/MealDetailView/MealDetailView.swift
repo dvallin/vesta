@@ -13,82 +13,85 @@ struct MealDetailView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                if let recipe = viewModel.meal.recipe {
-                    ReadOnlyRecipeDetailView(
-                        recipe: recipe, scalingFactor: viewModel.meal.scalingFactor
-                    )
-                }
-                HStack {
-                    Text(
-                        String(localized: "meal.detail-view.scaling-factor.label")
-                    )
-                    TextField(
-                        String(localized: "meal.detail-view.scaling-factor.field"),
-                        value: Binding(
-                            get: { viewModel.meal.scalingFactor },
-                            set: { newValue in viewModel.setScalingFactor(newValue) }
-                        ),
-                        formatter: NumberFormatter()
-                    )
-                    #if os(iOS)
-                        .keyboardType(.decimalPad)
-                    #endif
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                }
-                .padding()
-
-                HStack {
-                    Text(
-                        NSLocalizedString(
-                            "meal.detail-view.meal-type.label", comment: "Meal type label"))
-                    Picker(
-                        NSLocalizedString(
-                            "meal.detail-view.meal-type.field", comment: "Meal type picker label"),
-                        selection: Binding(
-                            get: { viewModel.meal.mealType },
-                            set: { newValue in
-                                viewModel.setMealType(newValue)
-                            }
+            ScrollView {
+                VStack {
+                    if let recipe = viewModel.meal.recipe {
+                        RecipeContentView(
+                            recipe: recipe, scalingFactor: viewModel.meal.scalingFactor
                         )
-                    ) {
-                        ForEach(MealType.allCases, id: \.self) { mealType in
-                            Text(mealType.displayName).tag(mealType)
-                        }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                }
-                .padding(.horizontal)
-
-                HStack {
-                    Text(
-                        String(localized: "meal.detail-view.due-date.label")
-                    )
-                    if viewModel.meal.todoItem?.dueDate != nil {
-                        DatePicker(
-                            "",
-                            selection: Binding(
-                                get: { viewModel.meal.todoItem?.dueDate ?? Date() },
-                                set: { newValue in viewModel.setDueDate(newValue) }
+                    HStack {
+                        Text(
+                            String(localized: "meal.detail-view.scaling-factor.label")
+                        )
+                        TextField(
+                            String(localized: "meal.detail-view.scaling-factor.field"),
+                            value: Binding(
+                                get: { viewModel.meal.scalingFactor },
+                                set: { newValue in viewModel.setScalingFactor(newValue) }
                             ),
-                            displayedComponents: .date
+                            formatter: NumberFormatter()
                         )
-                        Button(
-                            String(localized: "meal.detail-view.due-date.remove")
-                        ) {
-                            viewModel.removeDueDate()
-                        }
-                        .foregroundColor(.red)
-                    } else {
-                        Button(
-                            String(localized: "meal.detail-view.due-date.set")
-                        ) {
-                            viewModel.setDueDate(Date())
-                        }
-                        .foregroundColor(.blue)
+                        #if os(iOS)
+                            .keyboardType(.decimalPad)
+                        #endif
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
                     }
+                    .padding()
+
+                    HStack {
+                        Text(
+                            NSLocalizedString(
+                                "meal.detail-view.meal-type.label", comment: "Meal type label"))
+                        Picker(
+                            NSLocalizedString(
+                                "meal.detail-view.meal-type.field",
+                                comment: "Meal type picker label"),
+                            selection: Binding(
+                                get: { viewModel.meal.mealType },
+                                set: { newValue in
+                                    viewModel.setMealType(newValue)
+                                }
+                            )
+                        ) {
+                            ForEach(MealType.allCases, id: \.self) { mealType in
+                                Text(mealType.displayName).tag(mealType)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                    }
+                    .padding(.horizontal)
+
+                    HStack {
+                        Text(
+                            String(localized: "meal.detail-view.due-date.label")
+                        )
+                        if viewModel.meal.todoItem?.dueDate != nil {
+                            DatePicker(
+                                "",
+                                selection: Binding(
+                                    get: { viewModel.meal.todoItem?.dueDate ?? Date() },
+                                    set: { newValue in viewModel.setDueDate(newValue) }
+                                ),
+                                displayedComponents: .date
+                            )
+                            Button(
+                                String(localized: "meal.detail-view.due-date.remove")
+                            ) {
+                                viewModel.removeDueDate()
+                            }
+                            .foregroundColor(.red)
+                        } else {
+                            Button(
+                                String(localized: "meal.detail-view.due-date.set")
+                            ) {
+                                viewModel.setDueDate(Date())
+                            }
+                            .foregroundColor(.blue)
+                        }
+                    }
+                    .padding()
                 }
-                .padding()
             }
             .navigationTitle(
                 String(localized: "meal.detail-view.title")

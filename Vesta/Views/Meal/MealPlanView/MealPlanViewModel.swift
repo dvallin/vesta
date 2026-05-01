@@ -7,7 +7,6 @@ class MealPlanViewModel: ObservableObject {
 
     @Published var selectedMeal: Meal?
     @Published var isPresentingAddMealView = false
-    @Published var isPresentingRecipeListView = false
     @Published var isPresentingShoppingListGenerator = false
     @Published var toastMessages: [ToastMessage] = []
     @Published var filterMode: MealPlanFilterMode = .all

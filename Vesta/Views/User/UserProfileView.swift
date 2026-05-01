@@ -8,6 +8,9 @@ struct UserProfileView: View {
 
     @StateObject var viewModel = UserProfileViewModel()
 
+    @State private var apiKeyInput: String = ""
+    @State private var hasAPIKey: Bool = false
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -21,6 +24,10 @@ struct UserProfileView: View {
                     Divider()
 
                     sharingPreferencesSection
+
+                    Divider()
+
+                    aiConfigurationSection
 
                     Divider()
 
@@ -50,6 +57,7 @@ struct UserProfileView: View {
         .toast(messages: $viewModel.toastMessages)
         .onAppear {
             viewModel.configureContext(modelContext, auth)
+            hasAPIKey = APIKeyManager.hasAPIKey
         }
     }
 
@@ -215,6 +223,77 @@ struct UserProfileView: View {
                     )
                 }
             }
+        }
+    }
+
+    private var aiConfigurationSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(NSLocalizedString("AI Configuration", comment: "AI config section header"))
+                .font(.headline)
+
+            // Status indicator
+            HStack {
+                Image(systemName: hasAPIKey ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .foregroundColor(hasAPIKey ? .green : .secondary)
+                Text(
+                    hasAPIKey
+                        ? NSLocalizedString("API Key Configured", comment: "API key status")
+                        : NSLocalizedString("API Key Not Configured", comment: "API key status")
+                )
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            }
+
+            // Input field
+            SecureField(
+                NSLocalizedString("Enter Anthropic API Key", comment: "API key placeholder"),
+                text: $apiKeyInput
+            )
+            .textFieldStyle(.roundedBorder)
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.never)
+
+            // Buttons
+            HStack(spacing: 12) {
+                Button {
+                    let trimmed = apiKeyInput.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmed.isEmpty else { return }
+                    APIKeyManager.saveAPIKey(trimmed)
+                    apiKeyInput = ""
+                    hasAPIKey = true
+                    HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+                } label: {
+                    Label(
+                        NSLocalizedString("Save Key", comment: "Save API key button"),
+                        systemImage: "key.fill"
+                    )
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(apiKeyInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                if hasAPIKey {
+                    Button(role: .destructive) {
+                        APIKeyManager.deleteAPIKey()
+                        hasAPIKey = false
+                        apiKeyInput = ""
+                        HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+                    } label: {
+                        Label(
+                            NSLocalizedString("Remove Key", comment: "Remove API key button"),
+                            systemImage: "trash"
+                        )
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+
+            Text(
+                NSLocalizedString(
+                    "Your API key is stored locally on this device and never synced to the cloud.",
+                    comment: "API key storage info")
+            )
+            .font(.caption)
+            .foregroundColor(.secondary)
         }
     }
 

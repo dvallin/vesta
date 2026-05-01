@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct DurationSectionView: View {
-    let recipe: Recipe
+struct DurationSectionView<R: RecipeDisplayable>: View {
+    let recipe: R
 
     var body: some View {
         Section(header: Text(NSLocalizedString("Duration", comment: "Section header"))) {
