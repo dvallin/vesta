@@ -1,8 +1,7 @@
-import SwiftData
 import SwiftUI
 
-struct ReadOnlyRecipeDetailView: View {
-    let recipe: Recipe
+struct ReadOnlyRecipeDetailView<R: RecipeDisplayable>: View {
+    let recipe: R
     let scalingFactor: Double
 
     var body: some View {
@@ -76,7 +75,7 @@ struct ReadOnlyRecipeDetailView: View {
         }
     }
 
-    private func formattedQuantity(for ingredient: Ingredient) -> String {
+    private func formattedQuantity(for ingredient: some IngredientDisplayable) -> String {
         if ingredient.quantity == nil {
             return ""
         }

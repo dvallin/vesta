@@ -17,6 +17,7 @@ struct RecipeDetailView: View {
 
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
+    @State private var isPresentingGenerationView = false
 
     @FocusState private var focusedField: String?
 
@@ -174,8 +175,18 @@ struct RecipeDetailView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        viewModel.save()
+                    HStack(spacing: 12) {
+                        Button {
+                            isPresentingGenerationView = true
+                        } label: {
+                            Label(
+                                NSLocalizedString("AI Assist", comment: "AI assist button"),
+                                systemImage: "sparkles"
+                            )
+                        }
+                        Button("Save") {
+                            viewModel.save()
+                        }
                     }
                 }
             #endif
@@ -194,6 +205,9 @@ struct RecipeDetailView: View {
         }
         .onAppear {
             viewModel.configureEnvironment(modelContext, dismiss, auth)
+        }
+        .sheet(isPresented: $isPresentingGenerationView) {
+            RecipeGenerationView(recipe: viewModel.recipe)
         }
     }
 
