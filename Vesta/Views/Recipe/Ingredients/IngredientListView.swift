@@ -10,10 +10,11 @@ struct IngredientListView<IngredientType: Identifiable>: View {
     var body: some View {
         ForEach(ingredients) { ingredient in
             HStack {
-                Text(quantityText(ingredient))
-                    .frame(width: 100, alignment: .leading)
+                Text("•")
                 Text(nameText(ingredient))
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer()
+                Text(quantityText(ingredient))
+                    .foregroundColor(.secondary)
             }
         }
         .onDelete { indexSet in

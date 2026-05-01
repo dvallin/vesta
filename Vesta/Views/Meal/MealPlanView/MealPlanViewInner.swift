@@ -81,14 +81,18 @@ struct MealPlanViewInner: View {
         #endif
         .toolbar {
             #if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        HapticFeedbackManager.shared.generateSelectionFeedback()
-                        viewModel.isPresentingRecipeListView = true
-                    }) {
-                        Label(
-                            NSLocalizedString("Recipes", comment: "Recipes button"),
-                            systemImage: "book")
+                if viewModel.filterMode != .lastWeek {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            HapticFeedbackManager.shared.generateSelectionFeedback()
+                            isPresentingPlanHelper = true
+                        }) {
+                            Label(
+                                NSLocalizedString(
+                                    "Plan Helper",
+                                    comment: "Plan helper button"),
+                                systemImage: "sparkles")
+                        }
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -101,20 +105,6 @@ struct MealPlanViewInner: View {
                                 "Generate Shopping List",
                                 comment: "Generate shopping list button"),
                             systemImage: "cart")
-                    }
-                }
-                if viewModel.filterMode != .lastWeek {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            HapticFeedbackManager.shared.generateSelectionFeedback()
-                            isPresentingPlanHelper = true
-                        }) {
-                            Label(
-                                NSLocalizedString(
-                                    "Plan Helper",
-                                    comment: "Plan helper button"),
-                                systemImage: "wand.and.stars")
-                        }
                     }
                 }
             #endif

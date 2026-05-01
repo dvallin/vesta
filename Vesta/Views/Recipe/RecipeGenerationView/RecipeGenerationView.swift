@@ -63,6 +63,18 @@ extension RecipeGenerationView {
                 viewModel.dismissView()
             }
         }
+        if viewModel.isUsingMockProvider {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Text(NSLocalizedString("Mock", comment: "Mock mode indicator"))
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.orange.opacity(0.2))
+                    .foregroundColor(.orange)
+                    .cornerRadius(4)
+            }
+        }
     }
 }
 
@@ -72,101 +84,18 @@ extension RecipeGenerationView {
     @ViewBuilder
     private var recipePreview: some View {
         if viewModel.hasGeneratedResult, let generated = viewModel.generatedSnapshot {
-            recipeContent(
-                for: generated,
+            RecipeContentView(
+                recipe: generated,
                 label: NSLocalizedString("AI Generated", comment: "Generated recipe label")
             )
         } else {
-            recipeContent(
-                for: viewModel.originalSnapshot,
+            RecipeContentView(
+                recipe: viewModel.originalSnapshot,
                 label: NSLocalizedString("Current Recipe", comment: "Current recipe label")
             )
         }
     }
 
-    @ViewBuilder
-    private func recipeContent<R: RecipeDisplayable>(for recipe: R, label: String?) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            if let label = label {
-                Text(label)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
-                    .textCase(.uppercase)
-                    .padding(.horizontal)
-            }
-
-            // Title
-            Text(recipe.title)
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.horizontal)
-
-            // Details
-            if !recipe.details.isEmpty {
-                Text(recipe.details)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal)
-            }
-
-            // Ingredients
-            if !recipe.sortedIngredients.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(NSLocalizedString("Ingredients", comment: "Section header"))
-                        .font(.headline)
-                        .padding(.horizontal)
-
-                    ForEach(recipe.sortedIngredients) { ingredient in
-                        HStack {
-                            Text("•")
-                            Text(ingredient.name)
-                            Spacer()
-                            if let qty = ingredient.quantity {
-                                Text(
-                                    NumberFormatter.localizedString(
-                                        from: NSNumber(value: qty), number: .decimal)
-                                        + " " + (ingredient.unit?.displayName ?? "")
-                                )
-                                .foregroundColor(.secondary)
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-            }
-
-            // Steps
-            if !recipe.sortedSteps.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(NSLocalizedString("Steps", comment: "Section header"))
-                        .font(.headline)
-                        .padding(.horizontal)
-
-                    ForEach(Array(recipe.sortedSteps.enumerated()), id: \.offset) { index, step in
-                        HStack(alignment: .top) {
-                            Text("\(index + 1).")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.accentColor)
-                                .frame(width: 24, alignment: .leading)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(step.instruction)
-                                    .font(.subheadline)
-                                if let duration = step.duration {
-                                    Text(DateUtils.formattedDuration(duration))
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-            }
-        }
-        .padding(.vertical)
-    }
 }
 
 // MARK: - Actions Section
@@ -216,17 +145,14 @@ extension RecipeGenerationView {
                 )
                 .textFieldStyle(.roundedBorder)
                 .submitLabel(.done)
-                .onSubmit {
-                    viewModel.generate()
-                }
 
                 if !viewModel.customPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Button {
-                        viewModel.generate()
+                        viewModel.customPrompt = ""
                     } label: {
-                        Image(systemName: "arrow.right.circle.fill")
+                        Image(systemName: "xmark.circle.fill")
                             .font(.title2)
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(.secondary)
                     }
                     .transition(.scale.combined(with: .opacity))
                 }

@@ -176,13 +176,15 @@ struct RecipeDetailView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 12) {
-                        Button {
-                            isPresentingGenerationView = true
-                        } label: {
-                            Label(
-                                NSLocalizedString("AI Assist", comment: "AI assist button"),
-                                systemImage: "sparkles"
-                            )
+                        if APIKeyManager.hasAPIKey {
+                            Button {
+                                isPresentingGenerationView = true
+                            } label: {
+                                Label(
+                                    NSLocalizedString("AI Assist", comment: "AI assist button"),
+                                    systemImage: "sparkles"
+                                )
+                            }
                         }
                         Button("Save") {
                             viewModel.save()

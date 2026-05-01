@@ -26,6 +26,12 @@ struct VestaMainPage: View {
                 .onAppear {
                     HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
                 }
+                RecipeListView().tabItem {
+                    Label("Recipes", systemImage: "book")
+                }
+                .onAppear {
+                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+                }
                 ShoppingListView(
                     showPurchased: false
                 ).tabItem {

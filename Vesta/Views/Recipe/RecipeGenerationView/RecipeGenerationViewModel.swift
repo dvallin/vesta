@@ -31,10 +31,20 @@ class RecipeGenerationViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var showingError: Bool = false
 
-    init(recipe: Recipe, provider: RecipeGenerationProvider = MockRecipeGenerationProvider()) {
+    init(recipe: Recipe, provider: RecipeGenerationProvider? = nil) {
         self.recipe = recipe
-        self.provider = provider
+        if let provider = provider {
+            self.provider = provider
+        } else if let apiKey = APIKeyManager.getAPIKey() {
+            self.provider = AnthropicRecipeGenerationProvider(apiKey: apiKey)
+        } else {
+            self.provider = MockRecipeGenerationProvider()
+        }
         self.originalSnapshot = RecipeSnapshot(from: recipe)
+    }
+
+    var isUsingMockProvider: Bool {
+        provider is MockRecipeGenerationProvider
     }
 
     func configureEnvironment(
@@ -81,6 +91,8 @@ class RecipeGenerationViewModel: ObservableObject {
 
     @MainActor
     func generate() {
+        guard generationState != .generating else { return }
+
         let actions = actionsToApply
         guard !actions.isEmpty else {
             errorMessage = NSLocalizedString(

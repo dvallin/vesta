@@ -23,9 +23,6 @@ struct MealPlanView: View {
         .sheet(isPresented: $viewModel.isPresentingAddMealView) {
             AddMealView()
         }
-        .sheet(isPresented: $viewModel.isPresentingRecipeListView) {
-            RecipeListView()
-        }
         .sheet(isPresented: $viewModel.isPresentingShoppingListGenerator) {
             ShoppingListGeneratorView(meals: viewModel.filteredMeals(from: meals))
         }

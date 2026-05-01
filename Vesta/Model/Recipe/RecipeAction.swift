@@ -8,6 +8,7 @@ enum RecipeAction: Hashable, Identifiable {
     case makeFaster
     case simplify
     case makeMoreDetailed
+    case rewrite
     case custom(prompt: String)
 
     var displayName: String {
@@ -27,6 +28,8 @@ enum RecipeAction: Hashable, Identifiable {
             return NSLocalizedString("Simplify", comment: "Use fewer and simpler ingredients")
         case .makeMoreDetailed:
             return NSLocalizedString("More Detail", comment: "Add more detail to instructions")
+        case .rewrite:
+            return NSLocalizedString("Rewrite", comment: "Rewrite and translate recipe")
         case .custom(let prompt):
             if prompt.isEmpty {
                 return NSLocalizedString("Custom", comment: "Custom recipe transformation")
@@ -55,6 +58,8 @@ enum RecipeAction: Hashable, Identifiable {
             return "square.stack.3d.up.slash.fill"
         case .makeMoreDetailed:
             return "text.justify.leading"
+        case .rewrite:
+            return "character.book.closed.fill"
         case .custom:
             return "pencil"
         }
@@ -76,6 +81,8 @@ enum RecipeAction: Hashable, Identifiable {
             return "simplify"
         case .makeMoreDetailed:
             return "makeMoreDetailed"
+        case .rewrite:
+            return "rewrite"
         case .custom(let prompt):
             let hash = prompt.hashValue
             return "custom-\(hash)"
@@ -85,7 +92,7 @@ enum RecipeAction: Hashable, Identifiable {
     static var presets: [RecipeAction] {
         [
             .complete, .makeVegan, .makeVegetarian, .makeKidFriendly, .makeFaster, .simplify,
-            .makeMoreDetailed,
+            .makeMoreDetailed, .rewrite,
         ]
     }
 }
@@ -115,6 +122,8 @@ extension RecipeAction: Codable {
             try container.encode("simplify", forKey: .kind)
         case .makeMoreDetailed:
             try container.encode("makeMoreDetailed", forKey: .kind)
+        case .rewrite:
+            try container.encode("rewrite", forKey: .kind)
         case .custom(let prompt):
             try container.encode("custom", forKey: .kind)
             try container.encode(prompt, forKey: .prompt)
@@ -139,6 +148,8 @@ extension RecipeAction: Codable {
             self = .simplify
         case "makeMoreDetailed":
             self = .makeMoreDetailed
+        case "rewrite":
+            self = .rewrite
         case "custom":
             let prompt = try container.decode(String.self, forKey: .prompt)
             self = .custom(prompt: prompt)

@@ -43,6 +43,8 @@ class MockRecipeGenerationProvider: RecipeGenerationProvider {
             return applySimplify(to: snapshot)
         case .makeMoreDetailed:
             return applyMakeMoreDetailed(to: snapshot)
+        case .rewrite:
+            return applyRewrite(to: snapshot)
         case .custom(let prompt):
             return applyCustom(prompt: prompt, to: snapshot)
         }
@@ -405,6 +407,44 @@ class MockRecipeGenerationProvider: RecipeGenerationProvider {
 
         if !result.tags.contains("Detailed") {
             result.tags.append("Detailed")
+        }
+
+        return result
+    }
+
+    // MARK: - Rewrite
+
+    private func applyRewrite(to snapshot: RecipeSnapshot) -> RecipeSnapshot {
+        var result = snapshot
+
+        // Mock: capitalize and clean up ingredient names
+        result.ingredients = result.ingredients.map { ingredient in
+            var modified = ingredient
+            modified.name = ingredient.name
+                .split(separator: " ")
+                .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
+                .joined(separator: " ")
+            return modified
+        }
+
+        // Mock: clean up step instructions
+        result.steps = result.steps.map { step in
+            var modified = step
+            // Ensure instructions end with a period
+            if !modified.instruction.hasSuffix(".") {
+                modified.instruction += "."
+            }
+            return modified
+        }
+
+        // Improve details
+        if result.details.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            result.details =
+                "A carefully crafted \(result.title) recipe with well-balanced flavors."
+        }
+
+        if !result.tags.contains("Rewritten") {
+            result.tags.append("Rewritten")
         }
 
         return result
