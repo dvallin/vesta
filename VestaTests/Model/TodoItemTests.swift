@@ -660,6 +660,7 @@ final class TodoItemTests: XCTestCase {
     func testAdaptiveToleranceForDailyHabits() throws {
         let dailyTask = TodoItem(
             title: "Daily Exercise",
+            details: "",
             dueDate: Date(),
             recurrenceFrequency: .daily,
             recurrenceType: .flexible,
@@ -684,6 +685,7 @@ final class TodoItemTests: XCTestCase {
     func testAdaptiveToleranceForWeeklyTasks() throws {
         let weeklyTask = TodoItem(
             title: "Weekly Meeting",
+            details: "",
             dueDate: Date(),
             recurrenceFrequency: .weekly,
             recurrenceType: .flexible,
@@ -708,6 +710,7 @@ final class TodoItemTests: XCTestCase {
     func testAdaptiveToleranceForMonthlyTasks() throws {
         let monthlyTask = TodoItem(
             title: "Monthly Review",
+            details: "",
             dueDate: Date(),
             recurrenceFrequency: .monthly,
             recurrenceType: .flexible,
@@ -732,6 +735,7 @@ final class TodoItemTests: XCTestCase {
     func testAdaptiveToleranceForYearlyTasks() throws {
         let yearlyTask = TodoItem(
             title: "Annual Checkup",
+            details: "",
             dueDate: Date(),
             recurrenceFrequency: .yearly,
             recurrenceType: .flexible,
@@ -757,6 +761,7 @@ final class TodoItemTests: XCTestCase {
     func testFixedVsFlexibleToleranceDifference() throws {
         let fixedWeeklyTask = TodoItem(
             title: "Fixed Weekly Meeting",
+            details: "",
             dueDate: Date(),
             recurrenceFrequency: .weekly,
             recurrenceType: .fixed,
@@ -765,6 +770,7 @@ final class TodoItemTests: XCTestCase {
 
         let flexibleWeeklyTask = TodoItem(
             title: "Flexible Weekly Exercise",
+            details: "",
             dueDate: Date(),
             recurrenceFrequency: .weekly,
             recurrenceType: .flexible,
@@ -783,6 +789,7 @@ final class TodoItemTests: XCTestCase {
     func testNonRecurringItemTolerance() throws {
         let oneTimeTask = TodoItem(
             title: "One-time task",
+            details: "",
             dueDate: Date(),
             owner: user
         )
@@ -806,6 +813,7 @@ final class TodoItemTests: XCTestCase {
         // Even with the strictest settings, tolerance should never be less than 1 day
         let strictDailyTask = TodoItem(
             title: "Very Strict Daily Task",
+            details: "",
             dueDate: Date(),
             recurrenceFrequency: .daily,
             recurrenceType: .fixed,

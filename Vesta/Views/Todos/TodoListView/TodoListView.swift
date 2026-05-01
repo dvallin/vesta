@@ -6,6 +6,7 @@ struct TodoListView: View {
     @EnvironmentObject private var syncService: SyncService
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var deepLinkManager: DeepLinkManager
 
     @StateObject var viewModel = TodoListViewModel()
 
@@ -37,6 +38,16 @@ struct TodoListView: View {
             if newPhase == .active {
                 viewModel.updateCurrentDay()
             }
+        }
+        .onReceive(deepLinkManager.$pendingTodoItemUID) { uid in
+            guard let uid = uid else { return }
+            let descriptor = FetchDescriptor<TodoItem>(
+                predicate: #Predicate<TodoItem> { $0.uid == uid }
+            )
+            if let item = try? modelContext.fetch(descriptor).first {
+                viewModel.selectedTodoItem = item
+            }
+            deepLinkManager.pendingTodoItemUID = nil
         }
     }
 }

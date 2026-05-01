@@ -1,12 +1,16 @@
 import UserNotifications
 
-class NotificationManager {
+class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationManager()
 
-    private init() {}
+    private override init() {
+        super.init()
+    }
 
     func requestAuthorization() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) {
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+        center.requestAuthorization(options: [.alert, .badge, .sound]) {
             granted, error in
             if granted {
                 print("Notification permission granted")
@@ -28,6 +32,7 @@ class NotificationManager {
         content.title = item.title
         content.body = Self.notificationBody(for: item, dueDate: dueDate)
         content.sound = .default
+        content.userInfo = ["todoItemUID": item.uid]
 
         let calendar = Calendar.current
 
@@ -68,37 +73,50 @@ class NotificationManager {
         }
     }
 
-    // Helper to generate a detailed notification body from item data
+    // Helper to generate a concise, informative notification body
     private static func notificationBody(for item: TodoItem, dueDate: Date) -> String {
         var lines: [String] = []
 
-        // Format due date
-        let dateFormatter = DateFormatter()
-        if item.ignoreTimeComponent {
-            dateFormatter.dateStyle = .medium
-            dateFormatter.timeStyle = .none
+        // Show relative time: "In 15 minutes" since we always trigger 15 min before
+        let minutesUntilDue = Int(dueDate.timeIntervalSinceNow / 60)
+        if minutesUntilDue > 0 {
+            let formatter = DateComponentsFormatter()
+            formatter.unitsStyle = .full
+            formatter.allowedUnits = [.hour, .minute]
+            formatter.maximumUnitCount = 2
+            if let relativeString = formatter.string(from: TimeInterval(minutesUntilDue * 60)) {
+                lines.append(
+                    String(
+                        format: NSLocalizedString(
+                            "In %@", comment: "Relative time until due, e.g. 'In 15 minutes'"),
+                        relativeString
+                    ))
+            }
         } else {
-            dateFormatter.dateStyle = .medium
-            dateFormatter.timeStyle = .short
-        }
-        let dueString = dateFormatter.string(from: dueDate)
-        lines.append("Due: \(dueString)")
-
-        // Details
-        if !item.details.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            lines.append("Details: \(item.details)")
+            lines.append(
+                NSLocalizedString("Due now", comment: "Notification body when item is due now"))
         }
 
-        // Recurrence
-        if let freq = item.recurrenceFrequency {
-            var recurrence = freq.displayName
-            if let interval = item.recurrenceInterval, interval > 1 {
-                recurrence = "Every \(interval) \(freq.displayName.lowercased())"
-            }
-            if let type = item.recurrenceType {
-                recurrence += " (\(type.displayName))"
-            }
-            lines.append("Repeats: \(recurrence)")
+        // Show the actual time for quick reference (e.g. "at 21:00")
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateStyle = .none
+        timeFormatter.timeStyle = .short
+        let timeString = timeFormatter.string(from: dueDate)
+        lines.append(
+            String(
+                format: NSLocalizedString("at %@", comment: "Due time, e.g. 'at 21:00'"),
+                timeString
+            ))
+
+        // Show details if present (truncated to keep notification concise)
+        let trimmedDetails = item.details.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedDetails.isEmpty {
+            let maxLength = 80
+            let truncated =
+                trimmedDetails.count > maxLength
+                ? String(trimmedDetails.prefix(maxLength)) + "…"
+                : trimmedDetails
+            lines.append(truncated)
         }
 
         return lines.joined(separator: "\n")
@@ -109,5 +127,31 @@ class NotificationManager {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [
             identifier
         ])
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+        if let todoItemUID = userInfo["todoItemUID"] as? String {
+            DispatchQueue.main.async {
+                DeepLinkManager.shared.pendingTodoItemUID = todoItemUID
+            }
+        }
+        completionHandler()
+    }
+
+    // Handle notifications when app is in the foreground
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler:
+            @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound])
     }
 }

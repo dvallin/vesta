@@ -75,5 +75,6 @@ struct VestaApp: App {
         .environmentObject(inviteService)
         .environmentObject(entitySharingService)
         .environmentObject(cleanupService)
+        .environmentObject(DeepLinkManager.shared)
     }
 }
