@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct TodoListViewInner: View {
-    @ObservedObject var viewModel: TodoListViewModel
+    @Bindable var viewModel: TodoListViewModel
     var todoItems: [TodoItem]
     @State private var isSearchActive = false
     @FocusState private var isSearchFocused: Bool

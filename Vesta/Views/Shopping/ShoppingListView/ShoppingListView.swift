@@ -9,13 +9,14 @@ struct ShoppingListView: View {
         filter: #Predicate { item in item.deletedAt == nil }
     ) private var shoppingItems: [ShoppingListItem]
 
-    @StateObject var viewModel: ShoppingListViewModel
+    @State var viewModel: ShoppingListViewModel
 
     init(showPurchased: Bool = false) {
-        _viewModel = StateObject(wrappedValue: ShoppingListViewModel(showPurchased: showPurchased))
+        _viewModel = State(initialValue: ShoppingListViewModel(showPurchased: showPurchased))
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             ShoppingListViewInner(
                 viewModel: viewModel,

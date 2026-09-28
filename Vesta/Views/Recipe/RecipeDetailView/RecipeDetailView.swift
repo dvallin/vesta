@@ -5,11 +5,13 @@ struct RecipeDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var auth: UserAuthService
-    @StateObject private var viewModel: RecipeDetailViewModel
+    @State private var viewModel: RecipeDetailViewModel
 
     @State private var ingredientName: String = ""
     @State private var ingredientQuantity: String = ""
     @State private var ingredientUnit: Unit? = nil
+
+    @State private var editingIngredient: Ingredient? = nil
 
     @State private var stepInstruction: String = ""
     @State private var stepType: StepType = .cooking
@@ -21,10 +23,11 @@ struct RecipeDetailView: View {
     @FocusState private var focusedField: String?
 
     init(recipe: Recipe) {
-        _viewModel = StateObject(wrappedValue: RecipeDetailViewModel(recipe: recipe))
+        _viewModel = State(initialValue: RecipeDetailViewModel(recipe: recipe))
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         Form {
             RecipeTitleDetailsSection(
                 title: $viewModel.recipe.title,
@@ -131,25 +134,25 @@ struct RecipeDetailView: View {
                     NSLocalizedString("Meal Types", comment: "Section header for meal types"))
             ) {
                 ForEach(MealType.allCases, id: \.self) { mealType in
-                    HStack {
-                        Text(mealType.displayName)
-                        Spacer()
-                        if viewModel.recipe.mealTypes.contains(mealType) {
-                            Image(systemName: "checkmark")
-                                .foregroundColor(.accentColor)
-                        }
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        guard let currentUser = auth.currentUser else { return }
-                        var newMealTypes = viewModel.recipe.mealTypes
-                        if newMealTypes.contains(mealType) {
-                            newMealTypes.removeAll { $0 == mealType }
-                        } else {
-                            newMealTypes.append(mealType)
-                        }
-                        viewModel.recipe.setMealTypes(newMealTypes, currentUser: currentUser)
-                    }
+                    Toggle(
+                        mealType.displayName,
+                        isOn: Binding(
+                            get: { viewModel.recipe.mealTypes.contains(mealType) },
+                            set: { isOn in
+                                guard let currentUser = auth.currentUser else { return }
+                                var newMealTypes = viewModel.recipe.mealTypes
+                                if isOn {
+                                    if !newMealTypes.contains(mealType) {
+                                        newMealTypes.append(mealType)
+                                    }
+                                } else {
+                                    newMealTypes.removeAll { $0 == mealType }
+                                }
+                                viewModel.recipe.setMealTypes(
+                                    newMealTypes, currentUser: currentUser)
+                            }
+                        )
+                    )
                 }
             }
 
@@ -188,10 +191,14 @@ struct RecipeDetailView: View {
                     return qtyPart + " " + unitPart
                 },
                 nameText: { $0.name },
+                groupText: { $0.group },
                 ingredientName: $ingredientName,
                 ingredientQuantity: $ingredientQuantity,
                 ingredientUnit: $ingredientUnit,
-                onAdd: addIngredient
+                onAdd: addIngredient,
+                onEdit: { ingredient in
+                    editingIngredient = ingredient
+                }
             )
             .focused($focusedField, equals: "ingredients")
             #if os(iOS)
@@ -264,6 +271,20 @@ struct RecipeDetailView: View {
         .onAppear {
             viewModel.configureEnvironment(modelContext, dismiss, auth)
         }
+        .sheet(item: $editingIngredient) { ingredient in
+            IngredientEditSheet(
+                name: ingredient.name,
+                quantityText: ingredient.quantity.map {
+                    NumberFormatter.localizedString(from: NSNumber(value: $0), number: .decimal)
+                } ?? "",
+                unit: ingredient.unit,
+                onSave: { name, quantity, unit in
+                    viewModel.updateIngredient(
+                        ingredient, name: name, quantity: quantity, unit: unit)
+                }
+            )
+        }
+        .toast(messages: $viewModel.toastMessages)
 
     }
 
@@ -277,10 +298,26 @@ struct RecipeDetailView: View {
             return
         }
 
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
-        let quantity = numberFormatter.number(from: ingredientQuantity)?.doubleValue
-        viewModel.addIngredient(name: ingredientName, quantity: quantity, unit: ingredientUnit)
+        let name: String
+        let quantity: Double?
+        let unit: Unit?
+
+        // If quantity/unit fields are empty, try smart parsing from the name field
+        if ingredientQuantity.isEmpty && ingredientUnit == nil {
+            let parsed = IngredientParser.parse(ingredientName)
+            name = parsed.name
+            quantity = parsed.quantity
+            unit = parsed.unit
+        } else {
+            name = ingredientName
+            let numberFormatter = NumberFormatter()
+            numberFormatter.numberStyle = .decimal
+            quantity = numberFormatter.number(from: ingredientQuantity)?.doubleValue
+            unit = ingredientUnit
+        }
+
+        viewModel.addIngredient(
+            name: name, quantity: quantity, unit: unit, group: nil)
 
         // Reset the input fields.
         ingredientName = ""

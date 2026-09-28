@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct QuickFilterView: View {
-    @ObservedObject var viewModel: TodoListViewModel
+    var viewModel: TodoListViewModel
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {

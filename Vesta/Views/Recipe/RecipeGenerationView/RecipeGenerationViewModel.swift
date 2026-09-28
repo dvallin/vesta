@@ -8,7 +8,7 @@ enum GenerationState {
     case applying  // Writing changes to model
 }
 
-class RecipeGenerationViewModel: ObservableObject {
+@Observable class RecipeGenerationViewModel {
     // Environment (configured after init, same pattern as RecipeDetailViewModel)
     private var modelContext: ModelContext?
     private var auth: UserAuthService?
@@ -21,15 +21,15 @@ class RecipeGenerationViewModel: ObservableObject {
     private let provider: RecipeGenerationProvider
 
     // Snapshots
-    @Published var originalSnapshot: RecipeSnapshot
-    @Published var generatedSnapshot: RecipeSnapshot?
+    var originalSnapshot: RecipeSnapshot
+    var generatedSnapshot: RecipeSnapshot?
 
     // UI State
-    @Published var generationState: GenerationState = .idle
-    @Published var selectedActions: Set<RecipeAction> = [.complete]  // Default to "complete"
-    @Published var customPrompt: String = ""
-    @Published var errorMessage: String?
-    @Published var showingError: Bool = false
+    var generationState: GenerationState = .idle
+    var selectedActions: Set<RecipeAction> = [.complete]  // Default to "complete"
+    var customPrompt: String = ""
+    var errorMessage: String?
+    var showingError: Bool = false
 
     init(recipe: Recipe, provider: RecipeGenerationProvider? = nil) {
         self.recipe = recipe

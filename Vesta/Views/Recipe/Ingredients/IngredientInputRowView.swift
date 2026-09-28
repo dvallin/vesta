@@ -1,22 +1,48 @@
 import SwiftUI
 
 struct IngredientInputRowView: View {
+    @Binding var ingredientName: String
     @Binding var ingredientQuantity: String
     @Binding var ingredientUnit: Unit?
-    @Binding var ingredientName: String
 
     let onAdd: () -> Void
 
     enum FocusableField: Hashable {
-        case quantity
         case name
+        case quantity
     }
 
     @FocusState private var focusedField: FocusableField?
 
     var body: some View {
-        HStack {
-            HStack(spacing: 4) {
+        VStack(spacing: 8) {
+            HStack {
+                TextField(
+                    NSLocalizedString("Name", comment: "Ingredient name field placeholder"),
+                    text: $ingredientName
+                )
+                .focused($focusedField, equals: .name)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .autocorrectionDisabled(true)
+                .textInputAutocapitalization(.words)
+                .submitLabel(.done)
+                .onSubmit {
+                    onAdd()
+                    focusedField = .name
+                }
+
+                Button(action: {
+                    withAnimation {
+                        onAdd()
+                        focusedField = .name
+                    }
+                }) {
+                    Image(systemName: "plus.circle")
+                        .foregroundColor(.green)
+                }.accessibilityIdentifier("AddButton")
+            }
+
+            HStack {
                 TextField(
                     NSLocalizedString("Quantity", comment: "Ingredient quantity field placeholder"),
                     text: $ingredientQuantity
@@ -26,11 +52,7 @@ struct IngredientInputRowView: View {
                 #if os(iOS)
                     .keyboardType(.numbersAndPunctuation)
                 #endif
-                .submitLabel(.next)
-                .onSubmit {
-                    focusedField = .name
-                }
-                .layoutPriority(1)
+                .frame(width: 80)
 
                 Picker("", selection: $ingredientUnit) {
                     Text("None").tag(nil as Unit?)
@@ -40,46 +62,26 @@ struct IngredientInputRowView: View {
                 }
                 .pickerStyle(MenuPickerStyle())
                 .fixedSize()
-            }
-            .frame(width: 150)
 
-            TextField(
-                NSLocalizedString("Name", comment: "Ingredient name field placeholder"),
-                text: $ingredientName
-            )
-            .focused($focusedField, equals: .name)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .submitLabel(.done)
-            .autocorrectionDisabled(true)
-            .textInputAutocapitalization(.words)
-            .onSubmit {
-                onAdd()
-                focusedField = .quantity
+                Spacer()
             }
-
-            Button(action: {
-                withAnimation {
-                    onAdd()
-                    focusedField = .quantity
-                }
-            }) {
-                Image(systemName: "plus.circle")
-                    .foregroundColor(.green)
-            }.accessibilityIdentifier("AddButton")
+        }
+        .onAppear {
+            focusedField = .name
         }
     }
 }
 
 #Preview {
+    @Previewable @State var name = ""
     @Previewable @State var quantity = ""
     @Previewable @State var unit: Unit? = nil
-    @Previewable @State var name = ""
 
     Form {
         IngredientInputRowView(
+            ingredientName: $name,
             ingredientQuantity: $quantity,
             ingredientUnit: $unit,
-            ingredientName: $name,
             onAdd: {}
         )
         .padding()
@@ -89,9 +91,9 @@ struct IngredientInputRowView: View {
 #Preview("With Values") {
     Form {
         IngredientInputRowView(
+            ingredientName: .constant("Flour"),
             ingredientQuantity: .constant("100"),
             ingredientUnit: .constant(.gram),
-            ingredientName: .constant("Flour"),
             onAdd: {}
         )
         .padding()

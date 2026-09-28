@@ -135,6 +135,7 @@ extension Ingredient {
         // Add optional properties (always include to ensure nil values are synced)
         dto["quantity"] = quantity as Any
         dto["unit"] = unit?.rawValue as Any
+        dto["group"] = group as Any
 
         return dto
     }
@@ -155,11 +156,14 @@ extension Ingredient {
             unit = Unit(rawValue: unitRaw)
         }
 
+        let group = data["group"] as? String
+
         return Ingredient(
             name: name,
             order: order,
             quantity: quantity,
             unit: unit,
+            group: group,
             recipe: recipe
         )
     }

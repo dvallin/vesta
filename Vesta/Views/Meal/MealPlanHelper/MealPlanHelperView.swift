@@ -12,13 +12,14 @@ struct MealPlanHelperView: View {
         filter: #Predicate { recipe in recipe.deletedAt == nil }
     ) private var allRecipes: [Recipe]
 
-    @StateObject var viewModel: MealPlanHelperViewModel
+    @State var viewModel: MealPlanHelperViewModel
 
     init(filterMode: MealPlanFilterMode) {
-        _viewModel = StateObject(wrappedValue: MealPlanHelperViewModel(filterMode: filterMode))
+        _viewModel = State(initialValue: MealPlanHelperViewModel(filterMode: filterMode))
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             List {
                 // Planned meals section

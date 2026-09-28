@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TodoListItem: View {
-    @ObservedObject var viewModel: TodoListViewModel
+    var viewModel: TodoListViewModel
 
     var item: TodoItem
 
@@ -27,13 +27,9 @@ struct TodoListItem: View {
                         .font(.headline)
                     Spacer()
                     if item.isHabitItem {
-                        HealthScoreIndicator(
-                            health: item.health,
-                            isPersonalBest: item.bestStreak > 0
-                                && item.currentStreak >= item.bestStreak,
-                            isRebuilding: item.currentStreak == 0
-                                && item.bestStreak > 0,
-                            trend: item.healthTrend
+                        StreakIndicator(
+                            streak: item.currentStreak,
+                            isPersonalBest: item.isPersonalBest
                         )
                     }
                 }

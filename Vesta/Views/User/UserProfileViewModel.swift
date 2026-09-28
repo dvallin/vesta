@@ -2,15 +2,15 @@ import Foundation
 import SwiftData
 import os
 
-class UserProfileViewModel: ObservableObject {
-    @Published var isPresentingAddFriendView = false
-    @Published var isPresentingInvitesView = false
-    @Published var toastMessages: [ToastMessage] = []
-    @Published var shareMeals: Bool = false
-    @Published var shareShoppingItems: Bool = false
-    @Published var selectedCategories: [TodoItemCategory] = []
-    @Published var isOnHoliday: Bool = false
-    @Published var holidayStartDate: Date? = nil
+@Observable class UserProfileViewModel {
+    var isPresentingAddFriendView = false
+    var isPresentingInvitesView = false
+    var toastMessages: [ToastMessage] = []
+    var shareMeals: Bool = false
+    var shareShoppingItems: Bool = false
+    var selectedCategories: [TodoItemCategory] = []
+    var isOnHoliday: Bool = false
+    var holidayStartDate: Date? = nil
 
     private var modelContext: ModelContext?
     private var auth: UserAuthService?
@@ -60,7 +60,7 @@ class UserProfileViewModel: ObservableObject {
                 let todoItemService = TodoItemService(modelContext: context)
                 let items = try todoItemService.fetchByOwnerId(currentUser.uid)
                 for item in items {
-                    if item.isFrozen {
+                    if item.deletedAt == nil && item.isFrozen {
                         item.unfreeze(currentUser: currentUser)
                     }
                 }
@@ -75,7 +75,7 @@ class UserProfileViewModel: ObservableObject {
 
         do {
             try context.save()
-            
+
             try auth?.updateUser()
 
             // Update sharing status on all entities

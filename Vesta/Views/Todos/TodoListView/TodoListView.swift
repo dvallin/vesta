@@ -8,9 +8,10 @@ struct TodoListView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var deepLinkManager: DeepLinkManager
 
-    @StateObject var viewModel = TodoListViewModel()
+    @State var viewModel = TodoListViewModel()
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             if viewModel.filterMode == .completed {
                 CompletedTodoListView(viewModel: viewModel)

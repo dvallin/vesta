@@ -2,19 +2,21 @@ import Foundation
 
 // MARK: - Ingredient Snapshot
 
-struct IngredientSnapshot: Codable, Hashable, Identifiable {
+struct IngredientSnapshot: Hashable, Identifiable {
     var name: String
     var order: Int
     var quantity: Double?
     var unit: Unit?
+    var group: String?
 
     var id: Int { order }
 
-    init(name: String, order: Int, quantity: Double?, unit: Unit?) {
+    init(name: String, order: Int, quantity: Double?, unit: Unit?, group: String? = nil) {
         self.name = name
         self.order = order
         self.quantity = quantity
         self.unit = unit
+        self.group = group
     }
 
     init(from ingredient: Ingredient) {
@@ -22,6 +24,22 @@ struct IngredientSnapshot: Codable, Hashable, Identifiable {
         self.order = ingredient.order
         self.quantity = ingredient.quantity
         self.unit = ingredient.unit
+        self.group = ingredient.group
+    }
+}
+
+extension IngredientSnapshot: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case name, order, quantity, unit, group
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        order = try container.decode(Int.self, forKey: .order)
+        quantity = try container.decodeIfPresent(Double.self, forKey: .quantity)
+        unit = try container.decodeIfPresent(Unit.self, forKey: .unit)
+        group = try container.decodeIfPresent(String.self, forKey: .group)
     }
 }
 
@@ -121,6 +139,7 @@ struct RecipeSnapshot: Hashable {
                 name: ingredient.name,
                 quantity: ingredient.quantity,
                 unit: ingredient.unit,
+                group: ingredient.group,
                 currentUser: currentUser
             )
         }

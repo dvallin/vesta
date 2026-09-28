@@ -35,18 +35,18 @@ enum RecipeFilterMode: String, CaseIterable, Identifiable {
     }
 }
 
-class RecipeListViewModel: ObservableObject {
+@Observable class RecipeListViewModel {
     private var modelContext: ModelContext?
     private var auth: UserAuthService?
 
-    @Published var searchText: String = ""
-    @Published var sortOption: RecipeSortOption = .title
-    @Published var filterMode: RecipeFilterMode = .all
-    @Published var selectedSeasonality: Seasonality? = nil
-    @Published var selectedMealType: MealType? = nil
-    @Published var selectedTag: String? = nil
-    @Published var showUntagged: Bool = false
-    @Published var isPresentingAddRecipeView = false
+    var searchText: String = ""
+    var sortOption: RecipeSortOption = .title
+    var filterMode: RecipeFilterMode = .all
+    var selectedSeasonality: Seasonality? = nil
+    var selectedMealType: MealType? = nil
+    var selectedTag: String? = nil
+    var showUntagged: Bool = false
+    var isPresentingAddRecipeView = false
 
     func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
         self.modelContext = context

@@ -36,34 +36,6 @@ enum RecurrenceType: String, Codable, CaseIterable {
     }
 }
 
-enum HealthTrend: String {
-    case improving
-    case stable
-    case declining
-
-    var systemImage: String {
-        switch self {
-        case .improving:
-            return "arrow.up.right"
-        case .stable:
-            return "arrow.right"
-        case .declining:
-            return "arrow.down.right"
-        }
-    }
-
-    var displayName: String {
-        switch self {
-        case .improving:
-            return String(localized: "todos.health-trend.improving")
-        case .stable:
-            return String(localized: "todos.health-trend.stable")
-        case .declining:
-            return String(localized: "todos.health-trend.declining")
-        }
-    }
-}
-
 enum DayOfWeek: String, Codable, CaseIterable {
     case sunday, monday, tuesday, wednesday, thursday, friday, saturday
 
@@ -247,59 +219,25 @@ class TodoItem: SyncableEntity {
             .max()
     }
 
-    /// Checks if a completion date is within acceptable tolerance of the target due date
-    /// Uses adaptive tolerance based on recurrence frequency and type
+    /// Calculates the streak-break deadline for a given due date.
+    /// - If `ignoreTimeComponent` is false (time matters): the later of end-of-day or dueDate + 8 hours
+    /// - If `ignoreTimeComponent` is true (date only): end of that day
+    func streakDeadline(for targetDate: Date) -> Date {
+        let calendar = Calendar.current
+        let endOfDay = calendar.startOfDay(
+            for: calendar.date(byAdding: .day, value: 1, to: targetDate)!)
+
+        if !ignoreTimeComponent {
+            let plus8Hours = targetDate.addingTimeInterval(8 * 3600)
+            return max(endOfDay, plus8Hours)
+        } else {
+            return endOfDay
+        }
+    }
+
+    /// Whether a completion date counts as "on time" for streak purposes
     func isWithinStreakTolerance(date: Date, targetDate: Date) -> Bool {
-        let toleranceDays = calculateAdaptiveTolerance()
-        let tolerance =
-            Calendar.current.date(byAdding: .day, value: toleranceDays, to: targetDate)
-            ?? targetDate
-        return date <= tolerance
-    }
-
-    /// Calculates adaptive tolerance in days based on recurrence frequency and type
-    /// - Daily habits: 1 day (strict for consistency)
-    /// - Weekly tasks: 2 days (allows some flexibility)
-    /// - Monthly tasks: 5 days (reasonable for larger intervals)
-    /// - Yearly tasks: 14 days (generous for infrequent tasks)
-    ///
-    /// Modifiers:
-    /// - Fixed recurrence: 70% of base (stricter scheduling)
-    /// - Flexible recurrence: 130% of base (more adaptable)
-    private func calculateAdaptiveTolerance() -> Int {
-        guard let frequency = recurrenceFrequency else {
-            return 2  // Default for non-recurring items
-        }
-
-        let baseToleranceByFrequency: Int
-        switch frequency {
-        case .daily:
-            baseToleranceByFrequency = 1  // Daily habits should be stricter
-        case .weekly:
-            baseToleranceByFrequency = 2  // Weekly tasks get 2 days
-        case .monthly:
-            baseToleranceByFrequency = 5  // Monthly tasks get more flexibility
-        case .yearly:
-            baseToleranceByFrequency = 14  // Yearly tasks get 2 weeks
-        }
-
-        // Adjust based on recurrence type
-        let typeMultiplier: Double
-        switch recurrenceType {
-        case .fixed:
-            typeMultiplier = 0.7  // Fixed recurrences should be stricter
-        case .flexible:
-            typeMultiplier = 1.3  // Flexible recurrences get more tolerance
-        case .none:
-            typeMultiplier = 1.0  // Default multiplier
-        }
-
-        return max(1, Int(Double(baseToleranceByFrequency) * typeMultiplier))
-    }
-
-    /// Returns the current tolerance in days for this item (useful for debugging/UI)
-    var currentToleranceDays: Int {
-        return calculateAdaptiveTolerance()
+        return date <= streakDeadline(for: targetDate)
     }
 
     var isHabitItem: Bool {
@@ -311,7 +249,7 @@ class TodoItem: SyncableEntity {
             return false
         }
         guard let dueDate = dueDate else { return true }
-        return self.isInThePast && !isWithinStreakTolerance(date: Date(), targetDate: dueDate)
+        return Date() > streakDeadline(for: dueDate)
     }
 
     var currentStreak: Int {
@@ -319,31 +257,19 @@ class TodoItem: SyncableEntity {
         guard !sortedEvents.isEmpty else { return 0 }
 
         var streak = 0
-        var consecutiveMisses = 0
-        let maxConsecutiveMisses = 2
-
         for event in sortedEvents.reversed() {
-            if event.eventType == .completed && wasCompletedWithinReasonableTime(event) {
+            if event.eventType == .completed && wasCompletedOnTime(event) {
                 streak += 1
-                consecutiveMisses = 0
             } else if event.eventType == .skipped {
-                // Skipped tasks don't break the streak, just don't add to it
                 continue
             } else {
-                // Late completion or other event types: apply decay
-                consecutiveMisses += 1
-                if consecutiveMisses >= maxConsecutiveMisses {
-                    // Two consecutive misses: full reset
-                    break
-                }
-                // First miss: halve the accumulated streak (graceful decay)
-                streak = streak / 2
+                break
             }
         }
 
-        // If currently overdue beyond tolerance, apply one decay penalty
-        if self.streakMissed {
-            streak = streak / 2
+        // If currently past the deadline, streak is broken
+        if streakMissed {
+            return 0
         }
 
         return streak
@@ -356,11 +282,10 @@ class TodoItem: SyncableEntity {
         var current = 0
         var best = 0
         for event in sortedEvents {
-            if event.eventType == .completed && wasCompletedWithinReasonableTime(event) {
+            if event.eventType == .completed && wasCompletedOnTime(event) {
                 current += 1
                 best = max(best, current)
             } else if event.eventType == .skipped {
-                // Skipped tasks don't break the streak, just don't count
                 continue
             } else {
                 current = 0
@@ -369,7 +294,7 @@ class TodoItem: SyncableEntity {
         return max(best, currentStreak)
     }
 
-    private func wasCompletedWithinReasonableTime(_ event: TodoEvent) -> Bool {
+    private func wasCompletedOnTime(_ event: TodoEvent) -> Bool {
         guard let date = event.completedAt as Date? else {
             return false
         }
@@ -379,108 +304,8 @@ class TodoItem: SyncableEntity {
         return isWithinStreakTolerance(date: date, targetDate: dueDate)
     }
 
-    var health: Int {
-        let sCap = adaptiveStreakCap
-        let streak = Double(self.currentStreak)
-        let base = 100.0 * (streak / (streak + sCap))
-        // Subtle quality bonus: up to +5% for completing before the due date
-        let qualityBonus = onTimeRate * 5.0
-        return min(100, Int(base + qualityBonus))
-    }
-
-    /// Adapts the streak saturation cap based on recurrence frequency.
-    /// Lower caps mean health grows faster per completion, which is appropriate
-    /// for less frequent tasks where each completion represents more elapsed time.
-    /// - Daily: S_CAP=7 (~50% at 1 week, ~75% at 3 weeks)
-    /// - Weekly: S_CAP=5 (~50% at 5 weeks, ~75% at 15 weeks)
-    /// - Monthly: S_CAP=3 (~50% at 3 months, ~75% at 9 months)
-    /// - Yearly: S_CAP=2 (~50% at 2 years, ~75% at 6 years)
-    private var adaptiveStreakCap: Double {
-        switch recurrenceFrequency {
-        case .daily:
-            return 7.0
-        case .weekly:
-            return 5.0
-        case .monthly:
-            return 3.0
-        case .yearly:
-            return 2.0
-        case .none:
-            return 5.0
-        }
-    }
-
-    /// Determines if health is trending up, stable, or down by comparing
-    /// the on-time completion rate of recent events vs older events.
-    var healthTrend: HealthTrend {
-        let completedEvents =
-            events
-            .filter { $0.eventType == .completed }
-            .sorted { $0.completedAt < $1.completedAt }
-
-        // Need at least 4 completed events to determine a meaningful trend
-        guard completedEvents.count >= 4 else { return .stable }
-
-        let midpoint = completedEvents.count / 2
-        let olderEvents = Array(completedEvents.prefix(midpoint))
-        let recentEvents = Array(completedEvents.suffix(from: midpoint))
-
-        let olderRate = onTimeRateFor(events: olderEvents)
-        let recentRate = onTimeRateFor(events: recentEvents)
-
-        let threshold = 0.15
-        if recentRate > olderRate + threshold {
-            return .improving
-        } else if recentRate < olderRate - threshold {
-            return .declining
-        }
-        return .stable
-    }
-
-    /// The fraction of completed events in the current streak that were
-    /// completed on or before the due date (not just within tolerance).
-    /// Returns a value from 0.0 to 1.0.
-    var onTimeRate: Double {
-        let sortedEvents = events.sorted { $0.completedAt < $1.completedAt }
-        let streakEvents = recentStreakCompletions(from: sortedEvents)
-        guard !streakEvents.isEmpty else { return 0.0 }
-        return onTimeRateFor(events: streakEvents)
-    }
-
-    /// Calculates the on-time rate for a given set of events.
-    /// "On time" means completed on or before the due date (stricter than tolerance).
-    private func onTimeRateFor(events: [TodoEvent]) -> Double {
-        guard !events.isEmpty else { return 0.0 }
-        let onTimeCount = events.filter { wasCompletedOnTime($0) }.count
-        return Double(onTimeCount) / Double(events.count)
-    }
-
-    /// Checks if an event was completed on or before its due date (strict, no tolerance).
-    private func wasCompletedOnTime(_ event: TodoEvent) -> Bool {
-        guard event.eventType == .completed else { return false }
-        guard let completedAt = event.completedAt as Date?,
-            let dueDate = event.previousDueDate
-        else {
-            return false
-        }
-        return completedAt <= dueDate
-    }
-
-    /// Extracts the completed events that belong to the current streak
-    /// (walking backwards from most recent, stopping at the first non-on-time,
-    /// non-skipped event — mirroring the streak logic).
-    private func recentStreakCompletions(from sortedEvents: [TodoEvent]) -> [TodoEvent] {
-        var streakEvents: [TodoEvent] = []
-        for event in sortedEvents.reversed() {
-            if event.eventType == .completed && wasCompletedWithinReasonableTime(event) {
-                streakEvents.append(event)
-            } else if event.eventType == .skipped {
-                continue
-            } else {
-                break
-            }
-        }
-        return streakEvents
+    var isPersonalBest: Bool {
+        return currentStreak > 0 && currentStreak >= bestStreak
     }
 
     func markAsDone(currentUser: User) {
@@ -527,21 +352,26 @@ class TodoItem: SyncableEntity {
         if let frequency = recurrenceFrequency {
             if recurrenceType == .fixed {
                 let baseDate = dueDate ?? now
-                let baseDateWithTime = DateUtils.preserveTime(from: dueDate, applying: baseDate)
                 updateDueDate(
-                    for: frequency, basedOn: baseDateWithTime ?? baseDate, currentUser: currentUser)
+                    for: frequency, basedOn: baseDate, currentUser: currentUser)
             } else {
-                let daysDifference =
-                    Calendar.current.dateComponents([.day], from: startDate, to: now).day ?? 0
-                guard let originalDueDate = dueDate else { return }
-                let newDueDate =
-                    Calendar.current.date(
-                        byAdding: .day, value: daysDifference, to: originalDueDate)
-                    ?? originalDueDate
-                self.dueDate = newDueDate
-                self.markAsDirty()
+                shiftDueDateByHolidayDuration(startDate: startDate, now: now)
             }
+        } else {
+            shiftDueDateByHolidayDuration(startDate: startDate, now: now)
         }
+    }
+
+    private func shiftDueDateByHolidayDuration(startDate: Date, now: Date) {
+        let daysDifference =
+            Calendar.current.dateComponents([.day], from: startDate, to: now).day ?? 0
+        guard let originalDueDate = dueDate else { return }
+        let newDueDate =
+            Calendar.current.date(
+                byAdding: .day, value: daysDifference, to: originalDueDate)
+            ?? originalDueDate
+        self.dueDate = newDueDate
+        self.markAsDirty()
     }
 
     func setDetails(details: String, currentUser: User) {

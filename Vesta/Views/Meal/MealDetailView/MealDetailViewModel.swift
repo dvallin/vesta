@@ -1,12 +1,12 @@
 import SwiftData
 import SwiftUI
 
-class MealDetailViewModel: ObservableObject {
+@Observable class MealDetailViewModel {
     private var auth: UserAuthService?
     private var dismiss: DismissAction?
     private var modelContext: ModelContext?
 
-    @Published var meal: Meal
+    var meal: Meal
 
     init(meal: Meal) {
         self.meal = meal

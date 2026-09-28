@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct CompletedTodoListView: View {
-    @ObservedObject var viewModel: TodoListViewModel
+    var viewModel: TodoListViewModel
     @Query<TodoItem>(
         filter: #Predicate { item in item.isCompleted == true && item.deletedAt == nil },
         sort: [

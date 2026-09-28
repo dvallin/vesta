@@ -1,18 +1,18 @@
 import SwiftData
 import SwiftUI
 
-class ShoppingListViewModel: ObservableObject {
+@Observable class ShoppingListViewModel {
     private var modelContext: ModelContext?
     private var auth: UserAuthService?
     private var syncService: SyncService?
 
-    @Published var toastMessages: [ToastMessage] = []
+    var toastMessages: [ToastMessage] = []
 
-    @Published var showPurchased: Bool = false
+    var showPurchased: Bool = false
 
-    @Published var selectedShoppingItem: ShoppingListItem? = nil
+    var selectedShoppingItem: ShoppingListItem? = nil
 
-    @Published var isPresentingAddShoppingItemView = false
+    var isPresentingAddShoppingItemView = false
 
     init(showPurchased: Bool = false) {
         self.showPurchased = showPurchased

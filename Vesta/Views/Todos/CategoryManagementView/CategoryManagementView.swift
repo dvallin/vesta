@@ -6,9 +6,10 @@ struct CategoryManagementView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TodoItemCategory.name) var categories: [TodoItemCategory]
 
-    @StateObject private var viewModel = CategoryManagementViewModel()
+    @State private var viewModel = CategoryManagementViewModel()
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             List {
                 ForEach(categories) { category in

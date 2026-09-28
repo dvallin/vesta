@@ -6,7 +6,7 @@ struct AddTodoItemView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @StateObject var viewModel: AddTodoItemViewModel = AddTodoItemViewModel()
+    @State var viewModel: AddTodoItemViewModel = AddTodoItemViewModel()
 
     @FocusState private var focusedField: String?
 
@@ -15,8 +15,8 @@ struct AddTodoItemView: View {
         selectedPriority: Int = 4,
         presetDueDate: Date? = nil
     ) {
-        _viewModel = StateObject(
-            wrappedValue: AddTodoItemViewModel(
+        _viewModel = State(
+            initialValue: AddTodoItemViewModel(
                 initialCategory: selectedCategory?.name ?? "",
                 initialPriority: selectedPriority,
                 initialDueDate: presetDueDate
@@ -24,6 +24,7 @@ struct AddTodoItemView: View {
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             Form {
                 TitleDetailsSection(

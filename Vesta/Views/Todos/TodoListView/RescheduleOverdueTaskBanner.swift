@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RescheduleOverdueTaskBanner: View {
-    @ObservedObject var viewModel: TodoListViewModel
+    var viewModel: TodoListViewModel
 
     let todoItems: [TodoItem]
 

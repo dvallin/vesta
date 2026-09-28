@@ -1,5 +1,14 @@
 import SwiftUI
 
+private struct IngredientGroup<Item: Identifiable>: Identifiable {
+    let index: Int
+    let key: String?
+    var items: [Item]
+    var id: String {
+        if let key { return key } else { return "__ungrouped_\(index)__" }
+    }
+}
+
 struct RecipeContentView<R: RecipeDisplayable>: View {
     let recipe: R
     var scalingFactor: Double = 1.0
@@ -186,17 +195,48 @@ struct RecipeContentView<R: RecipeDisplayable>: View {
                 .font(.headline)
                 .padding(.horizontal)
 
-            ForEach(recipe.sortedIngredients) { ingredient in
-                HStack {
-                    Text("•")
-                    Text(ingredient.name)
-                    Spacer()
-                    Text(formattedQuantity(for: ingredient))
+            let grouped = groupedIngredients(recipe.sortedIngredients)
+            ForEach(grouped) { group in
+                if let groupName = group.key {
+                    Text(groupName)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
                         .foregroundColor(.secondary)
+                        .padding(.horizontal)
+                        .padding(.top, 4)
                 }
-                .padding(.horizontal)
+                ForEach(group.items) { ingredient in
+                    HStack {
+                        Text("•")
+                        Text(ingredient.name)
+                        Spacer()
+                        Text(formattedQuantity(for: ingredient))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal)
+                }
             }
         }
+    }
+
+    private func groupedIngredients(_ ingredients: [R.IngredientItem]) -> [IngredientGroup<
+        R.IngredientItem
+    >] {
+        var groups: [IngredientGroup<R.IngredientItem>] = []
+        var isFirst = true
+        var currentKey: String? = nil
+
+        for ingredient in ingredients {
+            let key = ingredient.group
+            if isFirst || key != currentKey {
+                groups.append(IngredientGroup(index: groups.count, key: key, items: [ingredient]))
+                currentKey = key
+                isFirst = false
+            } else {
+                groups[groups.count - 1].items.append(ingredient)
+            }
+        }
+        return groups
     }
 
     private func formattedQuantity(for ingredient: some IngredientDisplayable) -> String {

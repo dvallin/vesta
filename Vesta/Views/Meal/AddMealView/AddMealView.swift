@@ -12,8 +12,8 @@ struct AddMealView: View {
         filter: #Predicate { recipe in recipe.deletedAt == nil },
     ) private var meals: [Meal]
 
-    @StateObject private var recipeViewModel = RecipeListViewModel()
-    @StateObject private var mealViewModel = AddMealViewModel()
+    @State private var recipeViewModel = RecipeListViewModel()
+    @State private var mealViewModel = AddMealViewModel()
     @State private var isSearchActive = false
     @FocusState private var isSearchFocused: Bool
 
@@ -22,6 +22,8 @@ struct AddMealView: View {
     }
 
     var body: some View {
+        @Bindable var recipeViewModel = recipeViewModel
+        @Bindable var mealViewModel = mealViewModel
         NavigationStack {
             VStack(spacing: 0) {
                 RecipeQuickFilterView(viewModel: recipeViewModel, recipes: recipes)

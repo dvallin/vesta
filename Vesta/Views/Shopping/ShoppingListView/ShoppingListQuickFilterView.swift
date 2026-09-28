@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ShoppingListQuickFilterView: View {
-    @ObservedObject var viewModel: ShoppingListViewModel
+    var viewModel: ShoppingListViewModel
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {

@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct ShoppingListViewInner: View {
-    @ObservedObject var viewModel: ShoppingListViewModel
+    var viewModel: ShoppingListViewModel
     var shoppingItems: [ShoppingListItem]
 
     var body: some View {

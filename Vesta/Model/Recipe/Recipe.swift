@@ -90,28 +90,24 @@ class Recipe: SyncableEntity {
     }
 
     var status: RecipeStatus {
-        let now = Date()
-        let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
-        let nextWeek = Calendar.current.date(byAdding: .day, value: 7, to: now) ?? now
-
-        // Check if already planned
-        let hasUpcomingMeal = meals.contains { meal in
-            guard let todoItem = meal.todoItem,
-                let dueDate = todoItem.dueDate
-            else { return false }
-            return dueDate > now && dueDate <= nextWeek && !meal.isDone
+        // Planned: any non-deleted meal that is not yet completed.
+        let hasPlannedMeal = meals.contains { meal in
+            meal.deletedAt == nil && !meal.isDone
         }
 
-        if hasUpcomingMeal {
+        if hasPlannedMeal {
             return .planned
         }
 
-        // Check if recently made
+        // Recent: completed within the last 7 days, based on actual completion date.
+        let now = Date()
+        let oneWeekAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
+
         let wasRecentlyMade = meals.contains { meal in
-            guard let todoItem = meal.todoItem,
-                let dueDate = todoItem.dueDate
+            guard meal.deletedAt == nil,
+                let completionDate = meal.lastCompletionDate
             else { return false }
-            return dueDate >= oneWeekAgo && dueDate <= now && meal.isDone
+            return completionDate >= oneWeekAgo && completionDate <= now
         }
 
         if wasRecentlyMade {
@@ -123,9 +119,13 @@ class Recipe: SyncableEntity {
 
     // Mutation methods
 
-    func addIngredient(name: String, quantity: Double?, unit: Unit?, currentUser: User) {
+    func addIngredient(
+        name: String, quantity: Double?, unit: Unit?, group: String? = nil, currentUser: User
+    ) {
+        let trimmedGroup = group?.trimmingCharacters(in: .whitespacesAndNewlines)
         let newIngredient = Ingredient(
-            name: name, order: ingredients.count + 1, quantity: quantity, unit: unit, recipe: self)
+            name: name, order: ingredients.count + 1, quantity: quantity, unit: unit,
+            group: (trimmedGroup?.isEmpty == true) ? nil : trimmedGroup, recipe: self)
         ingredients.append(newIngredient)
         markAsDirty()
     }
@@ -135,6 +135,28 @@ class Recipe: SyncableEntity {
             ingredients.remove(at: index)
             markAsDirty()
         }
+    }
+
+    func updateIngredient(
+        _ ingredient: Ingredient, name: String, quantity: Double?, unit: Unit?,
+        currentUser: User
+    ) {
+        ingredient.name = name
+        ingredient.quantity = quantity
+        ingredient.unit = unit
+        markAsDirty()
+    }
+
+    func reinsertIngredient(_ ingredient: Ingredient, at index: Int, currentUser: User) {
+        var sorted = sortedIngredients
+        let insertIndex = min(index, sorted.count)
+        sorted.insert(ingredient, at: insertIndex)
+        for (i, ing) in sorted.enumerated() {
+            ing.order = i + 1
+        }
+        ingredient.recipe = self
+        ingredients = sorted
+        markAsDirty()
     }
 
     func moveIngredient(from source: IndexSet, to destination: Int, currentUser: User) {
@@ -165,6 +187,18 @@ class Recipe: SyncableEntity {
             steps.remove(at: index)
             markAsDirty()
         }
+    }
+
+    func reinsertStep(_ step: RecipeStep, at index: Int, currentUser: User) {
+        var sorted = sortedSteps
+        let insertIndex = min(index, sorted.count)
+        sorted.insert(step, at: insertIndex)
+        for (i, s) in sorted.enumerated() {
+            s.order = i + 1
+        }
+        step.recipe = self
+        steps = sorted
+        markAsDirty()
     }
 
     func moveStep(from source: IndexSet, to destination: Int, currentUser: User) {
@@ -262,15 +296,20 @@ class Ingredient {
     var order: Int
     var quantity: Double?
     var unit: Unit?
+    var group: String? = nil
 
     @Relationship
     var recipe: Recipe?
 
-    init(name: String, order: Int, quantity: Double?, unit: Unit?, recipe: Recipe? = nil) {
+    init(
+        name: String, order: Int, quantity: Double?, unit: Unit?, group: String? = nil,
+        recipe: Recipe? = nil
+    ) {
         self.name = name
         self.order = order
         self.quantity = quantity
         self.unit = unit
+        self.group = group
         self.recipe = recipe
     }
 }

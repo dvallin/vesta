@@ -7,10 +7,11 @@ struct ShoppingListGeneratorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @StateObject private var viewModel = ShoppingListGeneratorViewModel()
+    @State private var viewModel = ShoppingListGeneratorViewModel()
     let meals: [Meal]
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             List {
                 ForEach($viewModel.ingredientSelections) { $selection in

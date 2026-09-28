@@ -1,17 +1,17 @@
 import SwiftData
 import SwiftUI
 
-class AddShoppingItemViewModel: ObservableObject {
+@Observable class AddShoppingItemViewModel {
     private var auth: UserAuthService?
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
     private var syncService: SyncService?
 
-    @Published var name: String = ""
-    @Published var showQuantityField: Bool = false
-    @Published var quantity: String = ""
-    @Published var selectedUnit: Unit? = nil
+    var name: String = ""
+    var showQuantityField: Bool = false
+    var quantity: String = ""
+    var selectedUnit: Unit? = nil
 
     func configureEnvironment(
         _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService,

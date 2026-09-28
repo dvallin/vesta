@@ -6,13 +6,14 @@ struct RecipeGenerationView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @StateObject private var viewModel: RecipeGenerationViewModel
+    @State private var viewModel: RecipeGenerationViewModel
 
     init(recipe: Recipe) {
-        _viewModel = StateObject(wrappedValue: RecipeGenerationViewModel(recipe: recipe))
+        _viewModel = State(initialValue: RecipeGenerationViewModel(recipe: recipe))
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             ScrollView {
                 VStack(spacing: 0) {

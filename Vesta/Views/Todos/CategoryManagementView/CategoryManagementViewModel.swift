@@ -2,16 +2,16 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-class CategoryManagementViewModel: ObservableObject {
+@Observable class CategoryManagementViewModel {
     var modelContext: ModelContext?
 
     // UI State
-    @Published var categoryToEdit: TodoItemCategory?
-    @Published var newCategoryName: String = ""
-    @Published var showingEditAlert = false
-    @Published var showingDeleteAlert = false
-    @Published var showingCannotDeleteAlert = false
-    @Published var categoryToDelete: TodoItemCategory?
+    var categoryToEdit: TodoItemCategory?
+    var newCategoryName: String = ""
+    var showingEditAlert = false
+    var showingDeleteAlert = false
+    var showingCannotDeleteAlert = false
+    var categoryToDelete: TodoItemCategory?
 
     func configureContext(
         _ context: ModelContext

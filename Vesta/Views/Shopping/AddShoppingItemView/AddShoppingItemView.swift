@@ -7,7 +7,7 @@ struct AddShoppingItemView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @StateObject private var viewModel = AddShoppingItemViewModel()
+    @State private var viewModel = AddShoppingItemViewModel()
     @FocusState private var focusedField: FocusableField?
 
     enum FocusableField: Hashable {
@@ -16,6 +16,7 @@ struct AddShoppingItemView: View {
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             Form {
                 Section {

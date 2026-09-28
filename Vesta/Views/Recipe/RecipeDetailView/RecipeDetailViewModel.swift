@@ -1,15 +1,16 @@
 import SwiftData
 import SwiftUI
 
-class RecipeDetailViewModel: ObservableObject {
+@Observable class RecipeDetailViewModel {
     private var modelContext: ModelContext?
     private var auth: UserAuthService?
     private var dismiss: DismissAction?
 
-    @Published var recipe: Recipe
+    var recipe: Recipe
 
-    @Published var showingValidationAlert = false
-    @Published var validationMessage = ""
+    var showingValidationAlert = false
+    var validationMessage = ""
+    var toastMessages: [ToastMessage] = []
 
     init(recipe: Recipe) {
         self.recipe = recipe
@@ -44,21 +45,50 @@ class RecipeDetailViewModel: ObservableObject {
         dismiss?()
     }
 
-    func addIngredient(name: String, quantity: Double?, unit: Unit?) {
+    func addIngredient(name: String, quantity: Double?, unit: Unit?, group: String?) {
         guard let currentUser = auth?.currentUser else { return }
         withAnimation {
             recipe.addIngredient(
-                name: name, quantity: quantity, unit: unit, currentUser: currentUser)
+                name: name, quantity: quantity, unit: unit, group: group, currentUser: currentUser)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
     }
 
     func removeIngredient(_ ingredient: Ingredient) {
         guard let currentUser = auth?.currentUser else { return }
+        let index =
+            recipe.sortedIngredients.firstIndex(where: { $0 === ingredient })
+            ?? recipe.ingredients.count - 1
         withAnimation {
             recipe.removeIngredient(ingredient, currentUser: currentUser)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
+
+        let toastId = UUID()
+        let toast = ToastMessage(
+            id: toastId,
+            message: String(
+                format: NSLocalizedString(
+                    "%@ deleted", comment: "Toast message for deleting ingredient"),
+                ingredient.name
+            ),
+            undoAction: { [weak self] in
+                guard let self = self, let currentUser = self.auth?.currentUser else { return }
+                withAnimation {
+                    self.recipe.reinsertIngredient(ingredient, at: index, currentUser: currentUser)
+                    self.toastMessages.removeAll { $0.id == toastId }
+                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+                }
+            }
+        )
+        toastMessages.append(toast)
+    }
+
+    func updateIngredient(_ ingredient: Ingredient, name: String, quantity: Double?, unit: Unit?) {
+        guard let currentUser = auth?.currentUser else { return }
+        recipe.updateIngredient(
+            ingredient, name: name, quantity: quantity, unit: unit, currentUser: currentUser)
+        HapticFeedbackManager.shared.generateImpactFeedback(style: .light)
     }
 
     func moveIngredient(from source: IndexSet, to destination: Int) {
@@ -77,10 +107,32 @@ class RecipeDetailViewModel: ObservableObject {
 
     func removeStep(_ step: RecipeStep) {
         guard let currentUser = auth?.currentUser else { return }
+        let index =
+            recipe.sortedSteps.firstIndex(where: { $0 === step })
+            ?? recipe.steps.count - 1
         withAnimation {
             recipe.removeStep(step, currentUser: currentUser)
             HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
         }
+
+        let toastId = UUID()
+        let toast = ToastMessage(
+            id: toastId,
+            message: String(
+                format: NSLocalizedString(
+                    "Step %d deleted", comment: "Toast message for deleting step"),
+                index + 1
+            ),
+            undoAction: { [weak self] in
+                guard let self = self, let currentUser = self.auth?.currentUser else { return }
+                withAnimation {
+                    self.recipe.reinsertStep(step, at: index, currentUser: currentUser)
+                    self.toastMessages.removeAll { $0.id == toastId }
+                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+                }
+            }
+        )
+        toastMessages.append(toast)
     }
 
     func moveStep(from source: IndexSet, to destination: Int) {

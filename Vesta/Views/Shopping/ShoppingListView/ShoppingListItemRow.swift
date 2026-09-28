@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ShoppingListItemRow: View {
-    @ObservedObject var viewModel: ShoppingListViewModel
+    var viewModel: ShoppingListViewModel
     var item: ShoppingListItem
 
     var body: some View {
@@ -84,9 +84,10 @@ struct ShoppingListItemRow: View {
 #Preview {
     let viewModel = ShoppingListViewModel()
     let user = Fixtures.createUser()
-    
-    let todoItem = TodoItem(title: "Grocery Shopping", details: "Weekly groceries",
-                            dueDate: Date().addingTimeInterval(86400), owner: user)
+
+    let todoItem = TodoItem(
+        title: "Grocery Shopping", details: "Weekly groceries",
+        dueDate: Date().addingTimeInterval(86400), owner: user)
 
     // Create multiple recipes and meals
     let recipe1 = Fixtures.bolognese(owner: user)
@@ -105,7 +106,7 @@ struct ShoppingListItemRow: View {
         scalingFactor: 1.0, todoItem: mealTodo2, recipe: recipe2, owner: user)
     let meal3 = Meal(
         scalingFactor: 1.0, todoItem: mealTodo3, recipe: recipe2, owner: user)
-    
+
     let itemWithMeals = ShoppingListItem(
         name: "Pasta",
         quantity: 500,
@@ -114,24 +115,26 @@ struct ShoppingListItemRow: View {
         owner: user
     )
     itemWithMeals.meals = [meal1, meal2, meal3]
-    
+
     return List {
         // Regular shopping item
         ShoppingListItemRow(
             viewModel: viewModel,
-            item: ShoppingListItem( name: "Milk", quantity: 1, unit: .liter, todoItem: todoItem, owner: user)
+            item: ShoppingListItem(
+                name: "Milk", quantity: 1, unit: .liter, todoItem: todoItem, owner: user)
         )
 
         // Purchased item
         ShoppingListItemRow(
             viewModel: viewModel,
-            item: ShoppingListItem( name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem,  owner: user)
+            item: ShoppingListItem(
+                name: "Bread", quantity: 2, unit: .piece, todoItem: todoItem, owner: user)
         )
 
         // Item without quantity/unit
         ShoppingListItemRow(
             viewModel: viewModel,
-            item: ShoppingListItem( name: "Special sauce", todoItem: todoItem, owner: user)
+            item: ShoppingListItem(name: "Special sauce", todoItem: todoItem, owner: user)
         )
 
         // Item with multiple meal references

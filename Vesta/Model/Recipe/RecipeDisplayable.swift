@@ -7,6 +7,7 @@ protocol IngredientDisplayable {
     var order: Int { get }
     var quantity: Double? { get }
     var unit: Unit? { get }
+    var group: String? { get }
 }
 
 protocol StepDisplayable {
