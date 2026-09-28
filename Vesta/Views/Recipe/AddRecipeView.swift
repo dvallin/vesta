@@ -5,6 +5,7 @@ struct TempIngredient: Identifiable {
     let name: String
     let quantity: Double?
     let unit: Unit?
+    let group: String?
 }
 
 struct TempStep: Identifiable {
@@ -28,6 +29,8 @@ struct AddRecipeView: View {
     @State private var ingredientQuantity: String = ""
     @State private var ingredientUnit: Unit? = nil
 
+    @State private var editingTempIngredient: TempIngredient? = nil
+
     @State private var tempSteps: [TempStep] = []
     @State private var stepInstruction: String = ""
     @State private var stepType: StepType = .cooking
@@ -41,6 +44,7 @@ struct AddRecipeView: View {
     @State private var validationMessage = ""
     @State private var showingDiscardAlert = false
     @State private var isSaving = false
+    @State private var toastMessages: [ToastMessage] = []
 
     @FocusState private var focusedField: String?
 
@@ -77,22 +81,19 @@ struct AddRecipeView: View {
                         NSLocalizedString("Meal Types", comment: "Section header for meal types"))
                 ) {
                     ForEach(MealType.allCases, id: \.self) { mealType in
-                        HStack {
-                            Text(mealType.displayName)
-                            Spacer()
-                            if selectedMealTypes.contains(mealType) {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.accentColor)
-                            }
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            if selectedMealTypes.contains(mealType) {
-                                selectedMealTypes.remove(mealType)
-                            } else {
-                                selectedMealTypes.insert(mealType)
-                            }
-                        }
+                        Toggle(
+                            mealType.displayName,
+                            isOn: Binding(
+                                get: { selectedMealTypes.contains(mealType) },
+                                set: { isOn in
+                                    if isOn {
+                                        selectedMealTypes.insert(mealType)
+                                    } else {
+                                        selectedMealTypes.remove(mealType)
+                                    }
+                                }
+                            )
+                        )
                     }
                 }
 
@@ -131,10 +132,14 @@ struct AddRecipeView: View {
                         return qtyPart + " " + unitPart
                     },
                     nameText: { $0.name },
+                    groupText: { $0.group },
                     ingredientName: $ingredientName,
                     ingredientQuantity: $ingredientQuantity,
                     ingredientUnit: $ingredientUnit,
-                    onAdd: addTempIngredient
+                    onAdd: addTempIngredient,
+                    onEdit: { ingredient in
+                        editingTempIngredient = ingredient
+                    }
                 )
                 .focused($focusedField, equals: "ingredients")
                 #if os(iOS)
@@ -214,6 +219,28 @@ struct AddRecipeView: View {
                     NSLocalizedString("Continue Editing", comment: "Alert button"), role: .cancel
                 ) {}
             }
+            .sheet(item: $editingTempIngredient) { tempIngredient in
+                IngredientEditSheet(
+                    name: tempIngredient.name,
+                    quantityText: tempIngredient.quantity.map {
+                        NumberFormatter.localizedString(from: NSNumber(value: $0), number: .decimal)
+                    } ?? "",
+                    unit: tempIngredient.unit,
+                    onSave: { name, quantity, unit in
+                        if let index = tempIngredients.firstIndex(where: {
+                            $0.id == tempIngredient.id
+                        }) {
+                            tempIngredients[index] = TempIngredient(
+                                name: name,
+                                quantity: quantity,
+                                unit: unit,
+                                group: tempIngredient.group
+                            )
+                        }
+                    }
+                )
+            }
+            .toast(messages: $toastMessages)
         }
     }
 
@@ -228,14 +255,29 @@ struct AddRecipeView: View {
             return
         }
 
-        // Convert the quantity text to a Double; if conversion fails, it ends up as nil.
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
-        let quantity = numberFormatter.number(from: ingredientQuantity)?.doubleValue
+        let name: String
+        let quantity: Double?
+        let unit: Unit?
+
+        // If quantity/unit fields are empty, try smart parsing from the name field
+        if ingredientQuantity.isEmpty && ingredientUnit == nil {
+            let parsed = IngredientParser.parse(ingredientName)
+            name = parsed.name
+            quantity = parsed.quantity
+            unit = parsed.unit
+        } else {
+            name = ingredientName
+            let numberFormatter = NumberFormatter()
+            numberFormatter.numberStyle = .decimal
+            quantity = numberFormatter.number(from: ingredientQuantity)?.doubleValue
+            unit = ingredientUnit
+        }
+
         let newIngredient = TempIngredient(
-            name: ingredientName,
+            name: name,
             quantity: quantity,
-            unit: ingredientUnit
+            unit: unit,
+            group: nil
         )
 
         withAnimation {
@@ -250,9 +292,31 @@ struct AddRecipeView: View {
     }
 
     private func removeTempIngredient(_ ingredient: TempIngredient) {
-        withAnimation {
-            tempIngredients.removeAll { $0.id == ingredient.id }
+        guard let index = tempIngredients.firstIndex(where: { $0.id == ingredient.id }) else {
+            return
         }
+        withAnimation {
+            tempIngredients.remove(at: index)
+        }
+
+        let toastId = UUID()
+        let toast = ToastMessage(
+            id: toastId,
+            message: String(
+                format: NSLocalizedString(
+                    "%@ deleted", comment: "Toast message for deleting ingredient"),
+                ingredient.name
+            ),
+            undoAction: { [self] in
+                withAnimation {
+                    let insertIndex = min(index, self.tempIngredients.count)
+                    self.tempIngredients.insert(ingredient, at: insertIndex)
+                    self.toastMessages.removeAll { $0.id == toastId }
+                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+                }
+            }
+        )
+        toastMessages.append(toast)
     }
 
     private func moveTempIngredient(from source: IndexSet, to destination: Int) {
@@ -287,9 +351,29 @@ struct AddRecipeView: View {
     }
 
     private func removeTempStep(_ step: TempStep) {
+        guard let index = tempSteps.firstIndex(where: { $0.id == step.id }) else { return }
         withAnimation {
-            tempSteps.removeAll { $0.id == step.id }
+            tempSteps.remove(at: index)
         }
+
+        let toastId = UUID()
+        let toast = ToastMessage(
+            id: toastId,
+            message: String(
+                format: NSLocalizedString(
+                    "Step %d deleted", comment: "Toast message for deleting step"),
+                index + 1
+            ),
+            undoAction: { [self] in
+                withAnimation {
+                    let insertIndex = min(index, self.tempSteps.count)
+                    self.tempSteps.insert(step, at: insertIndex)
+                    self.toastMessages.removeAll { $0.id == toastId }
+                    HapticFeedbackManager.shared.generateImpactFeedback(style: .medium)
+                }
+            }
+        )
+        toastMessages.append(toast)
     }
 
     private func moveTempStep(from source: IndexSet, to destination: Int) {
@@ -330,7 +414,8 @@ struct AddRecipeView: View {
                     name: temp.name,
                     order: index + 1,
                     quantity: temp.quantity,
-                    unit: temp.unit
+                    unit: temp.unit,
+                    group: temp.group
                 )
                 newRecipe.ingredients.append(ingredient)
             }

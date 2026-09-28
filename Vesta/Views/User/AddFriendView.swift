@@ -8,9 +8,10 @@ struct AddFriendView: View {
     @EnvironmentObject private var auth: UserAuthService
     @EnvironmentObject private var invites: UserInviteService
 
-    @StateObject private var viewModel = AddFriendViewModel()
+    @State private var viewModel = AddFriendViewModel()
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             VStack {
                 VStack(alignment: .leading) {
@@ -189,7 +190,7 @@ struct UserSearchResultRow: View {
     }
 }
 
-class AddFriendViewModel: ObservableObject {
+@Observable class AddFriendViewModel {
     private let searchService = UserSearchService()
     private let logger = Logger(subsystem: "com.app.Vesta", category: "AddFriend")
 
@@ -198,12 +199,12 @@ class AddFriendViewModel: ObservableObject {
     // Dependencies injected by the view
     private var inviteService: UserInviteService?
 
-    @Published var searchText: String = ""
-    @Published var searchResults: [UserSearchResult] = []
-    @Published var isSearching = false
-    @Published var errorMessage: String? = nil
-    @Published var hasSearched = false
-    @Published var showingInviteSent = false
+    var searchText: String = ""
+    var searchResults: [UserSearchResult] = []
+    var isSearching = false
+    var errorMessage: String? = nil
+    var hasSearched = false
+    var showingInviteSent = false
 
     func configure(inviteService: UserInviteService) {
         self.inviteService = inviteService

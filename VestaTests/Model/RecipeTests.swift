@@ -162,7 +162,8 @@ final class RecipeTests: XCTestCase {
         let firstIngredient = initialIngredients[0]
 
         // Act - move the first ingredient to the end
-        recipe.moveIngredient(from: IndexSet(integer: 0), to: recipe.ingredients.count, currentUser: user)
+        recipe.moveIngredient(
+            from: IndexSet(integer: 0), to: recipe.ingredients.count, currentUser: user)
 
         // Assert
         let newIngredients = recipe.sortedIngredients
@@ -186,7 +187,8 @@ final class RecipeTests: XCTestCase {
         let initialCount = recipe.steps.count
 
         // Act
-        recipe.addStep(instruction: "Serve hot", type: .preparation, duration: 60, currentUser: user)
+        recipe.addStep(
+            instruction: "Serve hot", type: .preparation, duration: 60, currentUser: user)
 
         // Assert
         XCTAssertEqual(recipe.steps.count, initialCount + 1)
@@ -248,10 +250,15 @@ final class RecipeTests: XCTestCase {
         context.insert(recipe)
 
         // Add steps with different types and durations
-        recipe.addStep(instruction: "Prepare ingredients", type: .preparation, duration: 600, currentUser: user)  // 10 minutes
-        recipe.addStep(instruction: "Mix ingredients", type: .preparation, duration: 300, currentUser: user)  // 5 minutes
-        recipe.addStep(instruction: "Cook on stove", type: .cooking, duration: 1200, currentUser: user)  // 20 minutes
-        recipe.addStep(instruction: "Bake in oven", type: .cooking, duration: 1800, currentUser: user)  // 30 minutes
+        recipe.addStep(
+            instruction: "Prepare ingredients", type: .preparation, duration: 600, currentUser: user
+        )  // 10 minutes
+        recipe.addStep(
+            instruction: "Mix ingredients", type: .preparation, duration: 300, currentUser: user)  // 5 minutes
+        recipe.addStep(
+            instruction: "Cook on stove", type: .cooking, duration: 1200, currentUser: user)  // 20 minutes
+        recipe.addStep(
+            instruction: "Bake in oven", type: .cooking, duration: 1800, currentUser: user)  // 30 minutes
         recipe.addStep(instruction: "Let rest", type: .maturing, duration: 3600, currentUser: user)  // 60 minutes
 
         // Act & Assert
@@ -271,9 +278,13 @@ final class RecipeTests: XCTestCase {
         context.insert(recipe)
 
         // Add steps with some nil durations
-        recipe.addStep(instruction: "Prepare ingredients", type: .preparation, duration: 600, currentUser: user)
-        recipe.addStep(instruction: "Mix ingredients", type: .preparation, duration: nil, currentUser: user)
-        recipe.addStep(instruction: "Cook on stove", type: .cooking, duration: 1200, currentUser: user)
+        recipe.addStep(
+            instruction: "Prepare ingredients", type: .preparation, duration: 600, currentUser: user
+        )
+        recipe.addStep(
+            instruction: "Mix ingredients", type: .preparation, duration: nil, currentUser: user)
+        recipe.addStep(
+            instruction: "Cook on stove", type: .cooking, duration: 1200, currentUser: user)
 
         // Act & Assert
         XCTAssertEqual(
@@ -315,5 +326,158 @@ final class RecipeTests: XCTestCase {
 
         // Assert
         XCTAssertFalse(recipe.dirty, "Recipe should not be dirty after marked as synced again")
+    }
+
+    // MARK: - Status Tests
+
+    func testStatusNormalWhenNoMeals() throws {
+        let recipe = Recipe(title: "Test", details: "", owner: user)
+        context.insert(recipe)
+
+        XCTAssertEqual(recipe.status, .normal)
+    }
+
+    func testStatusPlannedWithIncompleteMealWithoutDueDate() throws {
+        // A meal without a due date should still count as planned
+        let recipe = Recipe(title: "Test", details: "", owner: user)
+        context.insert(recipe)
+
+        let todoItem = TodoItem(title: "Cook Test", details: "", dueDate: nil, owner: user)
+        let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe, owner: user)
+        context.insert(todoItem)
+        context.insert(meal)
+
+        XCTAssertEqual(recipe.status, .planned)
+    }
+
+    func testStatusPlannedWithIncompleteMealWithDueDate() throws {
+        // A meal with a future due date should be planned
+        let recipe = Recipe(title: "Test", details: "", owner: user)
+        context.insert(recipe)
+
+        let futureDate = Date().addingTimeInterval(3 * 24 * 60 * 60)
+        let todoItem = TodoItem(title: "Cook Test", details: "", dueDate: futureDate, owner: user)
+        let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe, owner: user)
+        context.insert(todoItem)
+        context.insert(meal)
+
+        XCTAssertEqual(recipe.status, .planned)
+    }
+
+    func testStatusPlannedWithIncompleteMealWithPastDueDate() throws {
+        // A meal with a past due date that is not completed should still be planned
+        let recipe = Recipe(title: "Test", details: "", owner: user)
+        context.insert(recipe)
+
+        let pastDate = Date().addingTimeInterval(-2 * 24 * 60 * 60)
+        let todoItem = TodoItem(title: "Cook Test", details: "", dueDate: pastDate, owner: user)
+        let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe, owner: user)
+        context.insert(todoItem)
+        context.insert(meal)
+
+        XCTAssertEqual(recipe.status, .planned)
+    }
+
+    func testStatusRecentAfterCompletion() throws {
+        // A completed meal should make the recipe "recent"
+        let recipe = Recipe(title: "Test", details: "", owner: user)
+        context.insert(recipe)
+
+        let todoItem = TodoItem(title: "Cook Test", details: "", dueDate: nil, owner: user)
+        let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe, owner: user)
+        context.insert(todoItem)
+        context.insert(meal)
+
+        // Complete the meal via the event system
+        todoItem.markAsDone(currentUser: user)
+
+        XCTAssertEqual(recipe.status, .recent)
+    }
+
+    func testStatusNormalWhenCompletedOverAWeekAgo() throws {
+        // A meal completed more than 7 days ago should be normal, not recent
+        let recipe = Recipe(title: "Test", details: "", owner: user)
+        context.insert(recipe)
+
+        let todoItem = TodoItem(
+            title: "Cook Test", details: "", dueDate: nil, isCompleted: true, owner: user)
+        let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe, owner: user)
+        context.insert(todoItem)
+        context.insert(meal)
+
+        // Add a completion event dated 10 days ago
+        let oldDate = Date().addingTimeInterval(-10 * 24 * 60 * 60)
+        let event = TodoEvent(
+            eventType: .completed,
+            completedAt: oldDate,
+            todoItem: todoItem,
+            previousDueDate: nil,
+            previousRescheduleDate: nil
+        )
+        context.insert(event)
+
+        XCTAssertEqual(recipe.status, .normal)
+    }
+
+    func testStatusIgnoresDeletedMeals() throws {
+        // A soft-deleted meal should not make a recipe "planned"
+        let recipe = Recipe(title: "Test", details: "", owner: user)
+        context.insert(recipe)
+
+        let todoItem = TodoItem(title: "Cook Test", details: "", dueDate: nil, owner: user)
+        let meal = Meal(scalingFactor: 1.0, todoItem: todoItem, recipe: recipe, owner: user)
+        context.insert(todoItem)
+        context.insert(meal)
+
+        // Soft-delete the meal
+        meal.softDelete(currentUser: user)
+
+        XCTAssertEqual(recipe.status, .normal)
+    }
+
+    func testStatusPlannedTakesPriorityOverRecent() throws {
+        // If there's both a planned and a recently completed meal, status should be planned
+        let recipe = Recipe(title: "Test", details: "", owner: user)
+        context.insert(recipe)
+
+        // Recently completed meal
+        let completedTodo = TodoItem(
+            title: "Cooked", details: "", dueDate: nil, isCompleted: true, owner: user)
+        let completedMeal = Meal(
+            scalingFactor: 1.0, todoItem: completedTodo, recipe: recipe, owner: user)
+        context.insert(completedTodo)
+        context.insert(completedMeal)
+
+        let recentEvent = TodoEvent(
+            eventType: .completed,
+            completedAt: Date().addingTimeInterval(-2 * 24 * 60 * 60),
+            todoItem: completedTodo,
+            previousDueDate: nil,
+            previousRescheduleDate: nil
+        )
+        context.insert(recentEvent)
+
+        // Planned (incomplete) meal
+        let plannedTodo = TodoItem(title: "To Cook", details: "", dueDate: nil, owner: user)
+        let plannedMeal = Meal(
+            scalingFactor: 1.0, todoItem: plannedTodo, recipe: recipe, owner: user)
+        context.insert(plannedTodo)
+        context.insert(plannedMeal)
+
+        XCTAssertEqual(recipe.status, .planned)
+    }
+
+    func testStatusWithMealWithoutTodoItem() throws {
+        // A meal with no todoItem is considered done (isDone returns true),
+        // so it should not be planned
+        let recipe = Recipe(title: "Test", details: "", owner: user)
+        context.insert(recipe)
+
+        let meal = Meal(scalingFactor: 1.0, todoItem: nil, recipe: recipe, owner: user)
+        context.insert(meal)
+
+        // isDone is true when todoItem is nil, so not planned
+        // lastCompletionDate is nil (no todoItem), so not recent
+        XCTAssertEqual(recipe.status, .normal)
     }
 }

@@ -24,16 +24,16 @@ struct MealProposal: Identifiable {
     var isDeclined: Bool = false
 }
 
-class MealPlanHelperViewModel: ObservableObject {
+@Observable class MealPlanHelperViewModel {
     private var modelContext: ModelContext?
     private var auth: UserAuthService?
     private var categoryService: TodoItemCategoryService?
 
-    @Published var proposals: [MealProposal] = []
-    @Published var plannedMeals: [Meal] = []
-    @Published var isLoading = false
-    @Published var showingErrorAlert = false
-    @Published var errorMessage = ""
+    var proposals: [MealProposal] = []
+    var plannedMeals: [Meal] = []
+    var isLoading = false
+    var showingErrorAlert = false
+    var errorMessage = ""
 
     let targetWeekStart: Date
     let filterMode: MealPlanFilterMode

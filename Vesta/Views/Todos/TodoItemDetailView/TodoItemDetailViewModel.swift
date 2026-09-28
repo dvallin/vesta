@@ -1,33 +1,33 @@
 import SwiftData
 import SwiftUI
 
-class TodoItemDetailViewModel: ObservableObject {
+@Observable class TodoItemDetailViewModel {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
     private var auth: UserAuthService?
     private var syncService: SyncService?
 
-    @Published var item: TodoItem
+    var item: TodoItem
 
     // Temporary values for editing
-    @Published var tempTitle: String
-    @Published var tempDetails: String
-    @Published var tempDueDate: Date?
-    @Published var tempRecurrenceFrequency: RecurrenceFrequency?
-    @Published var tempRecurrenceInterval: Int?
-    @Published var tempRecurrenceType: RecurrenceType?
-    @Published var tempRepeatOn: [DayOfWeek]?
-    @Published var tempIgnoreTimeComponent: Bool
-    @Published var tempIsCompleted: Bool
-    @Published var tempPriority: Int
-    @Published var tempCategory: String
-    @Published var matchingCategories: [TodoItemCategory] = []
+    var tempTitle: String
+    var tempDetails: String
+    var tempDueDate: Date?
+    var tempRecurrenceFrequency: RecurrenceFrequency?
+    var tempRecurrenceInterval: Int?
+    var tempRecurrenceType: RecurrenceType?
+    var tempRepeatOn: [DayOfWeek]?
+    var tempIgnoreTimeComponent: Bool
+    var tempIsCompleted: Bool
+    var tempPriority: Int
+    var tempCategory: String
+    var matchingCategories: [TodoItemCategory] = []
 
-    @Published var showingValidationAlert = false
-    @Published var validationMessage = ""
-    @Published var showingDiscardAlert = false
-    @Published var isSaving = false
+    var showingValidationAlert = false
+    var validationMessage = ""
+    var showingDiscardAlert = false
+    var isSaving = false
 
     init(item: TodoItem) {
         self.item = item

@@ -27,25 +27,25 @@ enum FilterMode: String, CaseIterable {
     }
 }
 
-class TodoListViewModel: ObservableObject {
+@Observable class TodoListViewModel {
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
     private var auth: UserAuthService?
     private var syncService: SyncService?
 
-    @Published var currentDay: Date = Date()
-    @Published var toastMessages: [ToastMessage] = []
+    var currentDay: Date = Date()
+    var toastMessages: [ToastMessage] = []
 
-    @Published var filterMode: FilterMode = .today
-    @Published var selectedPriority: Int? = nil
-    @Published var selectedCategory: TodoItemCategory? = nil
-    @Published var showNoCategory: Bool = false
-    @Published var searchText: String = ""
+    var filterMode: FilterMode = .today
+    var selectedPriority: Int? = nil
+    var selectedCategory: TodoItemCategory? = nil
+    var showNoCategory: Bool = false
+    var searchText: String = ""
 
-    @Published var selectedTodoItem: TodoItem? = nil
+    var selectedTodoItem: TodoItem? = nil
 
-    @Published var isPresentingAddTodoItemView = false
-    @Published var isPresentingCategoryManagementView = false
+    var isPresentingAddTodoItemView = false
+    var isPresentingCategoryManagementView = false
 
     func configureContext(
         _ context: ModelContext, _ auth: UserAuthService,
@@ -91,16 +91,33 @@ class TodoListViewModel: ObservableObject {
             NotificationManager.shared.scheduleNotification(for: item)
 
             _ = syncService?.pushLocalChanges()
-            HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+
+            // Streak-aware haptic feedback
+            let streak = item.currentStreak
+            if streak > 0 && item.isPersonalBest && streak >= 7 {
+                // Major milestone: double tap for "leveling up" feel
+                HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+                }
+            } else if streak > 0
+                && (streak == 3 || streak == 7 || streak == 14 || streak == 21 || streak % 10 == 0)
+            {
+                // Milestone streaks: strong single tap
+                HapticFeedbackManager.shared.generateImpactFeedback(style: .heavy)
+            } else {
+                HapticFeedbackManager.shared.generateNotificationFeedback(type: .success)
+            }
 
             let id = UUID()
+            let streakText = streak > 0 ? " \u{1F525} \(streak)" : ""
             let toastMessage = ToastMessage(
                 id: id,
                 message: String(
                     format: NSLocalizedString(
                         "%@ marked as done", comment: "Toast message for marking todo as done"),
                     item.title
-                ),
+                ) + streakText,
                 undoAction: {
                     undoAction(item, id)
                 }

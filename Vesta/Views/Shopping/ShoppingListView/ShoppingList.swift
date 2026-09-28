@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ShoppingList: View {
-    @ObservedObject var viewModel: ShoppingListViewModel
+    var viewModel: ShoppingListViewModel
 
     var shoppingItems: [ShoppingListItem]
 

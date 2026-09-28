@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-class ShoppingListGeneratorViewModel: ObservableObject {
+@Observable class ShoppingListGeneratorViewModel {
     private var auth: UserAuthService?
     private var modelContext: ModelContext?
     private var categoryService: TodoItemCategoryService?
@@ -27,7 +27,7 @@ class ShoppingListGeneratorViewModel: ObservableObject {
         var unit: Unit?
     }
 
-    @Published var ingredientSelections: [IngredientSelection] = []
+    var ingredientSelections: [IngredientSelection] = []
 
     func prepareMealsForShoppingList(_ meals: [Meal]) {
         let eligibleMeals = meals.filter { meal in

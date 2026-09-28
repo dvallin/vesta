@@ -8,9 +8,10 @@ struct MealPlanView: View {
         filter: #Predicate { meal in meal.deletedAt == nil }
     ) private var meals: [Meal]
 
-    @StateObject var viewModel = MealPlanViewModel()
+    @State var viewModel = MealPlanViewModel()
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             MealPlanViewInner(
                 viewModel: viewModel,

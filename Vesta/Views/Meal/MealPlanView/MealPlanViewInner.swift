@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct MealPlanViewInner: View {
-    @ObservedObject var viewModel: MealPlanViewModel
+    var viewModel: MealPlanViewModel
     var meals: [Meal]
     @State private var isPresentingPlanHelper = false
 

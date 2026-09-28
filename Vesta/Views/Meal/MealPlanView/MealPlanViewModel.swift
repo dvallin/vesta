@@ -1,15 +1,15 @@
 import SwiftData
 import SwiftUI
 
-class MealPlanViewModel: ObservableObject {
+@Observable class MealPlanViewModel {
     private var auth: UserAuthService?
     private var modelContext: ModelContext?
 
-    @Published var selectedMeal: Meal?
-    @Published var isPresentingAddMealView = false
-    @Published var isPresentingShoppingListGenerator = false
-    @Published var toastMessages: [ToastMessage] = []
-    @Published var filterMode: MealPlanFilterMode = .all
+    var selectedMeal: Meal?
+    var isPresentingAddMealView = false
+    var isPresentingShoppingListGenerator = false
+    var toastMessages: [ToastMessage] = []
+    var filterMode: MealPlanFilterMode = .all
 
     func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
         self.modelContext = context

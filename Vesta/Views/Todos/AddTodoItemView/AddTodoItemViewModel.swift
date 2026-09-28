@@ -1,29 +1,29 @@
 import SwiftData
 import SwiftUI
 
-class AddTodoItemViewModel: ObservableObject {
+@Observable class AddTodoItemViewModel {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var categoryService: TodoItemCategoryService?
     private var auth: UserAuthService?
     private var syncService: SyncService?
 
-    @Published var title: String = ""
-    @Published var details: String = ""
-    @Published var dueDate: Date? = nil
-    @Published var recurrenceFrequency: RecurrenceFrequency? = nil
-    @Published var recurrenceInterval: Int? = nil
-    @Published var recurrenceType: RecurrenceType? = nil
-    @Published var repeatOn: [DayOfWeek]? = nil
-    @Published var ignoreTimeComponent: Bool = true
-    @Published var priority: Int = 4
-    @Published var category: String = ""
-    @Published var matchingCategories: [TodoItemCategory] = []
+    var title: String = ""
+    var details: String = ""
+    var dueDate: Date? = nil
+    var recurrenceFrequency: RecurrenceFrequency? = nil
+    var recurrenceInterval: Int? = nil
+    var recurrenceType: RecurrenceType? = nil
+    var repeatOn: [DayOfWeek]? = nil
+    var ignoreTimeComponent: Bool = true
+    var priority: Int = 4
+    var category: String = ""
+    var matchingCategories: [TodoItemCategory] = []
 
-    @Published var showingValidationAlert = false
-    @Published var validationMessage = ""
-    @Published var showingDiscardAlert = false
-    @Published var isSaving = false
+    var showingValidationAlert = false
+    var validationMessage = ""
+    var showingDiscardAlert = false
+    var isSaving = false
 
     init(
         initialCategory: String = "",

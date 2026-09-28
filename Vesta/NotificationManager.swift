@@ -29,8 +29,8 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         guard let dueDate = effectiveDueDate, !item.isCompleted else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = item.title
-        content.body = Self.notificationBody(for: item, dueDate: dueDate)
+        content.title = Self.notificationTitle(for: dueDate)
+        content.body = Self.notificationBody(for: item)
         content.sound = .default
         content.userInfo = ["todoItemUID": item.uid]
 
@@ -73,40 +73,32 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
-    // Helper to generate a concise, informative notification body
-    private static func notificationBody(for item: TodoItem, dueDate: Date) -> String {
-        var lines: [String] = []
-
-        // Show relative time: "In 15 minutes" since we always trigger 15 min before
-        let minutesUntilDue = Int(dueDate.timeIntervalSinceNow / 60)
-        if minutesUntilDue > 0 {
-            let formatter = DateComponentsFormatter()
-            formatter.unitsStyle = .full
-            formatter.allowedUnits = [.hour, .minute]
-            formatter.maximumUnitCount = 2
-            if let relativeString = formatter.string(from: TimeInterval(minutesUntilDue * 60)) {
-                lines.append(
-                    String(
-                        format: NSLocalizedString(
-                            "In %@", comment: "Relative time until due, e.g. 'In 15 minutes'"),
-                        relativeString
-                    ))
-            }
-        } else {
-            lines.append(
-                NSLocalizedString("Due now", comment: "Notification body when item is due now"))
-        }
-
-        // Show the actual time for quick reference (e.g. "at 21:00")
+    // Helper to generate a concise notification title.
+    private static func notificationTitle(for dueDate: Date) -> String {
         let timeFormatter = DateFormatter()
         timeFormatter.dateStyle = .none
         timeFormatter.timeStyle = .short
         let timeString = timeFormatter.string(from: dueDate)
-        lines.append(
-            String(
-                format: NSLocalizedString("at %@", comment: "Due time, e.g. 'at 21:00'"),
-                timeString
-            ))
+        
+        return String(
+            format: NSLocalizedString("Due in 15 min at %@", comment: "Notification title with due time"),
+            timeString
+        )
+    }
+
+    // Helper to generate a concise, informative notification body.
+    // Note: This is computed at scheduling time (which may be days before delivery),
+    // so we avoid relative time like "In X minutes" and show static info instead.
+    private static func notificationBody(for item: TodoItem) -> String {
+        var lines: [String] = []
+
+        // Start with the todo item title
+        lines.append(item.title)
+
+        // Show category if present
+        if let category = item.category?.name, !category.isEmpty {
+            lines.append(category)
+        }
 
         // Show details if present (truncated to keep notification concise)
         let trimmedDetails = item.details.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -114,7 +106,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
             let maxLength = 80
             let truncated =
                 trimmedDetails.count > maxLength
-                ? String(trimmedDetails.prefix(maxLength)) + "…"
+                ? String(trimmedDetails.prefix(maxLength)) + "\u{2026}"
                 : trimmedDetails
             lines.append(truncated)
         }

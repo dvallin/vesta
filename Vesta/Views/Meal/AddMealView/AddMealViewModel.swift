@@ -1,14 +1,14 @@
 import SwiftData
 import SwiftUI
 
-class AddMealViewModel: ObservableObject {
+@Observable class AddMealViewModel {
     private var modelContext: ModelContext?
     private var dismiss: DismissAction?
     private var auth: UserAuthService?
     private var categoryService: TodoItemCategoryService?
 
-    @Published var showingErrorAlert = false
-    @Published var errorMessage = ""
+    var showingErrorAlert = false
+    var errorMessage = ""
 
     func configureEnvironment(
         _ context: ModelContext, _ dismiss: DismissAction, _ auth: UserAuthService

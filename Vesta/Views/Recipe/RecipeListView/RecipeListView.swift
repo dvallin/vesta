@@ -28,12 +28,13 @@ struct RecipeListView: View {
         filter: #Predicate { recipe in recipe.deletedAt == nil },
     ) private var recipes: [Recipe]
 
-    @StateObject private var viewModel = RecipeListViewModel()
+    @State private var viewModel = RecipeListViewModel()
     @State private var isSearchActive = false
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
-        NavigationView {
+        @Bindable var viewModel = viewModel
+        NavigationStack {
             VStack(spacing: 0) {
                 RecipeQuickFilterView(viewModel: viewModel, recipes: recipes)
                     .padding(.top, 8)

@@ -5,10 +5,10 @@ struct MealDetailView: View {
     @EnvironmentObject private var auth: UserAuthService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel: MealDetailViewModel
+    @State private var viewModel: MealDetailViewModel
 
     init(meal: Meal) {
-        _viewModel = StateObject(wrappedValue: MealDetailViewModel(meal: meal))
+        _viewModel = State(initialValue: MealDetailViewModel(meal: meal))
     }
 
     var body: some View {
@@ -149,7 +149,7 @@ struct MealDetailView: View {
         context.insert(todoItem)
         context.insert(meal)
 
-        return NavigationView {
+        return NavigationStack {
             MealDetailView(meal: meal)
         }
         .modelContainer(container)

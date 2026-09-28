@@ -7,6 +7,7 @@ protocol IngredientDisplayable {
     var order: Int { get }
     var quantity: Double? { get }
     var unit: Unit? { get }
+    var group: String? { get }
 }
 
 protocol StepDisplayable {
@@ -25,6 +26,8 @@ protocol RecipeDisplayable {
     var seasonality: Seasonality? { get }
     var mealTypes: [MealType] { get }
     var tags: [String] { get }
+    var servings: Int { get }
+    var difficulty: Difficulty? { get }
 
     var sortedIngredients: [IngredientItem] { get }
     var sortedSteps: [StepItem] { get }

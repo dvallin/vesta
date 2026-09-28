@@ -17,7 +17,7 @@ struct RecipeRow: View {
                     statusIndicator
                 }
 
-                Text(LocalizedStringKey(recipe.details))
+                Text(recipe.details)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
@@ -34,6 +34,13 @@ struct RecipeRow: View {
                     // Seasonality
                     if let seasonality = recipe.seasonality {
                         Label(seasonality.displayName, systemImage: "leaf")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    // Difficulty
+                    if let difficulty = recipe.difficulty {
+                        Label(difficulty.displayName, systemImage: difficulty.systemImage)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }

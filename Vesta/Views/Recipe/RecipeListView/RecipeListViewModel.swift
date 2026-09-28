@@ -9,6 +9,7 @@ enum RecipeFilterMode: String, CaseIterable, Identifiable {
     case notPlanned
     case quickCook  // under 30 minutes
     case longCook  // over 2 hours
+    case favorites
 
     var id: String { rawValue }
 
@@ -28,22 +29,24 @@ enum RecipeFilterMode: String, CaseIterable, Identifiable {
             return NSLocalizedString("Quick Cook", comment: "Filter mode: quick cooking recipes")
         case .longCook:
             return NSLocalizedString("Long Cook", comment: "Filter mode: long cooking recipes")
+        case .favorites:
+            return NSLocalizedString("Favorites", comment: "Filter mode: favorite recipes")
         }
     }
 }
 
-class RecipeListViewModel: ObservableObject {
+@Observable class RecipeListViewModel {
     private var modelContext: ModelContext?
     private var auth: UserAuthService?
 
-    @Published var searchText: String = ""
-    @Published var sortOption: RecipeSortOption = .title
-    @Published var filterMode: RecipeFilterMode = .all
-    @Published var selectedSeasonality: Seasonality? = nil
-    @Published var selectedMealType: MealType? = nil
-    @Published var selectedTag: String? = nil
-    @Published var showUntagged: Bool = false
-    @Published var isPresentingAddRecipeView = false
+    var searchText: String = ""
+    var sortOption: RecipeSortOption = .title
+    var filterMode: RecipeFilterMode = .all
+    var selectedSeasonality: Seasonality? = nil
+    var selectedMealType: MealType? = nil
+    var selectedTag: String? = nil
+    var showUntagged: Bool = false
+    var isPresentingAddRecipeView = false
 
     func configureContext(_ context: ModelContext, _ auth: UserAuthService) {
         self.modelContext = context
@@ -105,6 +108,8 @@ class RecipeListViewModel: ObservableObject {
             return recipe.totalDuration > 0 && recipe.totalDuration <= 30 * 60  // 30 minutes
         case .longCook:
             return recipe.totalDuration >= 2 * 60 * 60  // 2 hours
+        case .favorites:
+            return recipe.isFavorite
         }
     }
 
@@ -130,7 +135,7 @@ class RecipeListViewModel: ObservableObject {
             }
         case .recentlyAdded:
             return recipes.sorted {
-                ($0.deletedAt ?? Date.distantPast) > ($1.deletedAt ?? Date.distantPast)
+                $0.createdAt > $1.createdAt
             }
         case .timesCookedRecently:
             return recipes.sorted {

@@ -6,12 +6,13 @@ struct UserProfileView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var categories: [TodoItemCategory]
 
-    @StateObject var viewModel = UserProfileViewModel()
+    @State var viewModel = UserProfileViewModel()
 
     @State private var apiKeyInput: String = ""
     @State private var hasAPIKey: Bool = false
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {

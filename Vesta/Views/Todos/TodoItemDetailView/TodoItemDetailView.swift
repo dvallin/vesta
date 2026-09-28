@@ -6,15 +6,16 @@ struct TodoItemDetailView: View {
     @EnvironmentObject private var syncService: SyncService
     @Environment(\.dismiss) private var dismiss
 
-    @StateObject private var viewModel: TodoItemDetailViewModel
+    @State private var viewModel: TodoItemDetailViewModel
 
     @FocusState private var focusedField: String?
 
     init(item: TodoItem) {
-        _viewModel = StateObject(wrappedValue: TodoItemDetailViewModel(item: item))
+        _viewModel = State(initialValue: TodoItemDetailViewModel(item: item))
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             Form {
                 TitleDetailsSection(
@@ -43,44 +44,22 @@ struct TodoItemDetailView: View {
                 if viewModel.item.isHabitItem {
                     Section(
                         NSLocalizedString(
-                            "Habits", comment: "Habits section header")
+                            "Streak", comment: "Streak section header")
                     ) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack {
-                                Text(
-                                    NSLocalizedString(
-                                        "Health", comment: "Health label"))
-                                Spacer()
-                                HStack(spacing: 4) {
-                                    Text("\(viewModel.item.health)%")
-                                        .foregroundColor(.secondary)
-                                    Image(
-                                        systemName: viewModel.item.healthTrend
-                                            .systemImage
-                                    )
-                                    .font(.caption)
-                                    .foregroundColor(
-                                        trendColor(viewModel.item.healthTrend))
-                                }
-                            }
-                            Text(
-                                healthMotivationText(
-                                    health: viewModel.item.health,
-                                    trend: viewModel.item.healthTrend)
-                            )
-                            .font(.caption)
-                            .foregroundColor(
-                                trendColor(viewModel.item.healthTrend)
-                            )
-                            .padding(.leading, 0)
-                        }
                         HStack {
                             Text(
                                 NSLocalizedString(
                                     "Current Streak", comment: "Current streak label"))
                             Spacer()
-                            Text("\(viewModel.item.currentStreak)")
-                                .foregroundColor(.secondary)
+                            HStack(spacing: 4) {
+                                if viewModel.item.currentStreak > 0 {
+                                    Image(systemName: "flame.fill")
+                                        .font(.caption)
+                                        .foregroundColor(.orange)
+                                }
+                                Text("\(viewModel.item.currentStreak)")
+                                    .foregroundColor(.secondary)
+                            }
                         }
                         HStack {
                             Text(
@@ -88,10 +67,7 @@ struct TodoItemDetailView: View {
                                     "Best Streak", comment: "Best streak label"))
                             Spacer()
                             HStack(spacing: 4) {
-                                if viewModel.item.bestStreak > 0
-                                    && viewModel.item.currentStreak
-                                        >= viewModel.item.bestStreak
-                                {
+                                if viewModel.item.isPersonalBest {
                                     Image(systemName: "trophy.fill")
                                         .font(.caption)
                                         .foregroundColor(.yellow)
@@ -100,49 +76,14 @@ struct TodoItemDetailView: View {
                                     .foregroundColor(.secondary)
                             }
                         }
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack {
-                                Text(
-                                    NSLocalizedString(
-                                        "On-Time Rate",
-                                        comment: "On-time rate label"))
-                                Spacer()
-                                Text(
-                                    "\(Int(viewModel.item.onTimeRate * 100))%"
-                                )
-                                .foregroundColor(.secondary)
-                            }
+                        if viewModel.item.currentStreak > 0 {
                             Text(
-                                NSLocalizedString(
-                                    "Percentage of completions on or before the due date",
-                                    comment: "On-time rate explanation text")
+                                streakMotivationText(
+                                    streak: viewModel.item.currentStreak,
+                                    best: viewModel.item.bestStreak)
                             )
                             .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.leading, 0)
-                        }
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack {
-                                Text(
-                                    NSLocalizedString(
-                                        "Tolerance", comment: "Streak tolerance label"))
-                                Spacer()
-                                Text(
-                                    String.localizedStringWithFormat(
-                                        NSLocalizedString(
-                                            "%d days", comment: "Days tolerance format"),
-                                        viewModel.item.currentToleranceDays)
-                                )
-                                .foregroundColor(.secondary)
-                            }
-                            Text(
-                                NSLocalizedString(
-                                    "How many days late you can complete this without breaking your streak",
-                                    comment: "Tolerance explanation text")
-                            )
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.leading, 0)
+                            .foregroundColor(.orange)
                         }
                     }
                 }
@@ -219,71 +160,31 @@ struct TodoItemDetailView: View {
         }
     }
 
-    private func trendColor(_ trend: HealthTrend) -> Color {
-        switch trend {
-        case .improving:
-            return .green
-        case .stable:
-            return .secondary
-        case .declining:
-            return .orange
-        }
-    }
-
-    private func healthMotivationText(health: Int, trend: HealthTrend) -> String {
-        switch (health, trend) {
-        // High health
-        case (80...100, .improving):
+    private func streakMotivationText(streak: Int, best: Int) -> String {
+        if streak >= best && streak >= 7 {
             return NSLocalizedString(
-                "Exceptional! You're at peak performance",
-                comment: "Health motivation: high health, improving")
-        case (80...100, .stable):
+                "\u{1F3C6} New personal best! You're on fire!",
+                comment: "Streak motivation: personal best high")
+        } else if streak >= best && streak >= 3 {
             return NSLocalizedString(
-                "Solid habit — keep up the great rhythm",
-                comment: "Health motivation: high health, stable")
-        case (80...100, .declining):
+                "\u{1F3C6} Personal best \u{2014} keep it going!",
+                comment: "Streak motivation: matching best")
+        } else if streak >= 15 {
             return NSLocalizedString(
-                "Still strong, but watch the timing",
-                comment: "Health motivation: high health, declining")
-        // Medium-high health
-        case (60..<80, .improving):
+                "Incredible discipline \u{2014} you're unstoppable",
+                comment: "Streak motivation: very high streak")
+        } else if streak >= 7 {
             return NSLocalizedString(
-                "Nice momentum — you're building consistency",
-                comment: "Health motivation: medium-high health, improving")
-        case (60..<80, .stable):
+                "Solid streak \u{2014} consistency pays off",
+                comment: "Streak motivation: high streak")
+        } else if streak >= 3 {
             return NSLocalizedString(
-                "Good pace — a few more on time will push you higher",
-                comment: "Health motivation: medium-high health, stable")
-        case (60..<80, .declining):
+                "Building momentum \u{2014} don't break the chain!",
+                comment: "Streak motivation: medium streak")
+        } else {
             return NSLocalizedString(
-                "Slipping a bit — try completing before the due date",
-                comment: "Health motivation: medium-high health, declining")
-        // Medium-low health
-        case (40..<60, .improving):
-            return NSLocalizedString(
-                "Recovering well — keep the streak going",
-                comment: "Health motivation: medium-low health, improving")
-        case (40..<60, .stable):
-            return NSLocalizedString(
-                "Steady — each on-time completion builds health",
-                comment: "Health motivation: medium-low health, stable")
-        case (40..<60, .declining):
-            return NSLocalizedString(
-                "Needs attention — try not to let it slip further",
-                comment: "Health motivation: medium-low health, declining")
-        // Low health
-        case (_, .improving):
-            return NSLocalizedString(
-                "Good start — every completion counts",
-                comment: "Health motivation: low health, improving")
-        case (_, .stable):
-            return NSLocalizedString(
-                "Build your streak — consistency is key",
-                comment: "Health motivation: low health, stable")
-        case (_, .declining):
-            return NSLocalizedString(
-                "Fresh start — one completion is all it takes",
-                comment: "Health motivation: low health, declining")
+                "Every completion counts \u{2014} keep going",
+                comment: "Streak motivation: low streak")
         }
     }
 

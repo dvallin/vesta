@@ -9,12 +9,15 @@ struct IngredientsSection<IngredientType: Identifiable>: View {
     let removeHandler: (IngredientType) -> Void
     let quantityText: (IngredientType) -> String
     let nameText: (IngredientType) -> String
+    let groupText: (IngredientType) -> String?
 
     @Binding var ingredientName: String
     @Binding var ingredientQuantity: String
     @Binding var ingredientUnit: Unit?
 
     let onAdd: () -> Void
+
+    var onEdit: ((IngredientType) -> Void)? = nil
 
     var body: some View {
         Section(header: Text(header)) {
@@ -23,12 +26,14 @@ struct IngredientsSection<IngredientType: Identifiable>: View {
                 onRemove: removeHandler,
                 onMove: moveHandler,
                 quantityText: quantityText,
-                nameText: nameText
+                nameText: nameText,
+                groupText: groupText,
+                onEdit: onEdit
             )
             IngredientInputRowView(
+                ingredientName: $ingredientName,
                 ingredientQuantity: $ingredientQuantity,
                 ingredientUnit: $ingredientUnit,
-                ingredientName: $ingredientName,
                 onAdd: onAdd
             )
         }

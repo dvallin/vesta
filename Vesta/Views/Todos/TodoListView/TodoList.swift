@@ -5,7 +5,7 @@ import os
 struct TodoList: View {
     private let logger = Logger(subsystem: "com.yourapp.Vesta", category: "TodoList")
 
-    @ObservedObject var viewModel: TodoListViewModel
+    var viewModel: TodoListViewModel
 
     var todoItems: [TodoItem]
 

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RecipeQuickFilterView: View {
-    @ObservedObject var viewModel: RecipeListViewModel
+    var viewModel: RecipeListViewModel
     let recipes: [Recipe]
 
     var body: some View {

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MealListItem: View {
-    @ObservedObject var viewModel: MealPlanViewModel
+    var viewModel: MealPlanViewModel
     let meal: Meal
 
     // MARK: - Planning State Color

@@ -21,7 +21,7 @@ enum MealPlanFilterMode: String, CaseIterable {
 }
 
 struct MealPlanQuickFilterView: View {
-    @ObservedObject var viewModel: MealPlanViewModel
+    var viewModel: MealPlanViewModel
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {

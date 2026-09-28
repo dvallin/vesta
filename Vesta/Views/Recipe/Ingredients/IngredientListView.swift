@@ -6,15 +6,27 @@ struct IngredientListView<IngredientType: Identifiable>: View {
     let onMove: (IndexSet, Int) -> Void
     let quantityText: (IngredientType) -> String
     let nameText: (IngredientType) -> String
+    var groupText: ((IngredientType) -> String?)? = nil
+    var onEdit: ((IngredientType) -> Void)? = nil
 
     var body: some View {
         ForEach(ingredients) { ingredient in
             HStack {
-                Text("•")
-                Text(nameText(ingredient))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(nameText(ingredient))
+                    if let groupFn = groupText, let group = groupFn(ingredient) {
+                        Text(group)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
                 Spacer()
                 Text(quantityText(ingredient))
                     .foregroundColor(.secondary)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                onEdit?(ingredient)
             }
         }
         .onDelete { indexSet in
